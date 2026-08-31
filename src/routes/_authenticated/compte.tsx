@@ -2,7 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Baby, Briefcase, CalendarClock, Loader2, LogOut, Search } from "lucide-react";
+import {
+  Baby,
+  Briefcase,
+  CalendarClock,
+  Gavel,
+  Loader2,
+  LogOut,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -265,6 +274,38 @@ function AccountPage() {
                 </span>
                 <span className="block text-sm text-muted-foreground">
                   Profil, offres de cours et visibilité.
+                </span>
+              </span>
+            </Link>
+          )}
+
+          <Link
+            to="/compte/litiges"
+            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+          >
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+              <Gavel className="size-5" aria-hidden />
+            </span>
+            <span>
+              <span className="block font-display font-bold text-foreground">Mes litiges</span>
+              <span className="block text-sm text-muted-foreground">
+                Signalements sur vos séances et décisions de l&apos;équipe.
+              </span>
+            </span>
+          </Link>
+
+          {roles.includes("admin") && (
+            <Link
+              to="/admin"
+              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+            >
+              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                <ShieldCheck className="size-5" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-display font-bold text-foreground">Administration</span>
+                <span className="block text-sm text-muted-foreground">
+                  Professeurs, vérifications, offres et litiges.
                 </span>
               </span>
             </Link>

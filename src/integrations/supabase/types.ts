@@ -247,6 +247,62 @@ export type Database = {
           },
         ]
       }
+      disputes: {
+        Row: {
+          against_id: string | null
+          booking_id: string
+          created_at: string
+          description: string | null
+          id: string
+          opened_by: string
+          reason: string
+          refund_decision_fcfa: number | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          against_id?: string | null
+          booking_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          opened_by: string
+          reason: string
+          refund_decision_fcfa?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          against_id?: string | null
+          booking_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          opened_by?: string
+          reason?: string
+          refund_decision_fcfa?: number | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       levels: {
         Row: {
           created_at: string
@@ -612,6 +668,107 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_teachers: {
+        Args: never
+        Returns: {
+          city: string
+          commune: string
+          created_at: string
+          display_name: string
+          headline: string
+          identity_verified: boolean
+          offers_published: number
+          offers_total: number
+          phone: string
+          qualifications_verified: boolean
+          teacher_id: string
+          verification_status: string
+          years_experience: number
+        }[]
+      }
+      admin_moderate_offer: {
+        Args: { p_offer_id: string; p_reason?: string; p_status: string }
+        Returns: {
+          city: string
+          communes: string[]
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          offers_home: boolean
+          offers_online: boolean
+          price_fcfa: number
+          status: string
+          subject_id: string
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "teacher_offers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_resolve_dispute: {
+        Args: {
+          p_dispute_id: string
+          p_refund_fcfa?: number
+          p_resolution?: string
+          p_status: string
+        }
+        Returns: {
+          against_id: string | null
+          booking_id: string
+          created_at: string
+          description: string | null
+          id: string
+          opened_by: string
+          reason: string
+          refund_decision_fcfa: number | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "disputes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_set_teacher_verification: {
+        Args: {
+          p_identity_verified: boolean
+          p_qualifications_verified: boolean
+          p_teacher_id: string
+          p_verification_status: string
+        }
+        Returns: {
+          bio: string | null
+          created_at: string
+          headline: string | null
+          id: string
+          identity_verified: boolean
+          offers_home: boolean
+          offers_online: boolean
+          qualifications_verified: boolean
+          updated_at: string
+          user_id: string
+          verification_status: string
+          years_experience: number | null
+          zones: string[]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "teacher_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_booking: {
         Args: { p_booking_id: string; p_reason?: string }
         Returns: {

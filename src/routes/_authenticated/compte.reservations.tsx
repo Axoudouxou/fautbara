@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
+import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
   head: () => ({
@@ -36,6 +37,25 @@ export function formatSlot(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+export function formatDay(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+export function formatTime(iso: string | Date) {
+  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+/** Heure exacte de la séance : « 16:00 → 17:30 » */
+export function formatTimeRange(iso: string, durationMinutes: number) {
+  const start = new Date(iso);
+  const end = new Date(start.getTime() + durationMinutes * 60_000);
+  return `${formatTime(start)} → ${formatTime(end)}`;
 }
 
 function BookingsPage() {
@@ -133,7 +153,8 @@ function BookingsPage() {
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarClock className="size-4" aria-hidden />
-                  {formatSlot(b.scheduled_at)} · {b.duration_minutes} min
+                  {formatDay(b.scheduled_at)} · {formatTimeRange(b.scheduled_at, b.duration_minutes)}{" "}
+                  ({b.duration_minutes} min)
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   {b.format === "online" ? (
@@ -192,7 +213,20 @@ function BookingsPage() {
                     Annuler la séance
                   </button>
                 )}
+                {(b.status === "completed" || b.status === "cancelled") && (
+                  <OpenDisputeDialog
+                    bookingId={b.id}
+                    againstId={b.teacher_id}
+                    openedBy={user.id}
+                  />
+                )}
               </div>
+              <Link
+                to="/compte/litiges"
+                className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
+              >
+                Voir mes litiges
+              </Link>
             </li>
           );
         })}

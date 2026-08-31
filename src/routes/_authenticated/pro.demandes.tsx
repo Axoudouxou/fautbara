@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
+import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 
 export const Route = createFileRoute("/_authenticated/pro/demandes")({
   head: () => ({
@@ -196,7 +197,9 @@ function TeacherRequestsPage() {
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarClock className="size-4" aria-hidden />
-                  {formatSlot(r.scheduled_at)} · {r.duration_minutes} min
+                  {formatSlot(r.scheduled_at)} →{" "}
+                  {new Date(new Date(r.scheduled_at).getTime() + r.duration_minutes * 60_000).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}{" "}
+                  ({r.duration_minutes} min)
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   {r.format === "online" ? (
@@ -276,6 +279,13 @@ function TeacherRequestsPage() {
                   >
                     <X className="size-3.5" aria-hidden /> Annuler la séance
                   </button>
+                )}
+                {(r.status === "completed" || r.status === "cancelled") && (
+                  <OpenDisputeDialog
+                    bookingId={r.id}
+                    againstId={r.requester_id}
+                    openedBy={user.id}
+                  />
                 )}
               </div>
             </li>

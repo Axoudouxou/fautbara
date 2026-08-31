@@ -135,6 +135,15 @@ function BookingPage() {
     return exceptions.some((e) => e.exception_date === date && !e.start_time);
   }, [date, exceptions]);
 
+  const sessionRange = useMemo(() => {
+    if (!date || !time || !offer) return { start: "", end: "" };
+    const start = new Date(`${date}T${time}:00`);
+    const end = new Date(start.getTime() + offer.duration_minutes * 60_000);
+    const fmt = (d: Date) =>
+      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    return { start: fmt(start), end: fmt(end) };
+  }, [date, time, offer]);
+
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!offer) throw new Error("Offre indisponible");
@@ -313,6 +322,25 @@ function BookingPage() {
               />
             </div>
           </div>
+
+          {date && time && (
+            <div className="rounded-2xl border border-primary/30 bg-primary-soft/50 px-4 py-3 text-sm">
+              <p className="font-semibold text-foreground">
+                Séance du{" "}
+                {new Date(`${date}T${time}:00`).toLocaleDateString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}{" "}
+                de {sessionRange.start} à {sessionRange.end}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Durée : {offer.duration_minutes} minutes (heure d&apos;Abidjan).
+              </p>
+            </div>
+          )}
+
+
 
           {date && (
             <div className="rounded-2xl bg-secondary/50 px-4 py-3 text-sm">

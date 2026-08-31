@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
-import { STATUS_LABELS } from "./compte.reservations";
+import { STATUS_LABELS, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/compte/calendrier")({
   head: () => ({
@@ -163,11 +163,10 @@ function CalendarPage() {
                   return (
                     <li key={b.id} className="rounded-xl border border-border/70 bg-background p-3">
                       <p className="font-display text-sm font-bold text-foreground">
-                        {new Date(b.scheduled_at).toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        · {b.duration_minutes} min
+                        {formatTimeRange(b.scheduled_at, b.duration_minutes)}
+                        <span className="ml-1 font-sans text-xs font-semibold text-muted-foreground">
+                          ({b.duration_minutes} min)
+                        </span>
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {b.teacher_offers?.subjects?.name} — {b.children?.first_name ?? "moi"}
