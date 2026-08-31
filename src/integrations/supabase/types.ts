@@ -80,6 +80,87 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          address: string | null
+          child_id: string | null
+          city: string
+          commune: string | null
+          created_at: string
+          duration_minutes: number
+          format: string
+          id: string
+          is_recurring: boolean
+          message: string | null
+          offer_id: string
+          price_fcfa: number
+          recurrence_end_date: string | null
+          requester_id: string
+          scheduled_at: string
+          status: string
+          status_reason: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          child_id?: string | null
+          city?: string
+          commune?: string | null
+          created_at?: string
+          duration_minutes?: number
+          format?: string
+          id?: string
+          is_recurring?: boolean
+          message?: string | null
+          offer_id: string
+          price_fcfa: number
+          recurrence_end_date?: string | null
+          requester_id: string
+          scheduled_at: string
+          status?: string
+          status_reason?: string | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          child_id?: string | null
+          city?: string
+          commune?: string | null
+          created_at?: string
+          duration_minutes?: number
+          format?: string
+          id?: string
+          is_recurring?: boolean
+          message?: string | null
+          offer_id?: string
+          price_fcfa?: number
+          recurrence_end_date?: string | null
+          requester_id?: string
+          scheduled_at?: string
+          status?: string
+          status_reason?: string | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
