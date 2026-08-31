@@ -192,7 +192,20 @@ function BookingsPage() {
                     Annuler la séance
                   </button>
                 )}
+                {(b.status === "completed" || b.status === "cancelled") && (
+                  <OpenDisputeDialog
+                    bookingId={b.id}
+                    againstId={b.teacher_id}
+                    openedBy={user.id}
+                  />
+                )}
               </div>
+              <Link
+                to="/compte/litiges"
+                className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
+              >
+                Voir mes litiges
+              </Link>
             </li>
           );
         })}
