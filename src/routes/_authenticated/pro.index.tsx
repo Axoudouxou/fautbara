@@ -152,6 +152,8 @@ function TeacherDashboard() {
         Votre visibilité dépend de votre profil et de vos offres publiées.
       </p>
 
+      <VerificationBanner teacher={teacher} />
+
       <div className="mt-6 flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
           <ShieldCheck className="size-3.5" aria-hidden />
@@ -163,6 +165,7 @@ function TeacherDashboard() {
           </span>
         )}
       </div>
+
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
