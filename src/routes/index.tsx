@@ -27,11 +27,27 @@ export const Route = createFileRoute("/")({
 });
 
 const CATEGORIES = [
-  { icon: GraduationCap, label: "Soutien scolaire", detail: "Maths, français, physique…" },
-  { icon: BadgeCheck, label: "Préparation aux examens", detail: "CEPE, BEPC, BAC…" },
-  { icon: Languages, label: "Langues", detail: "Étrangères et ivoiriennes" },
-  { icon: CalendarCheck, label: "Compétences & arts", detail: "Informatique, musique…" },
+  {
+    icon: GraduationCap,
+    label: "Soutien scolaire",
+    detail: "Maths, français, physique…",
+    slug: "mathematiques",
+  },
+  {
+    icon: BadgeCheck,
+    label: "Préparation aux examens",
+    detail: "CEPE, BEPC, BAC…",
+    slug: "prep-bac",
+  },
+  { icon: Languages, label: "Langues", detail: "Étrangères et ivoiriennes", slug: "anglais" },
+  {
+    icon: CalendarCheck,
+    label: "Compétences & arts",
+    detail: "Informatique, musique…",
+    slug: "bureautique",
+  },
 ];
+
 
 const STEPS = [
   {
