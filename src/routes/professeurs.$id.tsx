@@ -182,18 +182,19 @@ function TeacherPublicPage() {
         <aside className="h-fit rounded-2xl border border-border/70 bg-secondary/40 p-5 lg:sticky lg:top-24">
           <p className="font-display font-bold text-foreground">Intéressé par ce professeur ?</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            La réservation de créneaux arrive prochainement sur FAUT BARA. Créez votre compte dès
-            maintenant pour préparer vos demandes de cours.
+            Choisissez une offre puis envoyez votre demande de cours : date, créneau, format et
+            bénéficiaire. Le professeur vous répond directement.
           </p>
           <a
             href="/auth"
             className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Créer un compte
+            Créer un compte pour réserver
           </a>
           <p className="mt-3 text-xs text-muted-foreground">
             Les coordonnées privées des professeurs ne sont jamais affichées publiquement.
           </p>
+
         </aside>
       </div>
     </div>
