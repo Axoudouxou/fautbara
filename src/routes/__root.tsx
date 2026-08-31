@@ -124,18 +124,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function SiteHeader() {
-  const [signedIn, setSignedIn] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") setSignedIn(true);
-      if (event === "SIGNED_OUT") setSignedIn(false);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const { signedIn, primaryRole } = useAppNav();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -148,55 +137,47 @@ function SiteHeader() {
             FAUT BARA
           </span>
         </Link>
-        <nav className="flex items-center gap-1 sm:gap-2" aria-label="Navigation principale">
-          <Link
-            to="/professeurs"
-            search={{}}
-            className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-          >
-            Trouver un professeur
-          </Link>
-          <Link
-            to="/matieres"
-            className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-          >
-            Matières
-          </Link>
-          {signedIn ? (
-            <>
-              <Link
-                to="/messages"
-                className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              >
-                Messages
-              </Link>
-              <Link
-                to="/compte"
-                className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              >
-                Mon compte
-              </Link>
-
-              <Link
-                to="/accueil"
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
-              >
-                Mon espace
-              </Link>
-            </>
-          ) : (
+        {signedIn ? (
+          <div className="flex items-center gap-2">
+            <AppTabsBar role={primaryRole} />
+            <button
+              type="button"
+              onClick={() => {
+                void supabase.auth.signOut();
+              }}
+              className="inline-flex items-center justify-center rounded-full border border-input bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              Déconnexion
+            </button>
+          </div>
+        ) : (
+          <nav className="flex items-center gap-1 sm:gap-2" aria-label="Navigation principale">
+            <Link
+              to="/professeurs"
+              search={{}}
+              className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            >
+              Trouver un professeur
+            </Link>
+            <Link
+              to="/matieres"
+              className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            >
+              Matières
+            </Link>
             <a
               href="/auth"
               className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
             >
               Se connecter
             </a>
-          )}
-        </nav>
+          </nav>
+        )}
       </div>
     </header>
   );
 }
+
 
 function SiteFooter() {
   return (
