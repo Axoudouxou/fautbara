@@ -314,6 +314,25 @@ function BookingPage() {
             </div>
           </div>
 
+          {date && time && (
+            <div className="rounded-2xl border border-primary/30 bg-primary-soft/50 px-4 py-3 text-sm">
+              <p className="font-semibold text-foreground">
+                Séance du{" "}
+                {new Date(`${date}T${time}:00`).toLocaleDateString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}{" "}
+                de {sessionRange.start} à {sessionRange.end}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Durée : {offer.duration_minutes} minutes (heure d&apos;Abidjan).
+              </p>
+            </div>
+          )}
+
+
+
           {date && (
             <div className="rounded-2xl bg-secondary/50 px-4 py-3 text-sm">
               {dayBlocked ? (
