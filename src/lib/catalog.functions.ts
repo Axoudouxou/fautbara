@@ -61,17 +61,16 @@ export const searchTeachers = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => searchFiltersSchema.parse(data ?? {}))
   .handler(async ({ data }): Promise<TeacherCard[]> => {
     const supabase = publicClient();
-    const { data: rows, error } = await supabase.rpc("search_teachers", {
-      p_query: data.q,
-      p_subject_slug: data.matiere,
-      p_level_slug: data.niveau,
-      p_format: data.format,
-      p_city: data.ville,
-      p_commune: data.commune,
-      p_max_price: data.prixMax,
-      p_limit: 24,
-      p_offset: 0,
-    });
+    const args: Record<string, string | number> = { p_limit: 24, p_offset: 0 };
+    if (data.q) args["p_query"] = data.q;
+    if (data.matiere) args["p_subject_slug"] = data.matiere;
+    if (data.niveau) args["p_level_slug"] = data.niveau;
+    if (data.format) args["p_format"] = data.format;
+    if (data.ville) args["p_city"] = data.ville;
+    if (data.commune) args["p_commune"] = data.commune;
+    if (data.prixMax) args["p_max_price"] = data.prixMax;
+    const { data: rows, error } = await supabase.rpc("search_teachers", args);
+
     if (error) throw error;
     return (rows ?? []) as TeacherCard[];
   });
