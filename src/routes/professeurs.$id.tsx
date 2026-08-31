@@ -5,9 +5,9 @@ import { getTeacherPublicProfile } from "@/lib/catalog.functions";
 
 export const Route = createFileRoute("/professeurs/$id")({
   loader: async ({ params }) => {
-    const result = await getTeacherPublicProfile({ data: { id: params.id } });
-    if (!result.profile) throw notFound();
-    return result;
+    const { profile, offers } = await getTeacherPublicProfile({ data: { id: params.id } });
+    if (!profile) throw notFound();
+    return { profile, offers };
   },
   head: ({ loaderData }) => {
     if (!loaderData) {

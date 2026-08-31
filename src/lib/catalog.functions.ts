@@ -62,13 +62,13 @@ export const searchTeachers = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<TeacherCard[]> => {
     const supabase = publicClient();
     const { data: rows, error } = await supabase.rpc("search_teachers", {
-      p_query: data.q ?? null,
-      p_subject_slug: data.matiere ?? null,
-      p_level_slug: data.niveau ?? null,
-      p_format: data.format ?? null,
-      p_city: data.ville ?? null,
-      p_commune: data.commune ?? null,
-      p_max_price: data.prixMax ?? null,
+      p_query: data.q,
+      p_subject_slug: data.matiere,
+      p_level_slug: data.niveau,
+      p_format: data.format,
+      p_city: data.ville,
+      p_commune: data.commune,
+      p_max_price: data.prixMax,
       p_limit: 24,
       p_offset: 0,
     });
