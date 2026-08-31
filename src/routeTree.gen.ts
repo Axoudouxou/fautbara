@@ -21,6 +21,7 @@ import { Route as ProfesseursIdRouteImport } from './routes/professeurs.$id'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
 import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_authenticated/compte.reservations'
 import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticated/pro.index'
+import { Route as AuthenticatedProDemandesRouteImport } from './routes/_authenticated/pro.demandes'
 import { Route as AuthenticatedProDisponibilitesRouteImport } from './routes/_authenticated/pro.disponibilites'
 import { Route as AuthenticatedProOffresRouteImport } from './routes/_authenticated/pro.offres'
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
@@ -87,6 +88,12 @@ const AuthenticatedProIndexRoute = AuthenticatedProIndexRouteImport.update({
   path: '/pro/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProDemandesRoute =
+  AuthenticatedProDemandesRouteImport.update({
+    id: '/pro/demandes',
+    path: '/pro/demandes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProDisponibilitesRoute =
   AuthenticatedProDisponibilitesRouteImport.update({
     id: '/pro/disponibilites',
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/professeurs/': typeof ProfesseursIndexRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
+  '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
   '/professeurs': typeof ProfesseursIndexRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
+  '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
@@ -157,6 +166,7 @@ export interface FileRoutesById {
   '/professeurs/': typeof ProfesseursIndexRoute
   '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
+  '/_authenticated/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/_authenticated/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/_authenticated/pro/offres': typeof AuthenticatedProOffresRoute
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/professeurs/'
     | '/compte/enfants'
     | '/compte/reservations'
+    | '/pro/demandes'
     | '/pro/disponibilites'
     | '/pro/offres'
     | '/pro/profil'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/professeurs'
     | '/compte/enfants'
     | '/compte/reservations'
+    | '/pro/demandes'
     | '/pro/disponibilites'
     | '/pro/offres'
     | '/pro/profil'
@@ -211,6 +223,7 @@ export interface FileRouteTypes {
     | '/professeurs/'
     | '/_authenticated/compte/enfants'
     | '/_authenticated/compte/reservations'
+    | '/_authenticated/pro/demandes'
     | '/_authenticated/pro/disponibilites'
     | '/_authenticated/pro/offres'
     | '/_authenticated/pro/profil'
@@ -315,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/demandes': {
+      id: '/_authenticated/pro/demandes'
+      path: '/pro/demandes'
+      fullPath: '/pro/demandes'
+      preLoaderRoute: typeof AuthenticatedProDemandesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pro/disponibilites': {
       id: '/_authenticated/pro/disponibilites'
       path: '/pro/disponibilites'
@@ -361,6 +381,7 @@ const AuthenticatedCompteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteRoute: typeof AuthenticatedCompteRouteWithChildren
+  AuthenticatedProDemandesRoute: typeof AuthenticatedProDemandesRoute
   AuthenticatedProDisponibilitesRoute: typeof AuthenticatedProDisponibilitesRoute
   AuthenticatedProOffresRoute: typeof AuthenticatedProOffresRoute
   AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
@@ -370,6 +391,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteRoute: AuthenticatedCompteRouteWithChildren,
+  AuthenticatedProDemandesRoute: AuthenticatedProDemandesRoute,
   AuthenticatedProDisponibilitesRoute: AuthenticatedProDisponibilitesRoute,
   AuthenticatedProOffresRoute: AuthenticatedProOffresRoute,
   AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
