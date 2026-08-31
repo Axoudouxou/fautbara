@@ -57,7 +57,18 @@ function AdminOffers() {
       if (filter !== "all") query = query.eq("status", filter);
       const { data, error } = await query;
       if (error) throw error;
-      return data ?? [];
+      const rows = data ?? [];
+      const teacherIds = [...new Set(rows.map((r) => r.teacher_id))];
+      const names = new Map<string, string>();
+      if (teacherIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from("profiles")
+          .select("user_id, display_name")
+          .in("user_id", teacherIds);
+        if (profilesError) throw profilesError;
+        for (const p of profiles ?? []) names.set(p.user_id, p.display_name);
+      }
+      return rows.map((r) => ({ ...r, teacher_name: names.get(r.teacher_id) ?? "Professeur" }));
     },
   });
 
@@ -124,7 +135,7 @@ function AdminOffers() {
                 <div className="min-w-0">
                   <p className="font-display font-bold text-foreground">{o.title}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {o.profiles?.display_name} · {o.subjects?.name} ·{" "}
+                    {o.teacher_name} · {o.subjects?.name} ·{" "}
                     {o.price_fcfa.toLocaleString("fr-FR")} F / {o.duration_minutes} min
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
