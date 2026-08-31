@@ -4,6 +4,7 @@ import {
   BadgeCheck,
   BookOpen,
   CalendarClock,
+  Inbox,
   Eye,
   Loader2,
   ShieldCheck,
@@ -221,6 +222,15 @@ function TeacherDashboard() {
             <BookOpen className="size-5" aria-hidden />
           </span>
           <span className="font-display font-bold text-foreground">Mes offres</span>
+        </Link>
+        <Link
+          to="/pro/demandes"
+          className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+        >
+          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <Inbox className="size-5" aria-hidden />
+          </span>
+          <span className="font-display font-bold text-foreground">Demandes de cours</span>
         </Link>
         <Link
           to="/pro/disponibilites"
