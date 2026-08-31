@@ -2,7 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Baby, Briefcase, CalendarClock, Loader2, LogOut, Search } from "lucide-react";
+import {
+  Baby,
+  Briefcase,
+  CalendarClock,
+  Gavel,
+  Loader2,
+  LogOut,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
