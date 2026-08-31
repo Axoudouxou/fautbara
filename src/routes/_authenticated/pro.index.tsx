@@ -109,7 +109,13 @@ function TeacherDashboard() {
       done: published.length > 0,
       to: "/pro/offres" as const,
     },
+    {
+      label: "Renseigner mes disponibilités",
+      done: (availabilitiesQuery.data ?? 0) > 0,
+      to: "/pro/disponibilites" as const,
+    },
   ];
+
 
   return (
     <div className="container-page py-10 sm:py-14">
