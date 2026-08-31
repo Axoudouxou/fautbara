@@ -24,6 +24,7 @@ import { Route as AuthenticatedAdminOffresRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminProfesseursRouteImport } from './routes/_authenticated/admin.professeurs'
 import { Route as AuthenticatedCompteCalendrierRouteImport } from './routes/_authenticated/compte.calendrier'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
+import { Route as AuthenticatedCompteLitigesRouteImport } from './routes/_authenticated/compte.litiges'
 import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_authenticated/compte.reservations'
 import { Route as AuthenticatedPaiementBookingIdRouteImport } from './routes/_authenticated/paiement.$bookingId'
 import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticated/pro.index'
@@ -112,6 +113,12 @@ const AuthenticatedCompteEnfantsRoute =
     path: '/enfants',
     getParentRoute: () => AuthenticatedCompteRoute,
   } as any)
+const AuthenticatedCompteLitigesRoute =
+  AuthenticatedCompteLitigesRouteImport.update({
+    id: '/litiges',
+    path: '/litiges',
+    getParentRoute: () => AuthenticatedCompteRoute,
+  } as any)
 const AuthenticatedCompteReservationsRoute =
   AuthenticatedCompteReservationsRouteImport.update({
     id: '/reservations',
@@ -172,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
@@ -196,6 +204,7 @@ export interface FileRoutesByTo {
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/_authenticated/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/_authenticated/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/_authenticated/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
   '/_authenticated/pro/demandes': typeof AuthenticatedProDemandesRoute
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/admin/professeurs'
     | '/compte/calendrier'
     | '/compte/enfants'
+    | '/compte/litiges'
     | '/compte/reservations'
     | '/paiement/$bookingId'
     | '/pro/demandes'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/admin/professeurs'
     | '/compte/calendrier'
     | '/compte/enfants'
+    | '/compte/litiges'
     | '/compte/reservations'
     | '/paiement/$bookingId'
     | '/pro/demandes'
@@ -297,6 +309,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/professeurs'
     | '/_authenticated/compte/calendrier'
     | '/_authenticated/compte/enfants'
+    | '/_authenticated/compte/litiges'
     | '/_authenticated/compte/reservations'
     | '/_authenticated/paiement/$bookingId'
     | '/_authenticated/pro/demandes'
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompteEnfantsRouteImport
       parentRoute: typeof AuthenticatedCompteRoute
     }
+    '/_authenticated/compte/litiges': {
+      id: '/_authenticated/compte/litiges'
+      path: '/litiges'
+      fullPath: '/compte/litiges'
+      preLoaderRoute: typeof AuthenticatedCompteLitigesRouteImport
+      parentRoute: typeof AuthenticatedCompteRoute
+    }
     '/_authenticated/compte/reservations': {
       id: '/_authenticated/compte/reservations'
       path: '/reservations'
@@ -488,12 +508,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedCompteRouteChildren {
   AuthenticatedCompteCalendrierRoute: typeof AuthenticatedCompteCalendrierRoute
   AuthenticatedCompteEnfantsRoute: typeof AuthenticatedCompteEnfantsRoute
+  AuthenticatedCompteLitigesRoute: typeof AuthenticatedCompteLitigesRoute
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
 }
 
 const AuthenticatedCompteRouteChildren: AuthenticatedCompteRouteChildren = {
   AuthenticatedCompteCalendrierRoute: AuthenticatedCompteCalendrierRoute,
   AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRoute,
+  AuthenticatedCompteLitigesRoute: AuthenticatedCompteLitigesRoute,
   AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
 }
 
