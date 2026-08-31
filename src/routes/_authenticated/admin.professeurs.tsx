@@ -59,7 +59,7 @@ function AdminTeachers() {
         p_identity_verified: input.identity,
         p_qualifications_verified: input.qualifications,
         p_verification_status: input.status,
-        p_note: input.note?.trim() ? input.note.trim() : null,
+        p_note: input.note?.trim() ? input.note.trim() : undefined,
       });
       if (error) throw error;
     },
@@ -285,7 +285,7 @@ function TeacherDocuments({ teacherId, isAdmin }: { teacherId: string; isAdmin: 
       const { error } = await supabase.rpc("admin_review_teacher_document", {
         p_document_id: input.id,
         p_status: input.status,
-        p_note: input.note?.trim() ? input.note.trim() : null,
+        p_note: input.note?.trim() ? input.note.trim() : undefined,
       });
       if (error) throw error;
     },
