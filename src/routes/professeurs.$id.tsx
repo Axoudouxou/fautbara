@@ -172,9 +172,8 @@ function TeacherPublicPage() {
                   >
                     Réserver ce cours
                   </Link>
-
-                  </div>
                 </li>
+
               );
             })}
           </ul>
