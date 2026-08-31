@@ -135,6 +135,15 @@ function BookingPage() {
     return exceptions.some((e) => e.exception_date === date && !e.start_time);
   }, [date, exceptions]);
 
+  const sessionRange = useMemo(() => {
+    if (!date || !time || !offer) return { start: "", end: "" };
+    const start = new Date(`${date}T${time}:00`);
+    const end = new Date(start.getTime() + offer.duration_minutes * 60_000);
+    const fmt = (d: Date) =>
+      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    return { start: fmt(start), end: fmt(end) };
+  }, [date, time, offer]);
+
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!offer) throw new Error("Offre indisponible");
