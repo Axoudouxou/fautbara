@@ -39,6 +39,14 @@ export function formatSlot(iso: string) {
   });
 }
 
+export function formatDay(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
 export function formatTime(iso: string | Date) {
   return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
@@ -145,7 +153,8 @@ function BookingsPage() {
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarClock className="size-4" aria-hidden />
-                  {formatSlot(b.scheduled_at)} · {b.duration_minutes} min
+                  {formatDay(b.scheduled_at)} · {formatTimeRange(b.scheduled_at, b.duration_minutes)}{" "}
+                  ({b.duration_minutes} min)
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   {b.format === "online" ? (
