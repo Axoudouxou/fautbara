@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
-import { STATUS_LABELS } from "./compte.reservations";
+import { STATUS_LABELS, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/compte/calendrier")({
   head: () => ({
