@@ -19,6 +19,8 @@ import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
 import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
 import { Route as ProfesseursIdRouteImport } from './routes/professeurs.$id'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
+import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticated/pro.index'
+import { Route as AuthenticatedProOffresRouteImport } from './routes/_authenticated/pro.offres'
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +73,16 @@ const AuthenticatedCompteEnfantsRoute =
     path: '/enfants',
     getParentRoute: () => AuthenticatedCompteRoute,
   } as any)
+const AuthenticatedProIndexRoute = AuthenticatedProIndexRouteImport.update({
+  id: '/pro/',
+  path: '/pro/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProOffresRoute = AuthenticatedProOffresRouteImport.update({
+  id: '/pro/offres',
+  path: '/pro/offres',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProProfilRoute = AuthenticatedProProfilRouteImport.update({
   id: '/pro/profil',
   path: '/pro/profil',
@@ -87,7 +99,9 @@ export interface FileRoutesByFullPath {
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro/': typeof AuthenticatedProIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,7 +113,9 @@ export interface FileRoutesByTo {
   '/matieres': typeof MatieresIndexRoute
   '/professeurs': typeof ProfesseursIndexRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro': typeof AuthenticatedProIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,7 +129,9 @@ export interface FileRoutesById {
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
   '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/_authenticated/pro/offres': typeof AuthenticatedProOffresRoute
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
+  '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,7 +145,9 @@ export interface FileRouteTypes {
     | '/matieres/'
     | '/professeurs/'
     | '/compte/enfants'
+    | '/pro/offres'
     | '/pro/profil'
+    | '/pro/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,7 +159,9 @@ export interface FileRouteTypes {
     | '/matieres'
     | '/professeurs'
     | '/compte/enfants'
+    | '/pro/offres'
     | '/pro/profil'
+    | '/pro'
   id:
     | '__root__'
     | '/'
@@ -152,7 +174,9 @@ export interface FileRouteTypes {
     | '/matieres/'
     | '/professeurs/'
     | '/_authenticated/compte/enfants'
+    | '/_authenticated/pro/offres'
     | '/_authenticated/pro/profil'
+    | '/_authenticated/pro/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -238,6 +262,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompteEnfantsRouteImport
       parentRoute: typeof AuthenticatedCompteRoute
     }
+    '/_authenticated/pro/': {
+      id: '/_authenticated/pro/'
+      path: '/pro'
+      fullPath: '/pro/'
+      preLoaderRoute: typeof AuthenticatedProIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro/offres': {
+      id: '/_authenticated/pro/offres'
+      path: '/pro/offres'
+      fullPath: '/pro/offres'
+      preLoaderRoute: typeof AuthenticatedProOffresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pro/profil': {
       id: '/_authenticated/pro/profil'
       path: '/pro/profil'
@@ -261,12 +299,16 @@ const AuthenticatedCompteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteRoute: typeof AuthenticatedCompteRouteWithChildren
+  AuthenticatedProOffresRoute: typeof AuthenticatedProOffresRoute
   AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
+  AuthenticatedProIndexRoute: typeof AuthenticatedProIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteRoute: AuthenticatedCompteRouteWithChildren,
+  AuthenticatedProOffresRoute: AuthenticatedProOffresRoute,
   AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
+  AuthenticatedProIndexRoute: AuthenticatedProIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

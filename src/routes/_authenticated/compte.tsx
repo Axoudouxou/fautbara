@@ -218,7 +218,7 @@ function AccountPage() {
 
           {roles.includes("teacher") && (
             <Link
-              to="/pro/profil"
+              to="/pro"
               className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
             >
               <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
@@ -229,7 +229,7 @@ function AccountPage() {
                   Espace professeur
                 </span>
                 <span className="block text-sm text-muted-foreground">
-                  Complétez votre profil professionnel.
+                  Profil, offres de cours et visibilité.
                 </span>
               </span>
             </Link>
