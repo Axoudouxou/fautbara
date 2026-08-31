@@ -34,10 +34,11 @@ export function CancelBookingDialog({
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("cancel_booking", {
-        p_booking_id: bookingId,
-        p_reason: reason.trim() || undefined,
-      });
+      const trimmed = reason.trim();
+      const { error } = await supabase.rpc(
+        "cancel_booking",
+        trimmed ? { p_booking_id: bookingId, p_reason: trimmed } : { p_booking_id: bookingId },
+      );
       if (error) throw error;
     },
     onSuccess: () => {
