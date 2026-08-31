@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
 import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
 import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
 import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
@@ -22,6 +21,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminLitigesRouteImport } from './routes/_authenticated/admin.litiges'
 import { Route as AuthenticatedAdminOffresRouteImport } from './routes/_authenticated/admin.offres'
 import { Route as AuthenticatedAdminProfesseursRouteImport } from './routes/_authenticated/admin.professeurs'
+import { Route as AuthenticatedCompteIndexRouteImport } from './routes/_authenticated/compte.index'
 import { Route as AuthenticatedCompteCalendrierRouteImport } from './routes/_authenticated/compte.calendrier'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
 import { Route as AuthenticatedCompteLitigesRouteImport } from './routes/_authenticated/compte.litiges'
@@ -52,11 +52,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
-  id: '/compte',
-  path: '/compte',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const MatieresIndexRoute = MatieresIndexRouteImport.update({
   id: '/matieres/',
@@ -101,29 +96,35 @@ const AuthenticatedAdminProfesseursRoute =
     path: '/admin/professeurs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompteIndexRoute =
+  AuthenticatedCompteIndexRouteImport.update({
+    id: '/compte/',
+    path: '/compte/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCompteCalendrierRoute =
   AuthenticatedCompteCalendrierRouteImport.update({
-    id: '/calendrier',
-    path: '/calendrier',
-    getParentRoute: () => AuthenticatedCompteRoute,
+    id: '/compte/calendrier',
+    path: '/compte/calendrier',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCompteEnfantsRoute =
   AuthenticatedCompteEnfantsRouteImport.update({
-    id: '/enfants',
-    path: '/enfants',
-    getParentRoute: () => AuthenticatedCompteRoute,
+    id: '/compte/enfants',
+    path: '/compte/enfants',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCompteLitigesRoute =
   AuthenticatedCompteLitigesRouteImport.update({
-    id: '/litiges',
-    path: '/litiges',
-    getParentRoute: () => AuthenticatedCompteRoute,
+    id: '/compte/litiges',
+    path: '/compte/litiges',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCompteReservationsRoute =
   AuthenticatedCompteReservationsRouteImport.update({
-    id: '/reservations',
-    path: '/reservations',
-    getParentRoute: () => AuthenticatedCompteRoute,
+    id: '/compte/reservations',
+    path: '/compte/reservations',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPaiementBookingIdRoute =
   AuthenticatedPaiementBookingIdRouteImport.update({
@@ -169,7 +170,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/compte': typeof AuthenticatedCompteRouteWithChildren
   '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
@@ -188,13 +188,13 @@ export interface FileRoutesByFullPath {
   '/pro/profil': typeof AuthenticatedProProfilRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/compte/': typeof AuthenticatedCompteIndexRoute
   '/pro/': typeof AuthenticatedProIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/compte': typeof AuthenticatedCompteRouteWithChildren
   '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres': typeof MatieresIndexRoute
@@ -213,6 +213,7 @@ export interface FileRoutesByTo {
   '/pro/profil': typeof AuthenticatedProProfilRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/compte': typeof AuthenticatedCompteIndexRoute
   '/pro': typeof AuthenticatedProIndexRoute
 }
 export interface FileRoutesById {
@@ -221,7 +222,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/compte': typeof AuthenticatedCompteRouteWithChildren
   '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
@@ -240,6 +240,7 @@ export interface FileRoutesById {
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
   '/_authenticated/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/compte/': typeof AuthenticatedCompteIndexRoute
   '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
 }
 export interface FileRouteTypes {
@@ -248,7 +249,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
-    | '/compte'
     | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres/'
@@ -267,13 +267,13 @@ export interface FileRouteTypes {
     | '/pro/profil'
     | '/reserver/$offerId'
     | '/admin/'
+    | '/compte/'
     | '/pro/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/reset-password'
-    | '/compte'
     | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres'
@@ -292,6 +292,7 @@ export interface FileRouteTypes {
     | '/pro/profil'
     | '/reserver/$offerId'
     | '/admin'
+    | '/compte'
     | '/pro'
   id:
     | '__root__'
@@ -299,7 +300,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
-    | '/_authenticated/compte'
     | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres/'
@@ -318,6 +318,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/profil'
     | '/_authenticated/reserver/$offerId'
     | '/_authenticated/admin/'
+    | '/_authenticated/compte/'
     | '/_authenticated/pro/'
   fileRoutesById: FileRoutesById
 }
@@ -361,13 +362,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/compte': {
-      id: '/_authenticated/compte'
-      path: '/compte'
-      fullPath: '/compte'
-      preLoaderRoute: typeof AuthenticatedCompteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/matieres/': {
       id: '/matieres/'
@@ -425,33 +419,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProfesseursRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/compte/': {
+      id: '/_authenticated/compte/'
+      path: '/compte'
+      fullPath: '/compte/'
+      preLoaderRoute: typeof AuthenticatedCompteIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/compte/calendrier': {
       id: '/_authenticated/compte/calendrier'
-      path: '/calendrier'
+      path: '/compte/calendrier'
       fullPath: '/compte/calendrier'
       preLoaderRoute: typeof AuthenticatedCompteCalendrierRouteImport
-      parentRoute: typeof AuthenticatedCompteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/compte/enfants': {
       id: '/_authenticated/compte/enfants'
-      path: '/enfants'
+      path: '/compte/enfants'
       fullPath: '/compte/enfants'
       preLoaderRoute: typeof AuthenticatedCompteEnfantsRouteImport
-      parentRoute: typeof AuthenticatedCompteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/compte/litiges': {
       id: '/_authenticated/compte/litiges'
-      path: '/litiges'
+      path: '/compte/litiges'
       fullPath: '/compte/litiges'
       preLoaderRoute: typeof AuthenticatedCompteLitigesRouteImport
-      parentRoute: typeof AuthenticatedCompteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/compte/reservations': {
       id: '/_authenticated/compte/reservations'
-      path: '/reservations'
+      path: '/compte/reservations'
       fullPath: '/compte/reservations'
       preLoaderRoute: typeof AuthenticatedCompteReservationsRouteImport
-      parentRoute: typeof AuthenticatedCompteRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/paiement/$bookingId': {
       id: '/_authenticated/paiement/$bookingId'
@@ -505,28 +506,14 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedCompteRouteChildren {
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminLitigesRoute: typeof AuthenticatedAdminLitigesRoute
+  AuthenticatedAdminOffresRoute: typeof AuthenticatedAdminOffresRoute
+  AuthenticatedAdminProfesseursRoute: typeof AuthenticatedAdminProfesseursRoute
   AuthenticatedCompteCalendrierRoute: typeof AuthenticatedCompteCalendrierRoute
   AuthenticatedCompteEnfantsRoute: typeof AuthenticatedCompteEnfantsRoute
   AuthenticatedCompteLitigesRoute: typeof AuthenticatedCompteLitigesRoute
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
-}
-
-const AuthenticatedCompteRouteChildren: AuthenticatedCompteRouteChildren = {
-  AuthenticatedCompteCalendrierRoute: AuthenticatedCompteCalendrierRoute,
-  AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRoute,
-  AuthenticatedCompteLitigesRoute: AuthenticatedCompteLitigesRoute,
-  AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
-}
-
-const AuthenticatedCompteRouteWithChildren =
-  AuthenticatedCompteRoute._addFileChildren(AuthenticatedCompteRouteChildren)
-
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCompteRoute: typeof AuthenticatedCompteRouteWithChildren
-  AuthenticatedAdminLitigesRoute: typeof AuthenticatedAdminLitigesRoute
-  AuthenticatedAdminOffresRoute: typeof AuthenticatedAdminOffresRoute
-  AuthenticatedAdminProfesseursRoute: typeof AuthenticatedAdminProfesseursRoute
   AuthenticatedPaiementBookingIdRoute: typeof AuthenticatedPaiementBookingIdRoute
   AuthenticatedProDemandesRoute: typeof AuthenticatedProDemandesRoute
   AuthenticatedProDisponibilitesRoute: typeof AuthenticatedProDisponibilitesRoute
@@ -534,14 +521,18 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
   AuthenticatedReserverOfferIdRoute: typeof AuthenticatedReserverOfferIdRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedCompteIndexRoute: typeof AuthenticatedCompteIndexRoute
   AuthenticatedProIndexRoute: typeof AuthenticatedProIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedCompteRoute: AuthenticatedCompteRouteWithChildren,
   AuthenticatedAdminLitigesRoute: AuthenticatedAdminLitigesRoute,
   AuthenticatedAdminOffresRoute: AuthenticatedAdminOffresRoute,
   AuthenticatedAdminProfesseursRoute: AuthenticatedAdminProfesseursRoute,
+  AuthenticatedCompteCalendrierRoute: AuthenticatedCompteCalendrierRoute,
+  AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRoute,
+  AuthenticatedCompteLitigesRoute: AuthenticatedCompteLitigesRoute,
+  AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
   AuthenticatedPaiementBookingIdRoute: AuthenticatedPaiementBookingIdRoute,
   AuthenticatedProDemandesRoute: AuthenticatedProDemandesRoute,
   AuthenticatedProDisponibilitesRoute: AuthenticatedProDisponibilitesRoute,
@@ -549,6 +540,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
   AuthenticatedReserverOfferIdRoute: AuthenticatedReserverOfferIdRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedCompteIndexRoute: AuthenticatedCompteIndexRoute,
   AuthenticatedProIndexRoute: AuthenticatedProIndexRoute,
 }
 
