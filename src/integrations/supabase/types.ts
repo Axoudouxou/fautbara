@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       children: {
         Row: {
           auth_user_id: string | null
@@ -58,6 +91,63 @@ export type Database = {
           },
         ]
       }
+      levels: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          stage: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          stage?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          stage?: string
+        }
+        Relationships: []
+      }
+      offer_levels: {
+        Row: {
+          level_id: string
+          offer_id: string
+        }
+        Insert: {
+          level_id: string
+          offer_id: string
+        }
+        Update: {
+          level_id?: string
+          offer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_levels_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_levels_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -93,6 +183,103 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      subjects: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teacher_offers: {
+        Row: {
+          city: string
+          communes: string[]
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          offers_home: boolean
+          offers_online: boolean
+          price_fcfa: number
+          status: string
+          subject_id: string
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string
+          communes?: string[]
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          offers_home?: boolean
+          offers_online?: boolean
+          price_fcfa: number
+          status?: string
+          subject_id: string
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          communes?: string[]
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          offers_home?: boolean
+          offers_online?: boolean
+          price_fcfa?: number
+          status?: string
+          subject_id?: string
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_offers_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teacher_profiles: {
         Row: {
@@ -165,12 +352,56 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_teacher_public: {
+        Args: { p_teacher_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          city: string
+          commune: string
+          display_name: string
+          headline: string
+          identity_verified: boolean
+          qualifications_verified: boolean
+          teacher_id: string
+          years_experience: number
+          zones: string[]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      search_teachers: {
+        Args: {
+          p_city?: string
+          p_commune?: string
+          p_format?: string
+          p_level_slug?: string
+          p_limit?: number
+          p_max_price?: number
+          p_offset?: number
+          p_query?: string
+          p_subject_slug?: string
+        }
+        Returns: {
+          avatar_url: string
+          city: string
+          commune: string
+          display_name: string
+          headline: string
+          identity_verified: boolean
+          min_price_fcfa: number
+          offers_home: boolean
+          offers_online: boolean
+          qualifications_verified: boolean
+          subjects: string[]
+          teacher_id: string
+          years_experience: number
+        }[]
       }
     }
     Enums: {
