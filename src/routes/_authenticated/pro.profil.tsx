@@ -962,8 +962,59 @@ function TeacherProfilePage() {
           </form>
         </section>
 
+        {/* ---------- photo de profil ---------- */}
+        <section className={cardClass}>
+          <SectionTitle
+            icon={Images}
+            title="Photo de profil"
+            description="Votre portrait apparaît sur votre fiche publique et dans les résultats de recherche."
+          />
+
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-soft text-2xl font-bold text-primary-soft-foreground">
+              {avatarQuery.data?.url ? (
+                <img
+                  src={avatarQuery.data.url}
+                  alt="Votre photo de profil"
+                  className="size-full object-cover"
+                />
+              ) : (
+                (user.email ?? "P").slice(0, 1).toUpperCase()
+              )}
+            </span>
+            <div className="min-w-[12rem] flex-1">
+              <label className="block text-sm font-semibold text-foreground" htmlFor="tp-avatar">
+                Choisir une photo (JPG/PNG, 5 Mo max)
+              </label>
+              <input
+                id="tp-avatar"
+                type="file"
+                accept="image/*"
+                disabled={uploadAvatar.isPending}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadAvatar.mutate(file);
+                  e.target.value = "";
+                }}
+                className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground"
+              />
+              {avatarQuery.data?.url ? (
+                <button
+                  type="button"
+                  onClick={() => removeAvatar.mutate()}
+                  disabled={removeAvatar.isPending}
+                  className={`${ghostBtn} mt-3`}
+                >
+                  Retirer la photo
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
         {/* ---------- photos ---------- */}
         <section className={cardClass}>
+
           <SectionTitle
             icon={Images}
             title="Photos"
