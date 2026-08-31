@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell, useIsAdmin } from "@/components/admin-shell";
+import { KIND_LABEL } from "@/lib/verification";
 
 export const Route = createFileRoute("/_authenticated/admin/professeurs")({
   head: () => ({
@@ -109,6 +110,13 @@ function AdminTeachers() {
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {Number(t.offers_published)} offre(s) publiée(s) sur {Number(t.offers_total)}
+                    {" · "}
+                    {Number(t.documents_total)} pièce(s) déposée(s)
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t.verification_submitted_at
+                      ? `Dossier envoyé le ${new Date(t.verification_submitted_at).toLocaleString("fr-FR")}`
+                      : "Vérification non commencée"}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -134,6 +142,8 @@ function AdminTeachers() {
                   {t.verification_note}
                 </p>
               )}
+
+              <TeacherDocuments teacherId={t.teacher_id} isAdmin={isAdmin} />
 
               <div className="mt-4">
                 <label
@@ -242,5 +252,155 @@ function AdminTeachers() {
         </ul>
       )}
     </AdminShell>
+  );
+}
+
+function TeacherDocuments({ teacherId, isAdmin }: { teacherId: string; isAdmin: boolean }) {
+  const queryClient = useQueryClient();
+  const [notes, setNotes] = useState<Record<string, string>>({});
+
+  const docsQuery = useQuery({
+    queryKey: ["admin-teacher-documents", teacherId],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("teacher_documents")
+        .select("id, kind, storage_path, file_name, verification_status, note, created_at")
+        .eq("teacher_id", teacherId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return Promise.all(
+        (data ?? []).map(async (d) => {
+          const signed = await supabase.storage
+            .from("teacher-documents")
+            .createSignedUrl(d.storage_path, 3600);
+          return { ...d, url: signed.data?.signedUrl ?? null };
+        }),
+      );
+    },
+  });
+
+  const review = useMutation({
+    mutationFn: async (input: { id: string; status: string; note?: string | null }) => {
+      const { error } = await supabase.rpc("admin_review_teacher_document", {
+        p_document_id: input.id,
+        p_status: input.status,
+        p_note: input.note?.trim() ? input.note.trim() : null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_d, input) => {
+      toast.success("Pièce mise à jour", {
+        description: "Le professeur est notifié dans son espace.",
+      });
+      setNotes((prev) => ({ ...prev, [input.id]: "" }));
+      queryClient.invalidateQueries({ queryKey: ["admin-teacher-documents", teacherId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const docs = docsQuery.data ?? [];
+
+  if (docsQuery.isLoading) {
+    return (
+      <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="size-3.5 animate-spin" aria-hidden /> Chargement des pièces…
+      </p>
+    );
+  }
+
+  if (docs.length === 0) {
+    return (
+      <p className="mt-4 rounded-2xl border border-dashed border-border px-4 py-3 text-xs text-muted-foreground">
+        Aucune pièce déposée par ce professeur.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-4">
+      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        Pièces du dossier
+      </p>
+      <div className="mt-2 grid gap-3 md:grid-cols-3">
+        {docs.map((d) => {
+          const isPdf = d.file_name?.toLowerCase().endsWith(".pdf");
+          return (
+            <div key={d.id} className="rounded-2xl border border-border bg-background p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs font-semibold text-foreground">
+                  {KIND_LABEL[d.kind] ?? d.kind}
+                </p>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    d.verification_status === "approved"
+                      ? "bg-success-soft text-success"
+                      : d.verification_status === "rejected"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {d.verification_status === "approved"
+                    ? "Validée"
+                    : d.verification_status === "rejected"
+                      ? "Refusée"
+                      : "À examiner"}
+                </span>
+              </div>
+              {d.url &&
+                (isPdf ? (
+                  <a
+                    href={d.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
+                  >
+                    Ouvrir le PDF
+                  </a>
+                ) : (
+                  <a href={d.url} target="_blank" rel="noreferrer">
+                    <img
+                      src={d.url}
+                      alt={KIND_LABEL[d.kind] ?? "Pièce déposée"}
+                      className="mt-2 max-h-40 w-full rounded-xl object-cover"
+                    />
+                  </a>
+                ))}
+              {d.note && <p className="mt-1 text-[11px] text-destructive">{d.note}</p>}
+              <input
+                type="text"
+                maxLength={200}
+                value={notes[d.id] ?? ""}
+                onChange={(e) => setNotes((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                placeholder="Motif (ex. photo illisible)"
+                className="mt-2 w-full rounded-xl border border-input bg-background px-3 py-1.5 text-xs text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  disabled={review.isPending}
+                  onClick={() =>
+                    review.mutate({ id: d.id, status: "approved", note: notes[d.id] ?? null })
+                  }
+                  className="rounded-xl bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Valider
+                </button>
+                <button
+                  type="button"
+                  disabled={review.isPending}
+                  onClick={() =>
+                    review.mutate({ id: d.id, status: "rejected", note: notes[d.id] ?? null })
+                  }
+                  className="rounded-xl border border-destructive/30 px-3 py-1.5 text-[11px] font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                >
+                  Refuser
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
