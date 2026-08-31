@@ -58,7 +58,7 @@ export function UpcomingHighlights({ city }: { city?: string | null }) {
                 <li key={s.id}>
                   <Link
                     to="/professeurs"
-                    search={{ subject: s.slug }}
+                    search={{ matiere: s.slug }}
                     className="inline-flex rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground hover:bg-secondary"
                   >
                     {s.name}
