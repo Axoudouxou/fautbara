@@ -8,10 +8,11 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { GraduationCap } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 
 const SITE_NAME = "FAUT BARA";
@@ -123,6 +124,19 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function SiteHeader() {
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") setSignedIn(true);
+      if (event === "SIGNED_OUT") setSignedIn(false);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="container-page flex h-16 items-center justify-between gap-4">
@@ -147,12 +161,21 @@ function SiteHeader() {
           >
             Devenir professeur
           </Link>
-          <a
-            href="/auth"
-            className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
-          >
-            Se connecter
-          </a>
+          {signedIn ? (
+            <Link
+              to="/compte"
+              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
+            >
+              Mon compte
+            </Link>
+          ) : (
+            <a
+              href="/auth"
+              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
+            >
+              Se connecter
+            </a>
+          )}
         </nav>
       </div>
     </header>
@@ -179,6 +202,18 @@ function SiteFooter() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    });
+    return () => subscription.unsubscribe();
+  }, [router, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
