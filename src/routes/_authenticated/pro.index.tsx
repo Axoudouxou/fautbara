@@ -7,6 +7,8 @@ import {
   Inbox,
   Eye,
   Loader2,
+  MessageSquare,
+
   ShieldCheck,
   UserCog,
 } from "lucide-react";
@@ -233,6 +235,15 @@ function TeacherDashboard() {
           <span className="font-display font-bold text-foreground">Demandes de cours</span>
         </Link>
         <Link
+          to="/pro/messages"
+          className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+        >
+          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <MessageSquare className="size-5" aria-hidden />
+          </span>
+          <span className="font-display font-bold text-foreground">Messagerie &amp; devoirs</span>
+        </Link>
+        <Link
           to="/pro/disponibilites"
           className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
         >
@@ -241,6 +252,7 @@ function TeacherDashboard() {
           </span>
           <span className="font-display font-bold text-foreground">Mes disponibilités</span>
         </Link>
+
 
         <Link
           to="/professeurs/$id"

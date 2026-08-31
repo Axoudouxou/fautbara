@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignments: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          description: string | null
+          done_at: string | null
+          done_by: string | null
+          due_date: string | null
+          file_name: string | null
+          file_size: number | null
+          id: string
+          seen_at: string | null
+          seen_by: string | null
+          status: string
+          storage_path: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          description?: string | null
+          done_at?: string | null
+          done_by?: string | null
+          due_date?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          id?: string
+          seen_at?: string | null
+          seen_by?: string | null
+          status?: string
+          storage_path?: string | null
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          description?: string | null
+          done_at?: string | null
+          done_by?: string | null
+          due_date?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          id?: string
+          seen_at?: string | null
+          seen_by?: string | null
+          status?: string
+          storage_path?: string | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          metadata?: Json
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+        }
+        Relationships: []
+      }
       availabilities: {
         Row: {
           created_at: string
@@ -247,6 +342,70 @@ export type Database = {
           },
         ]
       }
+      conversation_reads: {
+        Row: {
+          conversation_id: string
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_reads_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          child_id: string | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          learner_id: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          child_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          learner_id: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          learner_id?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disputes: {
         Row: {
           against_id: string | null
@@ -329,6 +488,47 @@ export type Database = {
           stage?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          attachment_name: string | null
+          attachment_path: string | null
+          attachment_size: number | null
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       offer_levels: {
         Row: {
@@ -871,6 +1071,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_can_read_conversation: {
+        Args: { p_conversation_id: string; p_user: string }
+        Returns: boolean
+      }
       admin_list_teachers: {
         Args: never
         Returns: {
@@ -913,6 +1117,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      admin_read_dispute_conversation: {
+        Args: { p_dispute_id: string }
+        Returns: Json
       }
       admin_resolve_dispute: {
         Args: {
@@ -1074,6 +1282,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      conversation_role: {
+        Args: { p_conversation_id: string; p_user: string }
+        Returns: string
+      }
       create_booking_payment: {
         Args: { p_booking_id: string }
         Returns: {
@@ -1106,6 +1318,28 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      ensure_conversation: {
+        Args: {
+          p_child_id?: string
+          p_learner_id?: string
+          p_teacher_id: string
+        }
+        Returns: {
+          child_id: string | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          learner_id: string
+          teacher_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "conversations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_teacher_full_public: { Args: { p_teacher_id: string }; Returns: Json }
       get_teacher_public: {
         Args: { p_teacher_id: string }
@@ -1129,6 +1363,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      mark_conversation_read: {
+        Args: { p_conversation_id: string }
+        Returns: undefined
       }
       mark_payment_paid: {
         Args: { p_booking_id: string; p_method?: string }
@@ -1161,6 +1399,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      pair_has_booking: {
+        Args: { p_child_id: string; p_learner_id: string; p_teacher_id: string }
+        Returns: boolean
       }
       quote_booking_refund: {
         Args: { p_booking_id: string }
@@ -1201,6 +1443,34 @@ export type Database = {
           years_experience: number
         }[]
       }
+      set_assignment_status: {
+        Args: { p_assignment_id: string; p_status: string }
+        Returns: {
+          conversation_id: string
+          created_at: string
+          description: string | null
+          done_at: string | null
+          done_by: string | null
+          due_date: string | null
+          file_name: string | null
+          file_size: number | null
+          id: string
+          seen_at: string | null
+          seen_by: string | null
+          status: string
+          storage_path: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      teacher_recent_assignments: { Args: { p_limit?: number }; Returns: Json }
     }
     Enums: {
       app_role: "parent" | "student" | "teacher" | "admin"

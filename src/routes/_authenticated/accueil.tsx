@@ -289,13 +289,10 @@ function LearnerHome({
               <Link to="/compte/calendrier" className={CTA}>
                 Voir les détails
               </Link>
-              <Link
-                to="/professeurs/$id"
-                params={{ id: upcoming.teacher_id }}
-                className={CTA2}
-              >
+              <Link to="/messages" className={CTA2}>
                 Contacter le professeur
               </Link>
+
             </div>
           </>
         ) : last ? (
