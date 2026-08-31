@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Baby, Briefcase, Loader2, LogOut } from "lucide-react";
+import { Baby, Briefcase, CalendarClock, Loader2, LogOut, Search } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -212,6 +212,41 @@ function AccountPage() {
               <span className="block font-display font-bold text-foreground">Mes enfants</span>
               <span className="block text-sm text-muted-foreground">
                 Créez et gérez les profils pour lesquels vous réservez.
+              </span>
+            </span>
+          </Link>
+
+          <Link
+            to="/compte/reservations"
+            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+          >
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+              <CalendarClock className="size-5" aria-hidden />
+            </span>
+            <span>
+              <span className="block font-display font-bold text-foreground">
+                Mes demandes de cours
+              </span>
+              <span className="block text-sm text-muted-foreground">
+                Créneaux demandés, réponses des professeurs et annulations.
+              </span>
+            </span>
+          </Link>
+
+          <Link
+            to="/professeurs"
+            search={{}}
+            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+          >
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+              <Search className="size-5" aria-hidden />
+            </span>
+            <span>
+              <span className="block font-display font-bold text-foreground">
+                Chercher un professeur
+              </span>
+              <span className="block text-sm text-muted-foreground">
+                Par matière, niveau, commune et budget.
               </span>
             </span>
           </Link>
