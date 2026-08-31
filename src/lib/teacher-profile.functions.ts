@@ -73,7 +73,12 @@ export const getTeacherFullProfile = createServerFn({ method: "GET" })
     if (error) throw error;
 
     const result = (raw ?? {}) as unknown as TeacherFullProfile;
+    if (result.profile) {
+      const { signAvatars } = await import("./catalog.functions");
+      await signAvatars([result.profile as { avatar_url: string | null }]);
+    }
     const photos = result.photos ?? [];
+
 
     if (photos.length > 0) {
       // Photos live in a private bucket: sign short-lived read URLs server-side.

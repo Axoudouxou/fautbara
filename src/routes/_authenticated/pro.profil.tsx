@@ -335,7 +335,71 @@ function TeacherProfilePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["teacher-experiences", user.id] }),
   });
 
+  // ---------- photo de profil (avatar) ----------
+  const avatarQuery = useQuery({
+    queryKey: ["teacher-avatar", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      const stored = data?.avatar_url ?? null;
+      if (!stored) return { stored: null as string | null, url: null as string | null };
+      if (/^https?:\/\//.test(stored)) return { stored, url: stored };
+      const signed = await supabase.storage.from("teacher-photos").createSignedUrl(stored, 3600);
+      return { stored, url: signed.data?.signedUrl ?? null };
+    },
+  });
+
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (!file.type.startsWith("image/")) throw new Error("Seules les images sont acceptées");
+      if (file.size > 5 * 1024 * 1024) throw new Error("Image trop lourde (5 Mo maximum)");
+      const ext = file.name.split(".").pop()?.toLowerCase().slice(0, 6) ?? "jpg";
+      const path = `${user.id}/avatar-${crypto.randomUUID()}.${ext}`;
+      const up = await supabase.storage.from("teacher-photos").upload(path, file);
+      if (up.error) throw up.error;
+      const previous = avatarQuery.data?.stored;
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: path, updated_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      if (previous && !/^https?:\/\//.test(previous)) {
+        await supabase.storage.from("teacher-photos").remove([previous]);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Photo de profil mise à jour");
+      queryClient.invalidateQueries({ queryKey: ["teacher-avatar", user.id] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Envoi impossible"),
+  });
+
+  const removeAvatar = useMutation({
+    mutationFn: async () => {
+      const previous = avatarQuery.data?.stored;
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null, updated_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      if (previous && !/^https?:\/\//.test(previous)) {
+        await supabase.storage.from("teacher-photos").remove([previous]);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Photo de profil retirée");
+      queryClient.invalidateQueries({ queryKey: ["teacher-avatar", user.id] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Suppression impossible"),
+  });
+
   // ---------- photos ----------
+
   const uploadPhoto = useMutation({
     mutationFn: async (file: File) => {
       if (!file.type.startsWith("image/")) throw new Error("Seules les images sont acceptées");
@@ -898,8 +962,59 @@ function TeacherProfilePage() {
           </form>
         </section>
 
+        {/* ---------- photo de profil ---------- */}
+        <section className={cardClass}>
+          <SectionTitle
+            icon={Images}
+            title="Photo de profil"
+            description="Votre portrait apparaît sur votre fiche publique et dans les résultats de recherche."
+          />
+
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-soft text-2xl font-bold text-primary-soft-foreground">
+              {avatarQuery.data?.url ? (
+                <img
+                  src={avatarQuery.data.url}
+                  alt="Votre photo de profil"
+                  className="size-full object-cover"
+                />
+              ) : (
+                (user.email ?? "P").slice(0, 1).toUpperCase()
+              )}
+            </span>
+            <div className="min-w-[12rem] flex-1">
+              <label className="block text-sm font-semibold text-foreground" htmlFor="tp-avatar">
+                Choisir une photo (JPG/PNG, 5 Mo max)
+              </label>
+              <input
+                id="tp-avatar"
+                type="file"
+                accept="image/*"
+                disabled={uploadAvatar.isPending}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadAvatar.mutate(file);
+                  e.target.value = "";
+                }}
+                className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground"
+              />
+              {avatarQuery.data?.url ? (
+                <button
+                  type="button"
+                  onClick={() => removeAvatar.mutate()}
+                  disabled={removeAvatar.isPending}
+                  className={`${ghostBtn} mt-3`}
+                >
+                  Retirer la photo
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
         {/* ---------- photos ---------- */}
         <section className={cardClass}>
+
           <SectionTitle
             icon={Images}
             title="Photos"
