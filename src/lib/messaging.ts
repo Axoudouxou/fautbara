@@ -104,11 +104,13 @@ export async function ensureConversation(params: {
   learnerId?: string;
   childId?: string | null;
 }) {
-  const { data, error } = await supabase.rpc("ensure_conversation", {
+  const args: { p_teacher_id: string; p_learner_id?: string; p_child_id?: string } = {
     p_teacher_id: params.teacherId,
-    p_learner_id: params.learnerId ?? undefined,
-    p_child_id: params.childId ?? undefined,
-  });
+  };
+  if (params.learnerId) args.p_learner_id = params.learnerId;
+  if (params.childId) args.p_child_id = params.childId;
+  const { data, error } = await supabase.rpc("ensure_conversation", args);
+
   if (error) throw error;
   return data as unknown as { id: string };
 }
