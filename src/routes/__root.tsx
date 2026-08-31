@@ -8,12 +8,13 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { GraduationCap } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { AppTabsBar, AppTabsMobileBar, useAppNav } from "@/components/app-nav";
 
 const SITE_NAME = "FAUT BARA";
 const SITE_DESCRIPTION =
@@ -194,6 +195,16 @@ function SiteFooter() {
         </p>
       </div>
     </footer>
+  );
+}
+
+function AppMain({ children }: { children: ReactNode }) {
+  const { signedIn, primaryRole } = useAppNav();
+  return (
+    <>
+      <main className={signedIn ? "flex-1 pb-24 md:pb-0" : "flex-1"}>{children}</main>
+      {signedIn ? <AppTabsMobileBar role={primaryRole} /> : null}
+    </>
   );
 }
 
