@@ -39,6 +39,17 @@ export function formatSlot(iso: string) {
   });
 }
 
+export function formatTime(iso: string | Date) {
+  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+/** Heure exacte de la séance : « 16:00 → 17:30 » */
+export function formatTimeRange(iso: string, durationMinutes: number) {
+  const start = new Date(iso);
+  const end = new Date(start.getTime() + durationMinutes * 60_000);
+  return `${formatTime(start)} → ${formatTime(end)}`;
+}
+
 function BookingsPage() {
   const { user } = Route.useRouteContext();
   const [cancelId, setCancelId] = useState<string | null>(null);
