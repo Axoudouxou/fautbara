@@ -23,6 +23,7 @@ import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProDisponibilitesRouteImport } from './routes/_authenticated/pro.disponibilites'
 import { Route as AuthenticatedProOffresRouteImport } from './routes/_authenticated/pro.offres'
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
+import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -95,6 +96,12 @@ const AuthenticatedProProfilRoute = AuthenticatedProProfilRouteImport.update({
   path: '/pro/profil',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReserverOfferIdRoute =
+  AuthenticatedReserverOfferIdRouteImport.update({
+    id: '/reserver/$offerId',
+    path: '/reserver/$offerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/pro/': typeof AuthenticatedProIndexRoute
 }
 export interface FileRoutesByTo {
@@ -124,6 +132,7 @@ export interface FileRoutesByTo {
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/pro': typeof AuthenticatedProIndexRoute
 }
 export interface FileRoutesById {
@@ -141,6 +150,7 @@ export interface FileRoutesById {
   '/_authenticated/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/_authenticated/pro/offres': typeof AuthenticatedProOffresRoute
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
+  '/_authenticated/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
 }
 export interface FileRouteTypes {
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/pro/disponibilites'
     | '/pro/offres'
     | '/pro/profil'
+    | '/reserver/$offerId'
     | '/pro/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/pro/disponibilites'
     | '/pro/offres'
     | '/pro/profil'
+    | '/reserver/$offerId'
     | '/pro'
   id:
     | '__root__'
@@ -189,6 +201,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/disponibilites'
     | '/_authenticated/pro/offres'
     | '/_authenticated/pro/profil'
+    | '/_authenticated/reserver/$offerId'
     | '/_authenticated/pro/'
   fileRoutesById: FileRoutesById
 }
@@ -303,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProProfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reserver/$offerId': {
+      id: '/_authenticated/reserver/$offerId'
+      path: '/reserver/$offerId'
+      fullPath: '/reserver/$offerId'
+      preLoaderRoute: typeof AuthenticatedReserverOfferIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -322,6 +342,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProDisponibilitesRoute: typeof AuthenticatedProDisponibilitesRoute
   AuthenticatedProOffresRoute: typeof AuthenticatedProOffresRoute
   AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
+  AuthenticatedReserverOfferIdRoute: typeof AuthenticatedReserverOfferIdRoute
   AuthenticatedProIndexRoute: typeof AuthenticatedProIndexRoute
 }
 
@@ -330,6 +351,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProDisponibilitesRoute: AuthenticatedProDisponibilitesRoute,
   AuthenticatedProOffresRoute: AuthenticatedProOffresRoute,
   AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
+  AuthenticatedReserverOfferIdRoute: AuthenticatedReserverOfferIdRoute,
   AuthenticatedProIndexRoute: AuthenticatedProIndexRoute,
 }
 
