@@ -68,7 +68,7 @@ function Index() {
             Abidjan, Côte d'Ivoire
           </span>
           <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
-            Le bon professeur particulier, enfin facile à trouver.
+            Trouver un prof de maison n&apos;a jamais été aussi facile.
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
             FAUT BARA digitalise les cours particuliers en Côte d'Ivoire : comparez les
