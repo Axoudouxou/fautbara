@@ -295,6 +295,98 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount_fcfa: number
+          booking_id: string
+          cancelled_at: string | null
+          commission_fcfa: number
+          commission_rate: number
+          created_at: string
+          escrow_release_at: string | null
+          escrow_status: string
+          id: string
+          method: string
+          paid_at: string | null
+          payer_id: string
+          provider: string
+          status: string
+          teacher_id: string
+          teacher_payout_fcfa: number
+          updated_at: string
+        }
+        Insert: {
+          amount_fcfa: number
+          booking_id: string
+          cancelled_at?: string | null
+          commission_fcfa: number
+          commission_rate: number
+          created_at?: string
+          escrow_release_at?: string | null
+          escrow_status?: string
+          id?: string
+          method?: string
+          paid_at?: string | null
+          payer_id: string
+          provider?: string
+          status?: string
+          teacher_id: string
+          teacher_payout_fcfa: number
+          updated_at?: string
+        }
+        Update: {
+          amount_fcfa?: number
+          booking_id?: string
+          cancelled_at?: string | null
+          commission_fcfa?: number
+          commission_rate?: number
+          created_at?: string
+          escrow_release_at?: string | null
+          escrow_status?: string
+          id?: string
+          method?: string
+          paid_at?: string | null
+          payer_id?: string
+          provider?: string
+          status?: string
+          teacher_id?: string
+          teacher_payout_fcfa?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -499,6 +591,62 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_booking_payment: {
+        Args: { p_booking_id: string; p_reason?: string }
+        Returns: {
+          amount_fcfa: number
+          booking_id: string
+          cancelled_at: string | null
+          commission_fcfa: number
+          commission_rate: number
+          created_at: string
+          escrow_release_at: string | null
+          escrow_status: string
+          id: string
+          method: string
+          paid_at: string | null
+          payer_id: string
+          provider: string
+          status: string
+          teacher_id: string
+          teacher_payout_fcfa: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_booking_payment: {
+        Args: { p_booking_id: string }
+        Returns: {
+          amount_fcfa: number
+          booking_id: string
+          cancelled_at: string | null
+          commission_fcfa: number
+          commission_rate: number
+          created_at: string
+          escrow_release_at: string | null
+          escrow_status: string
+          id: string
+          method: string
+          paid_at: string | null
+          payer_id: string
+          provider: string
+          status: string
+          teacher_id: string
+          teacher_payout_fcfa: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_teacher_public: {
         Args: { p_teacher_id: string }
         Returns: {
@@ -521,6 +669,34 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      mark_payment_paid: {
+        Args: { p_booking_id: string; p_method?: string }
+        Returns: {
+          amount_fcfa: number
+          booking_id: string
+          cancelled_at: string | null
+          commission_fcfa: number
+          commission_rate: number
+          created_at: string
+          escrow_release_at: string | null
+          escrow_status: string
+          id: string
+          method: string
+          paid_at: string | null
+          payer_id: string
+          provider: string
+          status: string
+          teacher_id: string
+          teacher_payout_fcfa: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       search_teachers: {
         Args: {
