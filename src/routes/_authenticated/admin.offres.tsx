@@ -50,7 +50,7 @@ function AdminOffers() {
       let query = supabase
         .from("teacher_offers")
         .select(
-          "id, title, description, status, price_fcfa, duration_minutes, city, communes, offers_home, offers_online, teacher_id, created_at, subjects(name), profiles!inner(display_name)",
+          "id, title, description, status, price_fcfa, duration_minutes, city, communes, offers_home, offers_online, teacher_id, created_at, subjects(name)",
         )
         .order("created_at", { ascending: false })
         .limit(100);
@@ -62,7 +62,7 @@ function AdminOffers() {
   });
 
   const moderate = useMutation({
-    mutationFn: async (input: { offerId: string; status: string; reason?: string }) => {
+    mutationFn: async (input: { offerId: string; status: string; reason?: string | undefined }) => {
       const reason = input.reason?.trim();
       const { error } = await supabase.rpc(
         "admin_moderate_offer",

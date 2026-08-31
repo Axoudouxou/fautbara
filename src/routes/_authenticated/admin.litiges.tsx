@@ -67,8 +67,8 @@ function AdminDisputes() {
     mutationFn: async (input: {
       disputeId: string;
       status: string;
-      resolution?: string;
-      refund?: number;
+      resolution?: string | undefined;
+      refund?: number | undefined;
     }) => {
       const resolution = input.resolution?.trim();
       const payload: Record<string, unknown> = {
