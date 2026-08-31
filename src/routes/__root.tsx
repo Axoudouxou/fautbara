@@ -8,12 +8,13 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { GraduationCap } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { AppTabsBar, AppTabsMobileBar, useAppNav } from "@/components/app-nav";
 
 const SITE_NAME = "FAUT BARA";
 const SITE_DESCRIPTION =
@@ -124,18 +125,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function SiteHeader() {
-  const [signedIn, setSignedIn] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") setSignedIn(true);
-      if (event === "SIGNED_OUT") setSignedIn(false);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const { signedIn, primaryRole } = useAppNav();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -148,55 +138,47 @@ function SiteHeader() {
             FAUT BARA
           </span>
         </Link>
-        <nav className="flex items-center gap-1 sm:gap-2" aria-label="Navigation principale">
-          <Link
-            to="/professeurs"
-            search={{}}
-            className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-          >
-            Trouver un professeur
-          </Link>
-          <Link
-            to="/matieres"
-            className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-          >
-            Matières
-          </Link>
-          {signedIn ? (
-            <>
-              <Link
-                to="/messages"
-                className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              >
-                Messages
-              </Link>
-              <Link
-                to="/compte"
-                className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-              >
-                Mon compte
-              </Link>
-
-              <Link
-                to="/accueil"
-                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
-              >
-                Mon espace
-              </Link>
-            </>
-          ) : (
+        {signedIn ? (
+          <div className="flex items-center gap-2">
+            <AppTabsBar role={primaryRole} />
+            <button
+              type="button"
+              onClick={() => {
+                void supabase.auth.signOut();
+              }}
+              className="inline-flex items-center justify-center rounded-full border border-input bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              Déconnexion
+            </button>
+          </div>
+        ) : (
+          <nav className="flex items-center gap-1 sm:gap-2" aria-label="Navigation principale">
+            <Link
+              to="/professeurs"
+              search={{}}
+              className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            >
+              Trouver un professeur
+            </Link>
+            <Link
+              to="/matieres"
+              className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            >
+              Matières
+            </Link>
             <a
               href="/auth"
               className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
             >
               Se connecter
             </a>
-          )}
-        </nav>
+          </nav>
+        )}
       </div>
     </header>
   );
 }
+
 
 function SiteFooter() {
   return (
@@ -213,6 +195,16 @@ function SiteFooter() {
         </p>
       </div>
     </footer>
+  );
+}
+
+function AppMain({ children }: { children: ReactNode }) {
+  const { signedIn, primaryRole } = useAppNav();
+  return (
+    <>
+      <main className={signedIn ? "flex-1 pb-24 md:pb-0" : "flex-1"}>{children}</main>
+      {signedIn ? <AppTabsMobileBar role={primaryRole} /> : null}
+    </>
   );
 }
 
@@ -235,12 +227,13 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
         <SiteHeader />
-        <main className="flex-1">
+        <AppMain>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
-        </main>
+        </AppMain>
         <SiteFooter />
       </div>
+
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
