@@ -12,6 +12,7 @@ import {
   Star,
 } from "lucide-react";
 
+import { useSessionRoles } from "@/hooks/use-session-roles";
 import { getTeacherPublicProfile } from "@/lib/catalog.functions";
 import { getTeacherFullProfile } from "@/lib/teacher-profile.functions";
 
@@ -373,12 +374,7 @@ function TeacherPublicPage() {
             Choisissez une offre puis envoyez votre demande de cours : date, créneau, format et
             bénéficiaire. Le professeur vous répond directement.
           </p>
-          <a
-            href="/auth"
-            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Créer un compte pour réserver
-          </a>
+          <BookingCta firstOfferId={offers[0]?.id ?? null} />
           <p className="mt-3 text-xs text-muted-foreground">
             Les coordonnées privées des professeurs ne sont jamais affichées publiquement.
           </p>
@@ -387,3 +383,46 @@ function TeacherPublicPage() {
     </div>
   );
 }
+
+const ctaClass =
+  "mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90";
+
+function BookingCta({ firstOfferId }: { firstOfferId: string | null }) {
+  const { ready, signedIn, primaryRole } = useSessionRoles();
+
+  if (!ready) {
+    return <span className={`${ctaClass} pointer-events-none opacity-60`}>Chargement…</span>;
+  }
+
+  if (!signedIn) {
+    return (
+      <a href="/auth" className={ctaClass}>
+        Créer un compte pour réserver
+      </a>
+    );
+  }
+
+  if (primaryRole === "teacher" || primaryRole === "admin") {
+    return (
+      <p className="mt-4 rounded-2xl border border-dashed border-border bg-card p-3 text-xs text-muted-foreground">
+        Vous êtes connecté avec un compte {primaryRole === "admin" ? "administrateur" : "professeur"}
+        . La réservation est réservée aux parents et aux apprenants.
+      </p>
+    );
+  }
+
+  if (!firstOfferId) {
+    return (
+      <p className="mt-4 rounded-2xl border border-dashed border-border bg-card p-3 text-xs text-muted-foreground">
+        Ce professeur n'a pas encore d'offre réservable.
+      </p>
+    );
+  }
+
+  return (
+    <Link to="/reserver/$offerId" params={{ offerId: firstOfferId }} className={ctaClass}>
+      Envoyer une demande de cours
+    </Link>
+  );
+}
+
