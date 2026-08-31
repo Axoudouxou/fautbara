@@ -163,12 +163,20 @@ function SiteHeader() {
             Matières
           </Link>
           {signedIn ? (
-            <Link
-              to="/compte"
-              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
-            >
-              Mon compte
-            </Link>
+            <>
+              <Link
+                to="/compte"
+                className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+              >
+                Mon compte
+              </Link>
+              <Link
+                to="/accueil"
+                className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[var(--shadow-card)] transition-colors hover:bg-primary/90"
+              >
+                Mon espace
+              </Link>
+            </>
           ) : (
             <a
               href="/auth"
