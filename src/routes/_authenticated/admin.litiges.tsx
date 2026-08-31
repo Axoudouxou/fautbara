@@ -246,7 +246,9 @@ function AdminDisputes() {
                         Rejeter
                       </button>
                     </div>
+                    <DisputeConversationViewer disputeId={d.id} status={d.status} />
                   </div>
+
                 )}
               </li>
             );
