@@ -59,7 +59,7 @@ function AdminTeachers() {
         p_identity_verified: input.identity,
         p_qualifications_verified: input.qualifications,
         p_verification_status: input.status,
-        p_note: input.note?.trim() ? input.note.trim() : undefined,
+        ...(input.note?.trim() ? { p_note: input.note.trim() } : {}),
       });
       if (error) throw error;
     },
