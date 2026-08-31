@@ -268,15 +268,7 @@ function TeacherOffersPage() {
           className="mt-8 space-y-5 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!form.subject_id) {
-              toast.error("Choisissez une matière");
-              return;
-            }
-            if (!form.offers_home && !form.offers_online) {
-              toast.error("Choisissez au moins un format de cours");
-              return;
-            }
-            saveMutation.mutate(form);
+            submit(form, "draft");
           }}
         >
           <div className="flex items-center justify-between">
