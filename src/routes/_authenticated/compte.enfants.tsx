@@ -84,7 +84,22 @@ function ChildrenPage() {
 
   const children = childrenQuery.data ?? [];
 
+  if (!rolesLoading && !isParent) {
+    return (
+      <div className="container-page py-14">
+        <div className="max-w-md rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
+          <h1 className="font-display text-xl font-bold text-foreground">Espace réservé aux parents</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Les profils enfants servent aux parents qui réservent des cours. Votre compte n&apos;a
+            pas accès à cette section.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="container-page py-10 sm:py-14">
       <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Mes enfants</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
