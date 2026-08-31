@@ -277,6 +277,13 @@ function TeacherRequestsPage() {
                     <X className="size-3.5" aria-hidden /> Annuler la séance
                   </button>
                 )}
+                {(r.status === "completed" || r.status === "cancelled") && (
+                  <OpenDisputeDialog
+                    bookingId={r.id}
+                    againstId={r.requester_id}
+                    openedBy={user.id}
+                  />
+                )}
               </div>
             </li>
           );
