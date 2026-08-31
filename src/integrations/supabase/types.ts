@@ -530,6 +530,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offer_levels: {
         Row: {
           level_id: string
@@ -788,6 +821,7 @@ export type Database = {
           file_name: string | null
           id: string
           kind: string
+          note: string | null
           storage_path: string
           teacher_id: string
           updated_at: string
@@ -798,6 +832,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           kind?: string
+          note?: string | null
           storage_path: string
           teacher_id: string
           updated_at?: string
@@ -808,6 +843,7 @@ export type Database = {
           file_name?: string | null
           id?: string
           kind?: string
+          note?: string | null
           storage_path?: string
           teacher_id?: string
           updated_at?: string
@@ -1007,6 +1043,7 @@ export type Database = {
           verification_decided_at: string | null
           verification_note: string | null
           verification_status: string
+          verification_submitted_at: string | null
           years_experience: number | null
           zones: string[]
         }
@@ -1028,6 +1065,7 @@ export type Database = {
           verification_decided_at?: string | null
           verification_note?: string | null
           verification_status?: string
+          verification_submitted_at?: string | null
           years_experience?: number | null
           zones?: string[]
         }
@@ -1049,6 +1087,7 @@ export type Database = {
           verification_decided_at?: string | null
           verification_note?: string | null
           verification_status?: string
+          verification_submitted_at?: string | null
           years_experience?: number | null
           zones?: string[]
         }
@@ -1088,6 +1127,7 @@ export type Database = {
           commune: string
           created_at: string
           display_name: string
+          documents_total: number
           headline: string
           identity_verified: boolean
           offers_published: number
@@ -1098,6 +1138,7 @@ export type Database = {
           verification_decided_at: string
           verification_note: string
           verification_status: string
+          verification_submitted_at: string
           years_experience: number
         }[]
       }
@@ -1159,6 +1200,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_review_teacher_document: {
+        Args: { p_document_id: string; p_note?: string; p_status: string }
+        Returns: {
+          created_at: string
+          file_name: string | null
+          id: string
+          kind: string
+          note: string | null
+          storage_path: string
+          teacher_id: string
+          updated_at: string
+          verification_status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "teacher_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_set_teacher_verification:
         | {
             Args: {
@@ -1185,6 +1246,7 @@ export type Database = {
               verification_decided_at: string | null
               verification_note: string | null
               verification_status: string
+              verification_submitted_at: string | null
               years_experience: number | null
               zones: string[]
             }
@@ -1221,6 +1283,7 @@ export type Database = {
               verification_decided_at: string | null
               verification_note: string | null
               verification_status: string
+              verification_submitted_at: string | null
               years_experience: number | null
               zones: string[]
             }
@@ -1513,6 +1576,37 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      submit_teacher_verification: {
+        Args: never
+        Returns: {
+          bio: string | null
+          created_at: string
+          headline: string | null
+          id: string
+          identity_verified: boolean
+          intro_video_url: string | null
+          languages: string[]
+          main_degree: string | null
+          offers_home: boolean
+          offers_online: boolean
+          qualifications_verified: boolean
+          teaching_method: string | null
+          updated_at: string
+          user_id: string
+          verification_decided_at: string | null
+          verification_note: string | null
+          verification_status: string
+          verification_submitted_at: string | null
+          years_experience: number | null
+          zones: string[]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "teacher_profiles"
           isOneToOne: true
           isSetofReturn: false
         }

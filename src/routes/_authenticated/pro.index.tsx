@@ -9,12 +9,14 @@ import {
   Loader2,
   MessageSquare,
 
+  ShieldAlert,
   ShieldCheck,
   UserCog,
 } from "lucide-react";
 
 
 import { supabase } from "@/integrations/supabase/client";
+import { DOSSIER_LABEL, dossierStatus } from "@/lib/verification";
 
 export const Route = createFileRoute("/_authenticated/pro/")({
   head: () => ({
@@ -152,6 +154,8 @@ function TeacherDashboard() {
         Votre visibilité dépend de votre profil et de vos offres publiées.
       </p>
 
+      <VerificationBanner teacher={teacher} />
+
       <div className="mt-6 flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
           <ShieldCheck className="size-3.5" aria-hidden />
@@ -163,6 +167,7 @@ function TeacherDashboard() {
           </span>
         )}
       </div>
+
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
@@ -265,6 +270,58 @@ function TeacherDashboard() {
           <span className="font-display font-bold text-foreground">Voir ma fiche publique</span>
         </Link>
       </div>
+    </div>
+  );
+}
+
+function VerificationBanner({
+  teacher,
+}: {
+  teacher: { verification_status?: string | null; verification_submitted_at?: string | null; verification_note?: string | null } | null | undefined;
+}) {
+  const status = dossierStatus(teacher ?? {});
+  if (status === "approved") return null;
+
+  const tone =
+    status === "rejected"
+      ? "border-destructive/30 bg-destructive/10"
+      : status === "review"
+        ? "border-primary/30 bg-secondary/70"
+        : "border-primary/30 bg-primary-soft";
+
+  return (
+    <div className={`mt-6 rounded-3xl border p-5 ${tone}`}>
+      <p className="flex items-center gap-2 font-display text-base font-bold text-foreground">
+        {status === "rejected" ? (
+          <ShieldAlert className="size-4 text-destructive" aria-hidden />
+        ) : (
+          <ShieldCheck className="size-4 text-primary" aria-hidden />
+        )}
+        {DOSSIER_LABEL[status]}
+      </p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {status === "none"
+          ? "Lancez la vérification d'identité en 3 étapes pour obtenir le badge « Profil vérifié » et rassurer les parents."
+          : status === "review"
+            ? "Votre dossier est en cours de vérification, généralement traité sous 48 h."
+            : teacher?.verification_note || "Redéposez la pièce concernée puis renvoyez votre dossier."}
+      </p>
+      {status !== "review" && (
+        <Link
+          to="/pro/verification"
+          className="mt-4 inline-flex rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          {status === "none" ? "Commencer ma vérification" : "Corriger mon dossier"}
+        </Link>
+      )}
+      {status === "review" && (
+        <Link
+          to="/pro/verification"
+          className="mt-4 inline-flex rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary"
+        >
+          Voir mon dossier
+        </Link>
+      )}
     </div>
   );
 }
