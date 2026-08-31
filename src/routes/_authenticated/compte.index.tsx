@@ -15,7 +15,7 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_authenticated/compte")({
+export const Route = createFileRoute("/_authenticated/compte/")({
   head: () => ({
     meta: [
       { title: "Mon compte — FAUT BARA" },
