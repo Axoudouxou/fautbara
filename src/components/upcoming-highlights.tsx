@@ -26,11 +26,9 @@ export function UpcomingHighlights({ city }: { city?: string | null }) {
   const teachersQuery = useQuery({
     queryKey: ["new-teachers", city ?? "all"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("search_teachers", {
-        p_city: city ?? null,
-        p_limit: 3,
-        p_offset: 0,
-      });
+      const args: Record<string, string | number> = { p_limit: 3, p_offset: 0 };
+      if (city) args["p_city"] = city;
+      const { data, error } = await supabase.rpc("search_teachers", args);
       if (error) throw error;
       return data ?? [];
     },
