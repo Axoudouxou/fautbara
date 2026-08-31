@@ -18,6 +18,7 @@ import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
 import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
 import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
 import { Route as ProfesseursIdRouteImport } from './routes/professeurs.$id'
+import { Route as AuthenticatedCompteCalendrierRouteImport } from './routes/_authenticated/compte.calendrier'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
 import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_authenticated/compte.reservations'
 import { Route as AuthenticatedPaiementBookingIdRouteImport } from './routes/_authenticated/paiement.$bookingId'
@@ -72,6 +73,12 @@ const ProfesseursIdRoute = ProfesseursIdRouteImport.update({
   path: '/professeurs/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCompteCalendrierRoute =
+  AuthenticatedCompteCalendrierRouteImport.update({
+    id: '/calendrier',
+    path: '/calendrier',
+    getParentRoute: () => AuthenticatedCompteRoute,
+  } as any)
 const AuthenticatedCompteEnfantsRoute =
   AuthenticatedCompteEnfantsRouteImport.update({
     id: '/enfants',
@@ -133,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
+  '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
@@ -152,6 +160,7 @@ export interface FileRoutesByTo {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres': typeof MatieresIndexRoute
   '/professeurs': typeof ProfesseursIndexRoute
+  '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
@@ -173,6 +182,7 @@ export interface FileRoutesById {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
+  '/_authenticated/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/_authenticated/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
+    | '/compte/calendrier'
     | '/compte/enfants'
     | '/compte/reservations'
     | '/paiement/$bookingId'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres'
     | '/professeurs'
+    | '/compte/calendrier'
     | '/compte/enfants'
     | '/compte/reservations'
     | '/paiement/$bookingId'
@@ -233,6 +245,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
+    | '/_authenticated/compte/calendrier'
     | '/_authenticated/compte/enfants'
     | '/_authenticated/compte/reservations'
     | '/_authenticated/paiement/$bookingId'
@@ -320,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfesseursIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/compte/calendrier': {
+      id: '/_authenticated/compte/calendrier'
+      path: '/calendrier'
+      fullPath: '/compte/calendrier'
+      preLoaderRoute: typeof AuthenticatedCompteCalendrierRouteImport
+      parentRoute: typeof AuthenticatedCompteRoute
+    }
     '/_authenticated/compte/enfants': {
       id: '/_authenticated/compte/enfants'
       path: '/enfants'
@@ -387,11 +407,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedCompteRouteChildren {
+  AuthenticatedCompteCalendrierRoute: typeof AuthenticatedCompteCalendrierRoute
   AuthenticatedCompteEnfantsRoute: typeof AuthenticatedCompteEnfantsRoute
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
 }
 
 const AuthenticatedCompteRouteChildren: AuthenticatedCompteRouteChildren = {
+  AuthenticatedCompteCalendrierRoute: AuthenticatedCompteCalendrierRoute,
   AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRoute,
   AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
 }

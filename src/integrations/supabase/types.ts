@@ -83,9 +83,12 @@ export type Database = {
       bookings: {
         Row: {
           address: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           child_id: string | null
           city: string
           commune: string | null
+          completed_at: string | null
           created_at: string
           duration_minutes: number
           format: string
@@ -104,9 +107,12 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           child_id?: string | null
           city?: string
           commune?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_minutes?: number
           format?: string
@@ -125,9 +131,12 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           child_id?: string | null
           city?: string
           commune?: string | null
+          completed_at?: string | null
           created_at?: string
           duration_minutes?: number
           format?: string
@@ -310,6 +319,10 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          refund_fcfa: number
+          refund_rate: number | null
+          refunded_at: string | null
+          released_at: string | null
           status: string
           teacher_id: string
           teacher_payout_fcfa: number
@@ -329,6 +342,10 @@ export type Database = {
           paid_at?: string | null
           payer_id: string
           provider?: string
+          refund_fcfa?: number
+          refund_rate?: number | null
+          refunded_at?: string | null
+          released_at?: string | null
           status?: string
           teacher_id: string
           teacher_payout_fcfa: number
@@ -348,6 +365,10 @@ export type Database = {
           paid_at?: string | null
           payer_id?: string
           provider?: string
+          refund_fcfa?: number
+          refund_rate?: number | null
+          refunded_at?: string | null
+          released_at?: string | null
           status?: string
           teacher_id?: string
           teacher_payout_fcfa?: number
@@ -591,6 +612,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_booking: {
+        Args: { p_booking_id: string; p_reason?: string }
+        Returns: {
+          address: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          child_id: string | null
+          city: string
+          commune: string | null
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number
+          format: string
+          id: string
+          is_recurring: boolean
+          message: string | null
+          offer_id: string
+          price_fcfa: number
+          recurrence_end_date: string | null
+          requester_id: string
+          scheduled_at: string
+          status: string
+          status_reason: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_booking_payment: {
         Args: { p_booking_id: string; p_reason?: string }
         Returns: {
@@ -607,6 +661,10 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          refund_fcfa: number
+          refund_rate: number | null
+          refunded_at: string | null
+          released_at: string | null
           status: string
           teacher_id: string
           teacher_payout_fcfa: number
@@ -615,6 +673,39 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      complete_booking: {
+        Args: { p_booking_id: string }
+        Returns: {
+          address: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          child_id: string | null
+          city: string
+          commune: string | null
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number
+          format: string
+          id: string
+          is_recurring: boolean
+          message: string | null
+          offer_id: string
+          price_fcfa: number
+          recurrence_end_date: string | null
+          requester_id: string
+          scheduled_at: string
+          status: string
+          status_reason: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -635,6 +726,10 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          refund_fcfa: number
+          refund_rate: number | null
+          refunded_at: string | null
+          released_at: string | null
           status: string
           teacher_id: string
           teacher_payout_fcfa: number
@@ -686,6 +781,10 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          refund_fcfa: number
+          refund_rate: number | null
+          refunded_at: string | null
+          released_at: string | null
           status: string
           teacher_id: string
           teacher_payout_fcfa: number
@@ -697,6 +796,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      quote_booking_refund: {
+        Args: { p_booking_id: string }
+        Returns: {
+          amount_fcfa: number
+          hours_before: number
+          payment_status: string
+          policy_label: string
+          refund_fcfa: number
+          refund_rate: number
+        }[]
       }
       search_teachers: {
         Args: {

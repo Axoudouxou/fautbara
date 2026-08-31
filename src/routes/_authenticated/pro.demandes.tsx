@@ -3,7 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CalendarClock, Check, Home, Laptop, Loader2, Repeat, X } from "lucide-react";
 
+import { useState } from "react";
+
 import { supabase } from "@/integrations/supabase/client";
+import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
 
 export const Route = createFileRoute("/_authenticated/pro/demandes")({
   head: () => ({
@@ -40,6 +43,7 @@ function formatSlot(iso: string) {
 function TeacherRequestsPage() {
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
+  const [cancelId, setCancelId] = useState<string | null>(null);
 
   const rolesQuery = useQuery({
     queryKey: ["roles", user.id],
@@ -77,6 +81,11 @@ function TeacherRequestsPage() {
       status: "accepted" | "declined" | "completed";
       reason?: string | null;
     }) => {
+      if (status === "completed") {
+        const { error } = await supabase.rpc("complete_booking", { p_booking_id: id });
+        if (error) throw error;
+        return;
+      }
       const { error } = await supabase
         .from("bookings")
         .update({ status, status_reason: reason ?? null })
@@ -259,11 +268,28 @@ function TeacherRequestsPage() {
                     <Check className="size-3.5" aria-hidden /> Marquer comme terminée
                   </button>
                 )}
+                {(r.status === "pending" || r.status === "accepted") && (
+                  <button
+                    type="button"
+                    onClick={() => setCancelId(r.id)}
+                    className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10"
+                  >
+                    <X className="size-3.5" aria-hidden /> Annuler la séance
+                  </button>
+                )}
               </div>
             </li>
           );
         })}
       </ul>
+
+      {cancelId && (
+        <CancelBookingDialog
+          bookingId={cancelId}
+          onClose={() => setCancelId(null)}
+          invalidateKeys={[["teacher-bookings", user.id]]}
+        />
+      )}
     </div>
   );
 }
