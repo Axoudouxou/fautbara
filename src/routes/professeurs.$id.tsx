@@ -165,6 +165,15 @@ function TeacherPublicPage() {
                     ) : null}
                     {levels.length > 0 ? <span>Niveaux : {levels.join(", ")}</span> : null}
                   </div>
+                  <Link
+                    to="/reserver/$offerId"
+                    params={{ offerId: offer.id }}
+                    className="mt-4 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Réserver ce cours
+                  </Link>
+
+                  </div>
                 </li>
               );
             })}
