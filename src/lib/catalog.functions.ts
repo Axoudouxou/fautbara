@@ -72,8 +72,31 @@ export const searchTeachers = createServerFn({ method: "GET" })
     const { data: rows, error } = await supabase.rpc("search_teachers", args);
 
     if (error) throw error;
-    return (rows ?? []) as TeacherCard[];
+    const cards = (rows ?? []) as TeacherCard[];
+    await signAvatars(cards);
+    return cards;
   });
+
+/** Les portraits vivent dans un bucket privé : on signe des URLs de lecture côté serveur. */
+export async function signAvatars(rows: { avatar_url: string | null }[]) {
+  const paths = rows
+    .map((r) => r.avatar_url)
+    .filter((u): u is string => Boolean(u) && !/^https?:\/\//.test(u!));
+  if (paths.length === 0) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: signed } = await supabaseAdmin.storage
+    .from("teacher-photos")
+    .createSignedUrls(paths, 60 * 60);
+  const map = new Map<string, string>();
+  paths.forEach((path, index) => {
+    const url = signed?.[index]?.signedUrl;
+    if (url) map.set(path, url);
+  });
+  rows.forEach((row) => {
+    if (row.avatar_url && map.has(row.avatar_url)) row.avatar_url = map.get(row.avatar_url)!;
+  });
+}
+
 
 export const getTeacherPublicProfile = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
