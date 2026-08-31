@@ -285,7 +285,7 @@ function TeacherDocuments({ teacherId, isAdmin }: { teacherId: string; isAdmin: 
       const { error } = await supabase.rpc("admin_review_teacher_document", {
         p_document_id: input.id,
         p_status: input.status,
-        p_note: input.note?.trim() ? input.note.trim() : undefined,
+        ...(input.note?.trim() ? { p_note: input.note.trim() } : {}),
       });
       if (error) throw error;
     },
