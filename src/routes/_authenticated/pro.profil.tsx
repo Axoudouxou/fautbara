@@ -335,7 +335,71 @@ function TeacherProfilePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["teacher-experiences", user.id] }),
   });
 
+  // ---------- photo de profil (avatar) ----------
+  const avatarQuery = useQuery({
+    queryKey: ["teacher-avatar", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      const stored = data?.avatar_url ?? null;
+      if (!stored) return { stored: null as string | null, url: null as string | null };
+      if (/^https?:\/\//.test(stored)) return { stored, url: stored };
+      const signed = await supabase.storage.from("teacher-photos").createSignedUrl(stored, 3600);
+      return { stored, url: signed.data?.signedUrl ?? null };
+    },
+  });
+
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (!file.type.startsWith("image/")) throw new Error("Seules les images sont acceptées");
+      if (file.size > 5 * 1024 * 1024) throw new Error("Image trop lourde (5 Mo maximum)");
+      const ext = file.name.split(".").pop()?.toLowerCase().slice(0, 6) ?? "jpg";
+      const path = `${user.id}/avatar-${crypto.randomUUID()}.${ext}`;
+      const up = await supabase.storage.from("teacher-photos").upload(path, file);
+      if (up.error) throw up.error;
+      const previous = avatarQuery.data?.stored;
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: path, updated_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      if (previous && !/^https?:\/\//.test(previous)) {
+        await supabase.storage.from("teacher-photos").remove([previous]);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Photo de profil mise à jour");
+      queryClient.invalidateQueries({ queryKey: ["teacher-avatar", user.id] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Envoi impossible"),
+  });
+
+  const removeAvatar = useMutation({
+    mutationFn: async () => {
+      const previous = avatarQuery.data?.stored;
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null, updated_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      if (previous && !/^https?:\/\//.test(previous)) {
+        await supabase.storage.from("teacher-photos").remove([previous]);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Photo de profil retirée");
+      queryClient.invalidateQueries({ queryKey: ["teacher-avatar", user.id] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Suppression impossible"),
+  });
+
   // ---------- photos ----------
+
   const uploadPhoto = useMutation({
     mutationFn: async (file: File) => {
       if (!file.type.startsWith("image/")) throw new Error("Seules les images sont acceptées");
