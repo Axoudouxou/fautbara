@@ -12,6 +12,7 @@ import {
   Star,
 } from "lucide-react";
 
+import { useSessionRoles } from "@/hooks/use-session-roles";
 import { getTeacherPublicProfile } from "@/lib/catalog.functions";
 import { getTeacherFullProfile } from "@/lib/teacher-profile.functions";
 
