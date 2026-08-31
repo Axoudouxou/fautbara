@@ -113,6 +113,7 @@ function BookingPage() {
 
   const childrenQuery = useQuery({
     queryKey: ["children", user.id],
+    enabled: isParent,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("children")
@@ -293,31 +294,33 @@ function BookingPage() {
             submit();
           }}
         >
-          <div>
-            <label htmlFor="bk-child" className="text-sm font-semibold text-foreground">
-              Pour qui ?
-            </label>
-            <select
-              id="bk-child"
-              value={childId}
-              onChange={(e) => setChildId(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Pour moi</option>
-              {children.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.first_name}
-                  {c.school_level ? ` — ${c.school_level}` : ""}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Besoin d&apos;ajouter un enfant ?{" "}
-              <Link to="/compte/enfants" className="font-semibold text-primary hover:underline">
-                Gérer les profils enfants
-              </Link>
-            </p>
-          </div>
+          {isParent && (
+            <div>
+              <label htmlFor="bk-child" className="text-sm font-semibold text-foreground">
+                Pour qui ?
+              </label>
+              <select
+                id="bk-child"
+                value={childId}
+                onChange={(e) => setChildId(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Pour moi</option>
+                {children.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.first_name}
+                    {c.school_level ? ` — ${c.school_level}` : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Besoin d&apos;ajouter un enfant ?{" "}
+                <Link to="/compte/enfants" className="font-semibold text-primary hover:underline">
+                  Gérer les profils enfants
+                </Link>
+              </p>
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
