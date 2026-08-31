@@ -10,9 +10,9 @@ import {
   Wallet,
 } from "lucide-react";
 
-const SITE_NAME = "FAUT BARA";
+const SITE_NAME = "BARA";
 const SITE_DESCRIPTION =
-  "FAUT BARA met en relation parents, élèves et professeurs particuliers en Côte d'Ivoire : trouvez, comparez et réservez des cours particuliers en toute confiance.";
+  "BARA met en relation parents, élèves et professeurs particuliers en Côte d'Ivoire : trouvez, comparez et réservez des cours particuliers en toute confiance.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -87,7 +87,7 @@ function Index() {
             Trouver un prof de maison n&apos;a jamais été aussi facile.
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            FAUT BARA digitalise les cours particuliers en Côte d'Ivoire : comparez les
+            BARA digitalise les cours particuliers en Côte d'Ivoire : comparez les
             professeurs, réservez pour vos enfants et suivez chaque séance, à domicile ou en
             ligne.
           </p>

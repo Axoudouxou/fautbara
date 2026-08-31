@@ -18,8 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/compte/")({
   head: () => ({
     meta: [
-      { title: "Mon compte — FAUT BARA" },
-      { name: "description", content: "Gérez votre profil FAUT BARA, vos enfants et vos informations personnelles." },
+      { title: "Mon compte — BARA" },
+      { name: "description", content: "Gérez votre profil BARA, vos enfants et vos informations personnelles." },
       { name: "robots", content: "noindex" },
     ],
   }),

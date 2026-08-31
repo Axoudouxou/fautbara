@@ -11,7 +11,7 @@ import { LeaveReviewDialog } from "@/components/leave-review-dialog";
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
   head: () => ({
     meta: [
-      { title: "Mes demandes de cours — FAUT BARA" },
+      { title: "Mes demandes de cours — BARA" },
       {
         name: "description",
         content: "Suivez vos demandes de cours particuliers, leurs créneaux et leur statut.",

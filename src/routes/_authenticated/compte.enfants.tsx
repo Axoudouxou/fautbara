@@ -10,7 +10,7 @@ import { useSessionRoles } from "@/hooks/use-session-roles";
 export const Route = createFileRoute("/_authenticated/compte/enfants")({
   head: () => ({
     meta: [
-      { title: "Mes enfants — FAUT BARA" },
+      { title: "Mes enfants — BARA" },
       { name: "description", content: "Créez et gérez les profils de vos enfants pour réserver leurs cours particuliers." },
       { name: "robots", content: "noindex" },
     ],

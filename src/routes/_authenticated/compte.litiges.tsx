@@ -7,11 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/compte/litiges")({
   head: () => ({
     meta: [
-      { title: "Mes litiges — FAUT BARA" },
+      { title: "Mes litiges — BARA" },
       {
         name: "description",
         content:
-          "Suivez les litiges que vous avez déclarés sur vos séances de cours particuliers et la décision de l'équipe FAUT BARA.",
+          "Suivez les litiges que vous avez déclarés sur vos séances de cours particuliers et la décision de l'équipe BARA.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -49,7 +49,7 @@ function MyDisputes() {
     <div className="container-page py-10 sm:py-14">
       <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Mes litiges</h1>
       <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-        Chaque litige est examiné par l&apos;équipe FAUT BARA. La décision et le remboursement
+        Chaque litige est examiné par l&apos;équipe BARA. La décision et le remboursement
         éventuel apparaissent ici.
       </p>
       <Link

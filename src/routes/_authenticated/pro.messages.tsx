@@ -11,11 +11,11 @@ import { ensureConversation, initials, useConversations } from "@/lib/messaging"
 export const Route = createFileRoute("/_authenticated/pro/messages")({
   head: () => ({
     meta: [
-      { title: "Messagerie professeur — FAUT BARA" },
+      { title: "Messagerie professeur — BARA" },
       {
         name: "description",
         content:
-          "Échangez avec vos élèves FAUT BARA, envoyez des devoirs et suivez leur avancement élève par élève.",
+          "Échangez avec vos élèves BARA, envoyez des devoirs et suivez leur avancement élève par élève.",
       },
       { name: "robots", content: "noindex" },
     ],

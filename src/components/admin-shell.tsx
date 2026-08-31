@@ -56,7 +56,7 @@ export function AdminShell({
           </span>
           <h1 className="mt-4 font-display text-xl font-bold text-foreground">Accès réservé</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Cette section est réservée aux administrateurs FAUT BARA.
+            Cette section est réservée aux administrateurs BARA.
           </p>
           <Link
             to="/compte"

@@ -12,11 +12,11 @@ import { DisputeConversationViewer } from "@/components/dispute-conversation-vie
 export const Route = createFileRoute("/_authenticated/admin/litiges")({
   head: () => ({
     meta: [
-      { title: "Litiges — Administration FAUT BARA" },
+      { title: "Litiges — Administration BARA" },
       {
         name: "description",
         content:
-          "Traitement des litiges FAUT BARA : instruction, décision et remboursement décidé par l'administration.",
+          "Traitement des litiges BARA : instruction, décision et remboursement décidé par l'administration.",
       },
       { name: "robots", content: "noindex" },
     ],

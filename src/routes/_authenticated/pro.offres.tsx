@@ -10,11 +10,11 @@ import { COMMUNES_ABIDJAN } from "@/lib/geo";
 export const Route = createFileRoute("/_authenticated/pro/offres")({
   head: () => ({
     meta: [
-      { title: "Mes offres de cours — FAUT BARA" },
+      { title: "Mes offres de cours — BARA" },
       {
         name: "description",
         content:
-          "Créez, modifiez et publiez vos offres de cours particuliers sur FAUT BARA : matière, niveaux, tarif et zones.",
+          "Créez, modifiez et publiez vos offres de cours particuliers sur BARA : matière, niveaux, tarif et zones.",
       },
       { name: "robots", content: "noindex" },
     ],

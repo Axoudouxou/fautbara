@@ -16,13 +16,13 @@ export const Route = createFileRoute("/professeurs/")({
   },
   head: () => ({
     meta: [
-      { title: "Trouver un professeur particulier à Abidjan — FAUT BARA" },
+      { title: "Trouver un professeur particulier à Abidjan — BARA" },
       {
         name: "description",
         content:
-          "Parcourez les professeurs particuliers vérifiés de FAUT BARA : filtrez par matière, niveau, commune, format et budget, à Abidjan et partout en Côte d'Ivoire.",
+          "Parcourez les professeurs particuliers vérifiés de BARA : filtrez par matière, niveau, commune, format et budget, à Abidjan et partout en Côte d'Ivoire.",
       },
-      { property: "og:title", content: "Trouver un professeur particulier — FAUT BARA" },
+      { property: "og:title", content: "Trouver un professeur particulier — BARA" },
       {
         property: "og:description",
         content: "Professeurs particuliers vérifiés, à domicile ou en ligne, en Côte d'Ivoire.",
@@ -214,7 +214,7 @@ function TeachersPage() {
             Aucun professeur ne correspond encore
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Les professeurs sont en cours d'inscription sur FAUT BARA. Élargissez vos filtres, ou
+            Les professeurs sont en cours d'inscription sur BARA. Élargissez vos filtres, ou
             créez votre profil professeur pour être parmi les premiers.
           </p>
           <a
