@@ -226,6 +226,22 @@ function TeacherOffersPage() {
     return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
   }
 
+  function submit(f: FormState, status: "draft" | "published") {
+    if (!f.subject_id) {
+      toast.error("Choisissez une matière");
+      return;
+    }
+    if (!f.title.trim() || !f.price) {
+      toast.error("Renseignez le titre et le tarif");
+      return;
+    }
+    if (!f.offers_home && !f.offers_online) {
+      toast.error("Choisissez au moins un format de cours");
+      return;
+    }
+    saveMutation.mutate({ ...f, status });
+  }
+
   return (
     <div className="container-page py-10 sm:py-14">
       <div className="flex flex-wrap items-center justify-between gap-3">
