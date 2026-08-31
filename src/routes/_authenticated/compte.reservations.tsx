@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, Home, Laptop, Loader2, Repeat } from "lucide-react";
+import { useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
   head: () => ({
@@ -39,7 +40,7 @@ export function formatSlot(iso: string) {
 
 function BookingsPage() {
   const { user } = Route.useRouteContext();
-  const queryClient = useQueryClient();
+  const [cancelId, setCancelId] = useState<string | null>(null);
 
   const bookingsQuery = useQuery({
     queryKey: ["my-bookings", user.id],
@@ -56,24 +57,6 @@ function BookingsPage() {
     },
   });
 
-  const cancelMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("bookings")
-        .update({ status: "cancelled", status_reason: "Annulée par le demandeur" })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Demande annulée");
-      queryClient.invalidateQueries({ queryKey: ["my-bookings", user.id] });
-    },
-    onError: (err) =>
-      toast.error("Annulation impossible", {
-        description: err instanceof Error ? err.message : undefined,
-      }),
-  });
-
   const bookings = bookingsQuery.data ?? [];
 
   return (
@@ -81,7 +64,13 @@ function BookingsPage() {
       <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
         Mes demandes de cours
       </h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+      <Link
+        to="/compte/calendrier"
+        className="mt-3 inline-flex rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
+      >
+        Vue calendrier
+      </Link>
+      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         Suivez l&apos;état de vos demandes. Le professeur accepte, refuse ou propose un autre
         créneau.
       </p>
@@ -197,11 +186,10 @@ function BookingsPage() {
                 {canCancel && (
                   <button
                     type="button"
-                    onClick={() => cancelMutation.mutate(b.id)}
-                    disabled={cancelMutation.isPending}
-                    className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-60"
+                    onClick={() => setCancelId(b.id)}
+                    className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10"
                   >
-                    Annuler la demande
+                    Annuler la séance
                   </button>
                 )}
               </div>
@@ -209,6 +197,14 @@ function BookingsPage() {
           );
         })}
       </ul>
+
+      {cancelId && (
+        <CancelBookingDialog
+          bookingId={cancelId}
+          onClose={() => setCancelId(null)}
+          invalidateKeys={[["my-bookings", user.id]]}
+        />
+      )}
     </div>
   );
 }

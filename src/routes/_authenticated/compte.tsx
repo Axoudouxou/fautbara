@@ -217,7 +217,7 @@ function AccountPage() {
           </Link>
 
           <Link
-            to="/compte/reservations"
+            to="/compte/calendrier"
             className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
           >
             <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
@@ -225,10 +225,10 @@ function AccountPage() {
             </span>
             <span>
               <span className="block font-display font-bold text-foreground">
-                Mes demandes de cours
+                Mon calendrier de cours
               </span>
               <span className="block text-sm text-muted-foreground">
-                Créneaux demandés, réponses des professeurs et annulations.
+                Séances de la semaine, statuts, paiements et annulations.
               </span>
             </span>
           </Link>
