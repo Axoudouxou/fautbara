@@ -19,6 +19,7 @@ import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
 import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
 import { Route as ProfesseursIdRouteImport } from './routes/professeurs.$id'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminProfesseursRouteImport } from './routes/_authenticated/admin.professeurs'
 import { Route as AuthenticatedCompteCalendrierRouteImport } from './routes/_authenticated/compte.calendrier'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
 import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_authenticated/compte.reservations'
@@ -79,6 +80,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminProfesseursRoute =
+  AuthenticatedAdminProfesseursRouteImport.update({
+    id: '/admin/professeurs',
+    path: '/admin/professeurs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCompteCalendrierRoute =
   AuthenticatedCompteCalendrierRouteImport.update({
     id: '/calendrier',
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
+  '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
@@ -167,6 +175,7 @@ export interface FileRoutesByTo {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres': typeof MatieresIndexRoute
   '/professeurs': typeof ProfesseursIndexRoute
+  '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
@@ -190,6 +199,7 @@ export interface FileRoutesById {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
+  '/_authenticated/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/_authenticated/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
+    | '/admin/professeurs'
     | '/compte/calendrier'
     | '/compte/enfants'
     | '/compte/reservations'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres'
     | '/professeurs'
+    | '/admin/professeurs'
     | '/compte/calendrier'
     | '/compte/enfants'
     | '/compte/reservations'
@@ -256,6 +268,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
+    | '/_authenticated/admin/professeurs'
     | '/_authenticated/compte/calendrier'
     | '/_authenticated/compte/enfants'
     | '/_authenticated/compte/reservations'
@@ -352,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/professeurs': {
+      id: '/_authenticated/admin/professeurs'
+      path: '/admin/professeurs'
+      fullPath: '/admin/professeurs'
+      preLoaderRoute: typeof AuthenticatedAdminProfesseursRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/compte/calendrier': {
       id: '/_authenticated/compte/calendrier'
       path: '/calendrier'
@@ -442,6 +462,7 @@ const AuthenticatedCompteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteRoute: typeof AuthenticatedCompteRouteWithChildren
+  AuthenticatedAdminProfesseursRoute: typeof AuthenticatedAdminProfesseursRoute
   AuthenticatedPaiementBookingIdRoute: typeof AuthenticatedPaiementBookingIdRoute
   AuthenticatedProDemandesRoute: typeof AuthenticatedProDemandesRoute
   AuthenticatedProDisponibilitesRoute: typeof AuthenticatedProDisponibilitesRoute
@@ -454,6 +475,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteRoute: AuthenticatedCompteRouteWithChildren,
+  AuthenticatedAdminProfesseursRoute: AuthenticatedAdminProfesseursRoute,
   AuthenticatedPaiementBookingIdRoute: AuthenticatedPaiementBookingIdRoute,
   AuthenticatedProDemandesRoute: AuthenticatedProDemandesRoute,
   AuthenticatedProDisponibilitesRoute: AuthenticatedProDisponibilitesRoute,
