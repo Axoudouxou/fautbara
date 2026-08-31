@@ -36,7 +36,7 @@ export function CancelBookingDialog({
     mutationFn: async () => {
       const { error } = await supabase.rpc("cancel_booking", {
         p_booking_id: bookingId,
-        p_reason: reason.trim() || null,
+        p_reason: reason.trim() || undefined,
       });
       if (error) throw error;
     },
