@@ -14,6 +14,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
+import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
+import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
+import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
+import { Route as ProfesseursIdRouteImport } from './routes/professeurs.$id'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
 
@@ -41,6 +45,26 @@ const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
   path: '/compte',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const MatieresIndexRoute = MatieresIndexRouteImport.update({
+  id: '/matieres/',
+  path: '/matieres/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatieresSlugRoute = MatieresSlugRouteImport.update({
+  id: '/matieres/$slug',
+  path: '/matieres/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfesseursIndexRoute = ProfesseursIndexRouteImport.update({
+  id: '/professeurs/',
+  path: '/professeurs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfesseursIdRoute = ProfesseursIdRouteImport.update({
+  id: '/professeurs/$id',
+  path: '/professeurs/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCompteEnfantsRoute =
   AuthenticatedCompteEnfantsRouteImport.update({
     id: '/enfants',
@@ -58,6 +82,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/matieres/$slug': typeof MatieresSlugRoute
+  '/professeurs/$id': typeof ProfesseursIdRoute
+  '/matieres/': typeof MatieresIndexRoute
+  '/professeurs/': typeof ProfesseursIndexRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
 }
@@ -66,6 +94,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/matieres/$slug': typeof MatieresSlugRoute
+  '/professeurs/$id': typeof ProfesseursIdRoute
+  '/matieres': typeof MatieresIndexRoute
+  '/professeurs': typeof ProfesseursIndexRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
 }
@@ -76,6 +108,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/matieres/$slug': typeof MatieresSlugRoute
+  '/professeurs/$id': typeof ProfesseursIdRoute
+  '/matieres/': typeof MatieresIndexRoute
+  '/professeurs/': typeof ProfesseursIndexRoute
   '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
 }
@@ -86,6 +122,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/compte'
+    | '/matieres/$slug'
+    | '/professeurs/$id'
+    | '/matieres/'
+    | '/professeurs/'
     | '/compte/enfants'
     | '/pro/profil'
   fileRoutesByTo: FileRoutesByTo
@@ -94,6 +134,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/compte'
+    | '/matieres/$slug'
+    | '/professeurs/$id'
+    | '/matieres'
+    | '/professeurs'
     | '/compte/enfants'
     | '/pro/profil'
   id:
@@ -103,6 +147,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/compte'
+    | '/matieres/$slug'
+    | '/professeurs/$id'
+    | '/matieres/'
+    | '/professeurs/'
     | '/_authenticated/compte/enfants'
     | '/_authenticated/pro/profil'
   fileRoutesById: FileRoutesById
@@ -112,6 +160,10 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  MatieresSlugRoute: typeof MatieresSlugRoute
+  ProfesseursIdRoute: typeof ProfesseursIdRoute
+  MatieresIndexRoute: typeof MatieresIndexRoute
+  ProfesseursIndexRoute: typeof ProfesseursIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -150,6 +202,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/compte'
       preLoaderRoute: typeof AuthenticatedCompteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/matieres/': {
+      id: '/matieres/'
+      path: '/matieres'
+      fullPath: '/matieres/'
+      preLoaderRoute: typeof MatieresIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matieres/$slug': {
+      id: '/matieres/$slug'
+      path: '/matieres/$slug'
+      fullPath: '/matieres/$slug'
+      preLoaderRoute: typeof MatieresSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/professeurs/': {
+      id: '/professeurs/'
+      path: '/professeurs'
+      fullPath: '/professeurs/'
+      preLoaderRoute: typeof ProfesseursIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/professeurs/$id': {
+      id: '/professeurs/$id'
+      path: '/professeurs/$id'
+      fullPath: '/professeurs/$id'
+      preLoaderRoute: typeof ProfesseursIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/compte/enfants': {
       id: '/_authenticated/compte/enfants'
@@ -197,6 +277,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  MatieresSlugRoute: MatieresSlugRoute,
+  ProfesseursIdRoute: ProfesseursIdRoute,
+  MatieresIndexRoute: MatieresIndexRoute,
+  ProfesseursIndexRoute: ProfesseursIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

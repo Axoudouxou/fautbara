@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
   CalendarCheck,
@@ -27,11 +27,27 @@ export const Route = createFileRoute("/")({
 });
 
 const CATEGORIES = [
-  { icon: GraduationCap, label: "Soutien scolaire", detail: "Maths, français, physique…" },
-  { icon: BadgeCheck, label: "Préparation aux examens", detail: "CEPE, BEPC, BAC…" },
-  { icon: Languages, label: "Langues", detail: "Étrangères et ivoiriennes" },
-  { icon: CalendarCheck, label: "Compétences & arts", detail: "Informatique, musique…" },
+  {
+    icon: GraduationCap,
+    label: "Soutien scolaire",
+    detail: "Maths, français, physique…",
+    slug: "mathematiques",
+  },
+  {
+    icon: BadgeCheck,
+    label: "Préparation aux examens",
+    detail: "CEPE, BEPC, BAC…",
+    slug: "prep-bac",
+  },
+  { icon: Languages, label: "Langues", detail: "Étrangères et ivoiriennes", slug: "anglais" },
+  {
+    icon: CalendarCheck,
+    label: "Compétences & arts",
+    detail: "Informatique, musique…",
+    slug: "bureautique",
+  },
 ];
+
 
 const STEPS = [
   {
@@ -162,18 +178,27 @@ function Index() {
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {CATEGORIES.map((c) => (
-              <article
+              <Link
                 key={c.label}
-                className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]"
+                to="/matieres/$slug"
+                params={{ slug: c.slug }}
+                className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:border-primary"
               >
                 <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
                   <c.icon className="size-5" aria-hidden />
                 </span>
                 <h3 className="mt-4 font-display font-bold text-foreground">{c.label}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{c.detail}</p>
-              </article>
+              </Link>
             ))}
           </div>
+          <Link
+            to="/matieres"
+            className="mt-6 inline-flex text-sm font-semibold text-primary hover:underline"
+          >
+            Voir toutes les matières →
+          </Link>
+
         </div>
       </section>
 

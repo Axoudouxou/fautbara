@@ -150,16 +150,17 @@ function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2" aria-label="Navigation principale">
           <Link
-            to="/"
+            to="/professeurs"
+            search={{}}
             className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             Trouver un professeur
           </Link>
           <Link
-            to="/"
+            to="/matieres"
             className="hidden rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
-            Devenir professeur
+            Matières
           </Link>
           {signedIn ? (
             <Link
