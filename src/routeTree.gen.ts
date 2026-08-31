@@ -35,6 +35,7 @@ import { Route as AuthenticatedProDisponibilitesRouteImport } from './routes/_au
 import { Route as AuthenticatedProMessagesRouteImport } from './routes/_authenticated/pro.messages'
 import { Route as AuthenticatedProOffresRouteImport } from './routes/_authenticated/pro.offres'
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
+import { Route as AuthenticatedProVerificationRouteImport } from './routes/_authenticated/pro.verification'
 import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -178,6 +179,12 @@ const AuthenticatedProProfilRoute = AuthenticatedProProfilRouteImport.update({
   path: '/pro/profil',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProVerificationRoute =
+  AuthenticatedProVerificationRouteImport.update({
+    id: '/pro/verification',
+    path: '/pro/verification',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedReserverOfferIdRoute =
   AuthenticatedReserverOfferIdRouteImport.update({
     id: '/reserver/$offerId',
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/pro/messages': typeof AuthenticatedProMessagesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/compte/': typeof AuthenticatedCompteIndexRoute
@@ -236,6 +244,7 @@ export interface FileRoutesByTo {
   '/pro/messages': typeof AuthenticatedProMessagesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/compte': typeof AuthenticatedCompteIndexRoute
@@ -266,6 +275,7 @@ export interface FileRoutesById {
   '/_authenticated/pro/messages': typeof AuthenticatedProMessagesRoute
   '/_authenticated/pro/offres': typeof AuthenticatedProOffresRoute
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
+  '/_authenticated/pro/verification': typeof AuthenticatedProVerificationRoute
   '/_authenticated/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/compte/': typeof AuthenticatedCompteIndexRoute
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/pro/messages'
     | '/pro/offres'
     | '/pro/profil'
+    | '/pro/verification'
     | '/reserver/$offerId'
     | '/admin/'
     | '/compte/'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/pro/messages'
     | '/pro/offres'
     | '/pro/profil'
+    | '/pro/verification'
     | '/reserver/$offerId'
     | '/admin'
     | '/compte'
@@ -353,6 +365,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/messages'
     | '/_authenticated/pro/offres'
     | '/_authenticated/pro/profil'
+    | '/_authenticated/pro/verification'
     | '/_authenticated/reserver/$offerId'
     | '/_authenticated/admin/'
     | '/_authenticated/compte/'
@@ -554,6 +567,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProProfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/verification': {
+      id: '/_authenticated/pro/verification'
+      path: '/pro/verification'
+      fullPath: '/pro/verification'
+      preLoaderRoute: typeof AuthenticatedProVerificationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reserver/$offerId': {
       id: '/_authenticated/reserver/$offerId'
       path: '/reserver/$offerId'
@@ -580,6 +600,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProMessagesRoute: typeof AuthenticatedProMessagesRoute
   AuthenticatedProOffresRoute: typeof AuthenticatedProOffresRoute
   AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
+  AuthenticatedProVerificationRoute: typeof AuthenticatedProVerificationRoute
   AuthenticatedReserverOfferIdRoute: typeof AuthenticatedReserverOfferIdRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedCompteIndexRoute: typeof AuthenticatedCompteIndexRoute
@@ -602,6 +623,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProMessagesRoute: AuthenticatedProMessagesRoute,
   AuthenticatedProOffresRoute: AuthenticatedProOffresRoute,
   AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
+  AuthenticatedProVerificationRoute: AuthenticatedProVerificationRoute,
   AuthenticatedReserverOfferIdRoute: AuthenticatedReserverOfferIdRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedCompteIndexRoute: AuthenticatedCompteIndexRoute,
