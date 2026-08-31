@@ -214,6 +214,16 @@ function TeacherDashboard() {
           <span className="font-display font-bold text-foreground">Mes offres</span>
         </Link>
         <Link
+          to="/pro/disponibilites"
+          className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+        >
+          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <CalendarClock className="size-5" aria-hidden />
+          </span>
+          <span className="font-display font-bold text-foreground">Mes disponibilités</span>
+        </Link>
+
+        <Link
           to="/professeurs/$id"
           params={{ id: user.id }}
           className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
