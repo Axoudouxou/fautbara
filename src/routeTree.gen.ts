@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
 import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
+import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
 import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
 import { Route as ProfesseursIdRouteImport } from './routes/professeurs.$id'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
@@ -49,6 +50,11 @@ const MatieresIndexRoute = MatieresIndexRouteImport.update({
   path: '/matieres/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MatieresSlugRoute = MatieresSlugRouteImport.update({
+  id: '/matieres/$slug',
+  path: '/matieres/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfesseursIndexRoute = ProfesseursIndexRouteImport.update({
   id: '/professeurs/',
   path: '/professeurs/',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres': typeof MatieresIndexRoute
   '/professeurs': typeof ProfesseursIndexRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/compte'
+    | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/compte'
+    | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres'
     | '/professeurs'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/compte'
+    | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
@@ -148,6 +160,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  MatieresSlugRoute: typeof MatieresSlugRoute
   ProfesseursIdRoute: typeof ProfesseursIdRoute
   MatieresIndexRoute: typeof MatieresIndexRoute
   ProfesseursIndexRoute: typeof ProfesseursIndexRoute
@@ -195,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/matieres'
       fullPath: '/matieres/'
       preLoaderRoute: typeof MatieresIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matieres/$slug': {
+      id: '/matieres/$slug'
+      path: '/matieres/$slug'
+      fullPath: '/matieres/$slug'
+      preLoaderRoute: typeof MatieresSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/professeurs/': {
@@ -257,6 +277,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  MatieresSlugRoute: MatieresSlugRoute,
   ProfesseursIdRoute: ProfesseursIdRoute,
   MatieresIndexRoute: MatieresIndexRoute,
   ProfesseursIndexRoute: ProfesseursIndexRoute,
