@@ -500,6 +500,50 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          author_id: string
+          booking_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          status: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          booking_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          status?: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          booking_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          status?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subjects: {
         Row: {
           category_id: string
@@ -537,6 +581,123 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      teacher_documents: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          id: string
+          kind: string
+          storage_path: string
+          teacher_id: string
+          updated_at: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          kind?: string
+          storage_path: string
+          teacher_id: string
+          updated_at?: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          kind?: string
+          storage_path?: string
+          teacher_id?: string
+          updated_at?: string
+          verification_status?: string
+        }
+        Relationships: []
+      }
+      teacher_educations: {
+        Row: {
+          created_at: string
+          degree: string
+          end_year: number | null
+          field: string | null
+          honors: string | null
+          id: string
+          school: string
+          sort_order: number
+          start_year: number | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          degree: string
+          end_year?: number | null
+          field?: string | null
+          honors?: string | null
+          id?: string
+          school: string
+          sort_order?: number
+          start_year?: number | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          degree?: string
+          end_year?: number | null
+          field?: string | null
+          honors?: string | null
+          id?: string
+          school?: string
+          sort_order?: number
+          start_year?: number | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      teacher_experiences: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_year: number | null
+          id: string
+          is_current: boolean
+          organization: string | null
+          role_title: string
+          sort_order: number
+          start_year: number | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_year?: number | null
+          id?: string
+          is_current?: boolean
+          organization?: string | null
+          role_title: string
+          sort_order?: number
+          start_year?: number | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_year?: number | null
+          id?: string
+          is_current?: boolean
+          organization?: string | null
+          role_title?: string
+          sort_order?: number
+          start_year?: number | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       teacher_offers: {
         Row: {
@@ -597,6 +758,36 @@ export type Database = {
           },
         ]
       }
+      teacher_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          sort_order: number
+          storage_path: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number
+          storage_path: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          sort_order?: number
+          storage_path?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       teacher_profiles: {
         Row: {
           bio: string | null
@@ -604,9 +795,13 @@ export type Database = {
           headline: string | null
           id: string
           identity_verified: boolean
+          intro_video_url: string | null
+          languages: string[]
+          main_degree: string | null
           offers_home: boolean
           offers_online: boolean
           qualifications_verified: boolean
+          teaching_method: string | null
           updated_at: string
           user_id: string
           verification_status: string
@@ -619,9 +814,13 @@ export type Database = {
           headline?: string | null
           id?: string
           identity_verified?: boolean
+          intro_video_url?: string | null
+          languages?: string[]
+          main_degree?: string | null
           offers_home?: boolean
           offers_online?: boolean
           qualifications_verified?: boolean
+          teaching_method?: string | null
           updated_at?: string
           user_id: string
           verification_status?: string
@@ -634,9 +833,13 @@ export type Database = {
           headline?: string | null
           id?: string
           identity_verified?: boolean
+          intro_video_url?: string | null
+          languages?: string[]
+          main_degree?: string | null
           offers_home?: boolean
           offers_online?: boolean
           qualifications_verified?: boolean
+          teaching_method?: string | null
           updated_at?: string
           user_id?: string
           verification_status?: string
@@ -753,9 +956,13 @@ export type Database = {
           headline: string | null
           id: string
           identity_verified: boolean
+          intro_video_url: string | null
+          languages: string[]
+          main_degree: string | null
           offers_home: boolean
           offers_online: boolean
           qualifications_verified: boolean
+          teaching_method: string | null
           updated_at: string
           user_id: string
           verification_status: string
@@ -899,6 +1106,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_teacher_full_public: { Args: { p_teacher_id: string }; Returns: Json }
       get_teacher_public: {
         Args: { p_teacher_id: string }
         Returns: {

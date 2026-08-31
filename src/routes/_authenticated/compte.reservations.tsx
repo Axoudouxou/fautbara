@@ -6,6 +6,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
 import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
+import { LeaveReviewDialog } from "@/components/leave-review-dialog";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
   head: () => ({
@@ -212,6 +213,14 @@ function BookingsPage() {
                   >
                     Annuler la séance
                   </button>
+                )}
+                {b.status === "completed" && (
+                  <LeaveReviewDialog
+                    bookingId={b.id}
+                    teacherId={b.teacher_id}
+                    authorId={user.id}
+                    invalidateKeys={[["my-bookings", user.id]]}
+                  />
                 )}
                 {(b.status === "completed" || b.status === "cancelled") && (
                   <OpenDisputeDialog
