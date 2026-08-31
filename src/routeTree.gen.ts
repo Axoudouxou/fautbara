@@ -10,33 +10,108 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
+import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
+import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
+  id: '/compte',
+  path: '/compte',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCompteEnfantsRoute =
+  AuthenticatedCompteEnfantsRouteImport.update({
+    id: '/enfants',
+    path: '/enfants',
+    getParentRoute: () => AuthenticatedCompteRoute,
+  } as any)
+const AuthenticatedProProfilRoute = AuthenticatedProProfilRouteImport.update({
+  id: '/pro/profil',
+  path: '/pro/profil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/pro/profil': typeof AuthenticatedProProfilRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/pro/profil': typeof AuthenticatedProProfilRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/compte': typeof AuthenticatedCompteRouteWithChildren
+  '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/compte'
+    | '/compte/enfants'
+    | '/pro/profil'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/compte'
+    | '/compte/enfants'
+    | '/pro/profil'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/compte'
+    | '/_authenticated/compte/enfants'
+    | '/_authenticated/pro/profil'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +123,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/compte': {
+      id: '/_authenticated/compte'
+      path: '/compte'
+      fullPath: '/compte'
+      preLoaderRoute: typeof AuthenticatedCompteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/compte/enfants': {
+      id: '/_authenticated/compte/enfants'
+      path: '/enfants'
+      fullPath: '/compte/enfants'
+      preLoaderRoute: typeof AuthenticatedCompteEnfantsRouteImport
+      parentRoute: typeof AuthenticatedCompteRoute
+    }
+    '/_authenticated/pro/profil': {
+      id: '/_authenticated/pro/profil'
+      path: '/pro/profil'
+      fullPath: '/pro/profil'
+      preLoaderRoute: typeof AuthenticatedProProfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedCompteRouteChildren {
+  AuthenticatedCompteEnfantsRoute: typeof AuthenticatedCompteEnfantsRoute
+}
+
+const AuthenticatedCompteRouteChildren: AuthenticatedCompteRouteChildren = {
+  AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRoute,
+}
+
+const AuthenticatedCompteRouteWithChildren =
+  AuthenticatedCompteRoute._addFileChildren(AuthenticatedCompteRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCompteRoute: typeof AuthenticatedCompteRouteWithChildren
+  AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCompteRoute: AuthenticatedCompteRouteWithChildren,
+  AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
