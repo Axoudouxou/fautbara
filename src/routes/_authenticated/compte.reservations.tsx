@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
+import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
   head: () => ({
