@@ -98,11 +98,11 @@ export function AppTabsBar({ role }: { role: AppRole | null }) {
           key={tab.label}
           {...tab.link}
           activeOptions={{ exact: true }}
-          className="relative rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground data-[status=active]:text-primary"
+          className="group relative rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground data-[status=active]:text-primary"
         >
           <span className="relative">
             {tab.label}
-            <span className="pointer-events-none absolute -bottom-2 left-0 hidden h-[3px] w-full rounded-full bg-primary [a[data-status=active]_&]:block" />
+            <span className="pointer-events-none absolute -bottom-2 left-0 hidden h-[3px] w-full rounded-full bg-primary group-data-[status=active]:block" />
           </span>
         </Link>
       ))}
@@ -126,9 +126,9 @@ export function AppTabsMobileBar({ role }: { role: AppRole | null }) {
               <Link
                 {...tab.link}
                 activeOptions={{ exact: true }}
-                className="flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-semibold text-muted-foreground transition-colors data-[status=active]:text-primary"
+                className="group flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-semibold text-muted-foreground transition-colors data-[status=active]:text-primary"
               >
-                <span className="flex size-8 items-center justify-center rounded-xl transition-colors [a[data-status=active]_&]:bg-primary/10">
+                <span className="flex size-8 items-center justify-center rounded-xl transition-colors group-data-[status=active]:bg-primary/10">
                   <Icon className="size-5" aria-hidden />
                 </span>
                 <span className="truncate">{tab.short}</span>
