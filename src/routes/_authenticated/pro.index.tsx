@@ -60,6 +60,20 @@ function TeacherDashboard() {
     },
   });
 
+  const availabilitiesQuery = useQuery({
+    queryKey: ["availabilities-count", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("availabilities")
+        .select("id", { count: "exact", head: true })
+        .eq("teacher_id", user.id);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+
   if (rolesQuery.isLoading) {
     return (
       <div className="container-page flex items-center gap-2 py-16 text-sm text-muted-foreground">
