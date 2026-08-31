@@ -214,6 +214,14 @@ function BookingsPage() {
                     Annuler la séance
                   </button>
                 )}
+                {b.status === "completed" && (
+                  <LeaveReviewDialog
+                    bookingId={b.id}
+                    teacherId={b.teacher_id}
+                    authorId={user.id}
+                    invalidateKeys={[["my-bookings", user.id]]}
+                  />
+                )}
                 {(b.status === "completed" || b.status === "cancelled") && (
                   <OpenDisputeDialog
                     bookingId={b.id}
