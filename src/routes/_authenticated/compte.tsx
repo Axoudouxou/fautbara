@@ -269,6 +269,38 @@ function AccountPage() {
               </span>
             </Link>
           )}
+
+          <Link
+            to="/compte/litiges"
+            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+          >
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+              <Gavel className="size-5" aria-hidden />
+            </span>
+            <span>
+              <span className="block font-display font-bold text-foreground">Mes litiges</span>
+              <span className="block text-sm text-muted-foreground">
+                Signalements sur vos séances et décisions de l&apos;équipe.
+              </span>
+            </span>
+          </Link>
+
+          {roles.includes("admin") && (
+            <Link
+              to="/admin"
+              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+            >
+              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                <ShieldCheck className="size-5" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-display font-bold text-foreground">Administration</span>
+                <span className="block text-sm text-muted-foreground">
+                  Professeurs, vérifications, offres et litiges.
+                </span>
+              </span>
+            </Link>
+          )}
         </div>
       </div>
     </div>
