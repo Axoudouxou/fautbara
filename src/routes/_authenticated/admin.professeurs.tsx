@@ -51,7 +51,7 @@ function AdminTeachers() {
       identity: boolean;
       qualifications: boolean;
       status: string;
-      note?: string | null;
+      note?: string | null | undefined;
     }) => {
       const { error } = await supabase.rpc("admin_set_teacher_verification", {
         p_teacher_id: input.teacherId,
@@ -165,7 +165,7 @@ function AdminTeachers() {
                       identity: true,
                       qualifications: true,
                       status: "approved",
-                      note: notes[t.teacher_id],
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
@@ -181,7 +181,7 @@ function AdminTeachers() {
                       identity: true,
                       qualifications: t.qualifications_verified ?? false,
                       status: "approved",
-                      note: notes[t.teacher_id],
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
@@ -197,7 +197,7 @@ function AdminTeachers() {
                       identity: t.identity_verified ?? false,
                       qualifications: true,
                       status: "approved",
-                      note: notes[t.teacher_id],
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
@@ -213,7 +213,7 @@ function AdminTeachers() {
                       identity: false,
                       qualifications: false,
                       status: "rejected",
-                      note: notes[t.teacher_id],
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="inline-flex items-center gap-1.5 rounded-xl border border-destructive/30 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
@@ -229,7 +229,7 @@ function AdminTeachers() {
                       identity: t.identity_verified ?? false,
                       qualifications: t.qualifications_verified ?? false,
                       status: "pending",
-                      note: notes[t.teacher_id],
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary disabled:opacity-50"
