@@ -185,6 +185,15 @@ function BookingsPage() {
                 >
                   Voir le professeur
                 </Link>
+                {(b.status === "accepted" || b.status === "completed") && (
+                  <Link
+                    to="/paiement/$bookingId"
+                    params={{ bookingId: b.id }}
+                    className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                  >
+                    Paiement de la séance
+                  </Link>
+                )}
                 {canCancel && (
                   <button
                     type="button"
