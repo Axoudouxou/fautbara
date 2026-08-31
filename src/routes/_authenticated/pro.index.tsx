@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, BookOpen, Eye, Loader2, ShieldCheck, UserCog } from "lucide-react";
+import {
+  BadgeCheck,
+  BookOpen,
+  CalendarClock,
+  Eye,
+  Loader2,
+  ShieldCheck,
+  UserCog,
+} from "lucide-react";
+
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -60,6 +69,20 @@ function TeacherDashboard() {
     },
   });
 
+  const availabilitiesQuery = useQuery({
+    queryKey: ["availabilities-count", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("availabilities")
+        .select("id", { count: "exact", head: true })
+        .eq("teacher_id", user.id);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+
   if (rolesQuery.isLoading) {
     return (
       <div className="container-page flex items-center gap-2 py-16 text-sm text-muted-foreground">
@@ -109,7 +132,13 @@ function TeacherDashboard() {
       done: published.length > 0,
       to: "/pro/offres" as const,
     },
+    {
+      label: "Renseigner mes disponibilités",
+      done: (availabilitiesQuery.data ?? 0) > 0,
+      to: "/pro/disponibilites" as const,
+    },
   ];
+
 
   return (
     <div className="container-page py-10 sm:py-14">
@@ -193,6 +222,16 @@ function TeacherDashboard() {
           </span>
           <span className="font-display font-bold text-foreground">Mes offres</span>
         </Link>
+        <Link
+          to="/pro/disponibilites"
+          className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+        >
+          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <CalendarClock className="size-5" aria-hidden />
+          </span>
+          <span className="font-display font-bold text-foreground">Mes disponibilités</span>
+        </Link>
+
         <Link
           to="/professeurs/$id"
           params={{ id: user.id }}

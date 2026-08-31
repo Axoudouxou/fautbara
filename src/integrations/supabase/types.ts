@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      availabilities: {
+        Row: {
+          created_at: string
+          end_time: string
+          format: string
+          id: string
+          start_time: string
+          teacher_id: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          format?: string
+          id?: string
+          start_time: string
+          teacher_id: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          format?: string
+          id?: string
+          start_time?: string
+          teacher_id?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
+      availability_exceptions: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          exception_date: string
+          id: string
+          reason: string | null
+          start_time: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          exception_date: string
+          id?: string
+          reason?: string | null
+          start_time?: string | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          exception_date?: string
+          id?: string
+          reason?: string | null
+          start_time?: string | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
