@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, Loader2, ShieldX } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ function AdminTeachers() {
   const adminQuery = useIsAdmin(user.id);
   const isAdmin = adminQuery.data ?? false;
   const queryClient = useQueryClient();
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const teachersQuery = useQuery({
     queryKey: ["admin-teachers"],
@@ -49,17 +51,22 @@ function AdminTeachers() {
       identity: boolean;
       qualifications: boolean;
       status: string;
+      note?: string | null | undefined;
     }) => {
       const { error } = await supabase.rpc("admin_set_teacher_verification", {
         p_teacher_id: input.teacherId,
         p_identity_verified: input.identity,
         p_qualifications_verified: input.qualifications,
         p_verification_status: input.status,
+        p_note: input.note?.trim() ? input.note.trim() : null,
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Vérification mise à jour");
+    onSuccess: (_d, input) => {
+      toast.success("Vérification mise à jour", {
+        description: "Le professeur voit la décision et le motif sur son espace.",
+      });
+      setNotes((prev) => ({ ...prev, [input.teacherId]: "" }));
       queryClient.invalidateQueries({ queryKey: ["admin-teachers"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
@@ -121,6 +128,33 @@ function AdminTeachers() {
                 </div>
               </div>
 
+              {t.verification_note && (
+                <p className="mt-3 rounded-2xl bg-secondary/60 px-4 py-3 text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">Motif communiqué :</span>{" "}
+                  {t.verification_note}
+                </p>
+              )}
+
+              <div className="mt-4">
+                <label
+                  htmlFor={`note-${t.teacher_id}`}
+                  className="text-xs font-semibold text-foreground"
+                >
+                  Motif / remarque envoyée au professeur (optionnel)
+                </label>
+                <textarea
+                  id={`note-${t.teacher_id}`}
+                  rows={2}
+                  maxLength={500}
+                  value={notes[t.teacher_id] ?? ""}
+                  onChange={(e) =>
+                    setNotes((prev) => ({ ...prev, [t.teacher_id]: e.target.value }))
+                  }
+                  placeholder="Ex. Pièce d'identité illisible, merci de la redéposer."
+                  className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
+                />
+              </div>
+
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -131,6 +165,7 @@ function AdminTeachers() {
                       identity: true,
                       qualifications: true,
                       status: "approved",
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
@@ -146,6 +181,7 @@ function AdminTeachers() {
                       identity: true,
                       qualifications: t.qualifications_verified ?? false,
                       status: "approved",
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
@@ -161,6 +197,7 @@ function AdminTeachers() {
                       identity: t.identity_verified ?? false,
                       qualifications: true,
                       status: "approved",
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
@@ -176,6 +213,7 @@ function AdminTeachers() {
                       identity: false,
                       qualifications: false,
                       status: "rejected",
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="inline-flex items-center gap-1.5 rounded-xl border border-destructive/30 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
@@ -191,6 +229,7 @@ function AdminTeachers() {
                       identity: t.identity_verified ?? false,
                       qualifications: t.qualifications_verified ?? false,
                       status: "pending",
+                      note: notes[t.teacher_id] ?? null,
                     })
                   }
                   className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary disabled:opacity-50"

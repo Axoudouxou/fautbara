@@ -1004,6 +1004,8 @@ export type Database = {
           teaching_method: string | null
           updated_at: string
           user_id: string
+          verification_decided_at: string | null
+          verification_note: string | null
           verification_status: string
           years_experience: number | null
           zones: string[]
@@ -1023,6 +1025,8 @@ export type Database = {
           teaching_method?: string | null
           updated_at?: string
           user_id: string
+          verification_decided_at?: string | null
+          verification_note?: string | null
           verification_status?: string
           years_experience?: number | null
           zones?: string[]
@@ -1042,6 +1046,8 @@ export type Database = {
           teaching_method?: string | null
           updated_at?: string
           user_id?: string
+          verification_decided_at?: string | null
+          verification_note?: string | null
           verification_status?: string
           years_experience?: number | null
           zones?: string[]
@@ -1089,6 +1095,8 @@ export type Database = {
           phone: string
           qualifications_verified: boolean
           teacher_id: string
+          verification_decided_at: string
+          verification_note: string
           verification_status: string
           years_experience: number
         }[]
@@ -1151,39 +1159,78 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      admin_set_teacher_verification: {
-        Args: {
-          p_identity_verified: boolean
-          p_qualifications_verified: boolean
-          p_teacher_id: string
-          p_verification_status: string
-        }
-        Returns: {
-          bio: string | null
-          created_at: string
-          headline: string | null
-          id: string
-          identity_verified: boolean
-          intro_video_url: string | null
-          languages: string[]
-          main_degree: string | null
-          offers_home: boolean
-          offers_online: boolean
-          qualifications_verified: boolean
-          teaching_method: string | null
-          updated_at: string
-          user_id: string
-          verification_status: string
-          years_experience: number | null
-          zones: string[]
-        }
-        SetofOptions: {
-          from: "*"
-          to: "teacher_profiles"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      admin_set_teacher_verification:
+        | {
+            Args: {
+              p_identity_verified: boolean
+              p_qualifications_verified: boolean
+              p_teacher_id: string
+              p_verification_status: string
+            }
+            Returns: {
+              bio: string | null
+              created_at: string
+              headline: string | null
+              id: string
+              identity_verified: boolean
+              intro_video_url: string | null
+              languages: string[]
+              main_degree: string | null
+              offers_home: boolean
+              offers_online: boolean
+              qualifications_verified: boolean
+              teaching_method: string | null
+              updated_at: string
+              user_id: string
+              verification_decided_at: string | null
+              verification_note: string | null
+              verification_status: string
+              years_experience: number | null
+              zones: string[]
+            }
+            SetofOptions: {
+              from: "*"
+              to: "teacher_profiles"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              p_identity_verified: boolean
+              p_note?: string
+              p_qualifications_verified: boolean
+              p_teacher_id: string
+              p_verification_status: string
+            }
+            Returns: {
+              bio: string | null
+              created_at: string
+              headline: string | null
+              id: string
+              identity_verified: boolean
+              intro_video_url: string | null
+              languages: string[]
+              main_degree: string | null
+              offers_home: boolean
+              offers_online: boolean
+              qualifications_verified: boolean
+              teaching_method: string | null
+              updated_at: string
+              user_id: string
+              verification_decided_at: string | null
+              verification_note: string | null
+              verification_status: string
+              years_experience: number | null
+              zones: string[]
+            }
+            SetofOptions: {
+              from: "*"
+              to: "teacher_profiles"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       cancel_booking: {
         Args: { p_booking_id: string; p_reason?: string }
         Returns: {

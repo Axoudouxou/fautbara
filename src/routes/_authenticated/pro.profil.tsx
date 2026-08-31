@@ -552,6 +552,49 @@ function TeacherProfilePage() {
         )}
       </div>
 
+      {status !== "none" && (
+        <div
+          className={`mt-5 rounded-3xl border p-5 ${
+            status === "approved"
+              ? "border-success/30 bg-success-soft/50"
+              : status === "rejected"
+                ? "border-destructive/30 bg-destructive/5"
+                : "border-border bg-secondary/50"
+          }`}
+        >
+          <p className="font-display font-bold text-foreground">
+            {status === "approved"
+              ? "Profil vérifié par l'équipe BARA"
+              : status === "rejected"
+                ? "Vérification refusée"
+                : "Vérification en cours"}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {status === "approved"
+              ? "Vos badges de confiance sont visibles publiquement et votre profil est mis en avant dans la recherche."
+              : status === "rejected"
+                ? "Corrigez les points indiqués puis redéposez vos documents justificatifs : l'équipe réexaminera votre dossier."
+                : "L'équipe BARA examine vos documents justificatifs (pièce d'identité, diplômes, CV). Déposez-les tous pour accélérer la validation."}
+          </p>
+          {teacherQuery.data?.verification_note && (
+            <p className="mt-3 rounded-2xl bg-card px-4 py-3 text-sm text-foreground">
+              <span className="font-semibold">Message de l&apos;équipe :</span>{" "}
+              {teacherQuery.data.verification_note}
+            </p>
+          )}
+          {teacherQuery.data?.verification_decided_at && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Décision du{" "}
+              {new Date(teacherQuery.data.verification_decided_at).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         {/* ---------- CV ---------- */}
         <form
