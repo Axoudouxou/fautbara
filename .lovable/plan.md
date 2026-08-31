@@ -1,111 +1,58 @@
-# FAUT BARA — Architecture produit & technique (analyse, aucun code)
+# FAUT BARA — Analyse du dépôt & plan de construction
 
-## 1. Architecture produit
-Marketplace à 3 faces : Demande (parent / étudiant adulte), Offre (professeur), Supervision (admin).
-Modules : Catalogue, Recherche & Matching, Offres professeurs, Disponibilités, Réservation (unique + récurrente), Paiement séquestré, Libération/Payout, Litiges, Vérification, Avis, Notifications, Back-office.
+## A. État actuel (aucun code métier n'existe encore)
+- Stack : TanStack Start v1 + React 19 + Vite 8, SSR, déploiement type worker edge.
+- Routes : uniquement `src/routes/__root.tsx` (layout + 404 + error boundary) et `src/routes/index.tsx` qui affiche encore **l'image placeholder du template**. Aucune autre page.
+- Design : `src/styles.css` = thème shadcn par défaut (gris/bleu neutre, oklch), **aucune identité visuelle**. Pas de police custom.
+- Composants : `src/components/ui/*` (shadcn complet) + `src/hooks/use-mobile.tsx`. Aucun composant métier.
+- Données : **aucun backend**. Pas de `src/integrations/supabase`, pas de dossier `supabase/`, aucune table, aucune auth, aucun rôle.
+- Libs déjà disponibles : TanStack Query, react-hook-form + zod, date-fns, react-day-picker, recharts, sonner, lucide.
+- Config : `src/start.ts` avec CSRF + middleware d'erreur (à préserver ; on y ajoutera le middleware bearer auth), `src/server.ts` wrapper SSR (ne pas toucher).
+- Problèmes/écarts à noter : `<Toaster />` sonner non monté, métadonnées SEO encore « Lovable App », pas de i18n FR, placeholder d'accueil à remplacer.
 
-Décision produit à valider : l'enfant est un **profil** (obligatoire) qui peut ou non avoir un **compte connectable** (facultatif, lecture seule).
+## B. Architecture recommandée
+- Front SSR TanStack Start, FR par défaut, mobile-first. Routes publiques en SSR (SEO), espaces connectés sous `src/routes/_authenticated/`.
+- Backend Lovable Cloud (Postgres + Auth + Storage). Aucune Edge Function : toute la logique passe par `createServerFn` ; les endpoints externes futurs (webhooks paiement) iront sous `src/routes/api/public/*`.
+- Rôles dans une table `user_roles` séparée + fonction `has_role()` SECURITY DEFINER. RLS activée partout.
+- Argent : montants **entiers FCFA**, prix toujours recalculés côté serveur depuis l'offre. Tables financières inaccessibles au client (service_role uniquement).
+- Fuseau de référence `Africa/Abidjan` centralisé dans un helper serveur (annulations, créneaux).
+- Couche paiement = **abstraction seulement** : statuts, références, écrans, ledger conceptuel. Aucun provider, aucun faux escrow, aucune transaction simulée présentée comme réelle.
+- Design system : tokens sémantiques dans `src/styles.css` + variantes shadcn (aucune couleur en dur dans les composants). Direction : identité ivoirienne moderne et rassurante, distincte de Superprof (à valider en Phase 0).
 
-## 2. Architecture technique recommandée
-- Front : TanStack Start (React 19, SSR) + Tailwind v4 + design system tokens, FR par défaut, mobile-first.
-- Backend : Lovable Cloud (Postgres + Auth + Storage + server functions). Logique sensible (prix, remboursement, commission, libération) **exclusivement serveur**.
-- Argent : jamais calculé côté client. Tous les montants en **entiers FCFA** (pas de décimales).
-- Jobs planifiés : pg_cron → endpoint `/api/public/*` signé (rappels, auto-complétion des séances, libération des fonds, expiration des demandes).
-- Webhooks paiement : route publique avec vérification de signature + idempotence.
+## C. Écart existant → cible
+| Domaine | Existant | À construire |
+|---|---|---|
+| Backend/DB | rien | Cloud + ~24 tables + RLS + grants |
+| Auth/rôles | rien | email/mot de passe, reset, `_authenticated`, `user_roles` |
+| Pages | 1 placeholder | ~40 routes (public/parent/pro/admin) |
+| Design | thème par défaut | identité + design system complet |
+| Catalogue | rien | catégories/matières/niveaux, dont langues ivoiriennes |
+| Réservation | rien | offres, dispos, unique + récurrent, annulations |
+| Finance | rien | abstraction paiement/escrow/litiges (sans provider) |
+Rien à supprimer ni à réécrire : le template est vierge, on construit dessus.
 
-## 3. Parcours
-**Parent** : inscription → vérification e-mail → ajout enfant(s) → recherche (matière, niveau, format, zone, prix, note) → fiche prof → choix offre + créneaux (unique ou série) → récap prix → paiement intégral → confirmation → prof accepte/refuse → cours → confirmation de séance → avis → suivi paiements/remboursements.
+## D. Plan par phases
+**Phase 0 — Fondations.** Objectif : socle technique et visuel. Design system + tokens + layout mobile-first (bottom nav mobile, header desktop), Toaster, SEO/métadonnées FR, activation Lovable Cloud, auth email/mot de passe + reset + vérification, `user_roles` + `has_role()`, `profiles`, `children`, `teacher_profiles`, RLS + grants, page d'accueil réelle à `/`. Dépendances : aucune. Risques : modèle de rôles, RLS. Tests : inscription/connexion/reset, accès par rôle, isolation inter-utilisateurs. Résultat : comptes fonctionnels, identité en place.
 
-**Professeur** : inscription → profil (bio, photo, diplômes, zones) → offres (matière + niveaux + tarif/séance + formats) → disponibilités → soumission vérification → réception demandes (accepter/refuser sous délai) → réalisation → marquer effectuée → suivi solde en attente / libéré → moyens de réception → demande de payout.
+**Phase 1 — Marketplace & catalogue.** `categories`, `subjects`, `levels` (avec langues ivoiriennes comme catégorie propre), `teacher_offers` (unique `teacher_id+subject_id`), `offer_levels`, pages `/`, `/professeurs`, `/professeurs/:id`, `/matieres`, `/matieres/:slug`, recherche + filtres (matière, niveau, format, ville/commune, prix, note). Dép. P0. Risques : perf recherche, fuite de PII sur profils publics. Tests : filtres, lecture anon limitée aux colonnes sûres. Résultat : catalogue navigable.
 
-**Étudiant/adulte** : identique au parent sans profils enfants ; réserve pour lui-même.
+**Phase 2 — Espace professeur.** `/pro/*` : profil, offres (matière + niveaux + tarif/séance + durée + formats), `availabilities` + `availability_exceptions`, planning, demandes (accepter/refuser). Dép. P1. Risques : conflits de créneaux, cohérence durée/tarif. Tests : unicité offre, chevauchement de dispos. Résultat : offre réelle publiable.
 
-**Enfant (facultatif)** : connexion limitée → voir ses cours à venir, son prof, ses devoirs/notes. Aucune réservation, aucun paiement, aucune donnée financière.
+**Phase 3 — Espace parent / étudiant.** `/compte`, enfants (profil obligatoire, compte facultatif en lecture seule), recherche depuis le compte, adresses privées, `/reserver/:offerId` (choix bénéficiaire, offre, créneau, récap serveur). Dép. P2. Risques : confusion profil/compte enfant, exposition d'adresse. Tests : parent voit seulement ses enfants, enfant en lecture seule stricte. Résultat : tunnel de réservation prêt.
 
-**Admin** : validation des vérifications, modération catalogue/offres/avis, suivi réservations & séquestre, arbitrage litiges, validation payouts, tableau de bord (GMV, commission, taux d'annulation).
+**Phase 4 — Réservations.** `booking_series`, `bookings`, `sessions`, réservation unique et récurrente (série → N séances), anti-double-booking en base, statuts de séance (planifiée / effectuée / annulée / no-show client / no-show prof / litige), politique d'annulation 24h/12h calculée serveur en Africa/Abidjan, `/reservations`, `/reservations/:id`. Dép. P3. Risques : concurrence, dates/récurrence. Tests : génération de série, matrice d'annulation, double réservation impossible. Résultat : réservations complètes sans argent réel.
 
-## 4. Navigation & pages
-Public : `/`, `/professeurs` (recherche), `/professeurs/$id`, `/matieres`, `/matieres/$slug`, `/devenir-professeur`, `/tarifs`, `/aide`, `/cgu`, `/confidentialite`, `/auth`.
-Parent : `/compte`, `/compte/enfants`, `/compte/enfants/$id`, `/reserver/$offreId`, `/reservations`, `/reservations/$id`, `/paiements`, `/messages`, `/avis`.
-Professeur : `/pro`, `/pro/profil`, `/pro/offres`, `/pro/disponibilites`, `/pro/demandes`, `/pro/planning`, `/pro/revenus`, `/pro/payouts`, `/pro/verification`.
-Admin : `/admin` + `verifications`, `/utilisateurs`, `/offres`, `/reservations`, `/escrow`, `/litiges`, `/payouts`, `/catalogue`.
+**Phase 5 — Administration.** `/admin/*`, `verifications` (identité vs qualifications, documents en bucket privé, motif de rejet), modération offres/avis, `reviews` liés à une séance effectuée, `disputes`, suspension de compte, `audit_logs`, statistiques. Dép. P4. Risques : accès aux documents, privilèges. Tests : accès admin uniquement, URLs signées. Résultat : plateforme supervisable.
 
-## 5. Objets métier
-User, Profile, ChildProfile, TeacherProfile, Category, Subject, Level, TeacherOffer, OfferLevel, Availability, AvailabilityException, Booking, BookingSeries, Session, Payment, EscrowLedger, Release, Refund, Commission, PayoutMethod, Payout, Dispute, Verification, Review, Message, Notification, AuditLog.
+**Phase 6 — Préparation paiements (sans provider).** `payments`, `escrow_ledger` (append-only), `refunds`, `commissions`, `payout_methods`, `payouts`, `/paiements`, `/pro/revenus`, `/pro/payouts`, `/admin/escrow`, `/admin/payouts`, écrans de paiement avec états en attente/succès/échec clairement marqués « intégration à venir », points d'extension provider + emplacement des webhooks. Dép. P5. Risques : ne jamais laisser croire qu'un escrow réel existe. Tests : invariants du ledger, aucun accès client aux tables financières. Résultat : architecture prête pour l'intégration financière réelle.
 
-## 6. Schéma proposé (tables clés)
-- `profiles` (user_id PK→auth.users, type: parent|student|teacher, nom, tél, ville, commune)
-- `user_roles` (user_id, role enum) — **rôles jamais sur profiles**
-- `children` (parent_id, prénom, date_naissance, niveau_id, auth_user_id nullable)
-- `teacher_profiles` (user_id, bio, expérience, rayon, identity_verified, quals_verified, statut)
-- `categories` → `subjects` (category_id) ; `levels` (cycle, ordre)
-- `teacher_offers` (teacher_id, subject_id, prix_seance, durée, formats[]) + **unique(teacher_id, subject_id)**
-- `offer_levels` (offer_id, level_id)
-- `availabilities` (teacher_id, jour, heure_début, heure_fin) / `availability_exceptions`
-- `booking_series` (client_id, child_id nullable, offer_id, récurrence, nb_séances, total)
-- `bookings` (series_id nullable, client_id, child_id, teacher_id, offer_id, format, adresse_privée_id, statut)
-- `sessions` (booking_id, start_at, end_at, statut: planifiée|effectuée|annulée|no_show_client|no_show_teacher|litige, montant, commission, statut_fonds)
-- `payments` (payer_id, series_id/booking_id, montant, provider, provider_ref, statut) — unique(provider, provider_ref)
-- `escrow_ledger` (append-only : session_id, type: hold|release|refund|fee|reversal, montant, signe)
-- `payout_methods` (teacher_id, type: mobile_money|bank, détails chiffrés, vérifié)
-- `payouts` (teacher_id, montant, statut, provider_ref)
-- `disputes` (session_id, ouvert_par, motif, statut, décision, résolu_par)
-- `verifications` (teacher_id, type, document_path, statut, reviewer_id)
-- `reviews` (booking_id unique, auteur, note, texte, statut modération)
-- `addresses` (owner_id, ligne, commune, geo) — jamais exposée publiquement
-- `platform_settings` (taux commission, délais annulation, délai libération)
+## E. Première phase à implémenter
+**Phase 0**, dans cet ordre : identité visuelle + design system → layout responsive + accueil réel → activation Lovable Cloud → auth + rôles + profils (parent / enfant / professeur) + RLS → vérification et tests.
 
-Relations : auth.users 1-1 profiles ; parent 1-N children ; teacher 1-N offers 1-N offer_levels ; series 1-N bookings 1-N sessions ; session 1-N escrow_ledger ; payment 1-N sessions.
-Chaque table publique reçoit ses `GRANT` explicites dans la même migration.
-
-## 7. Auth, rôles, RLS
-Auth e-mail + mot de passe (+ Google en option). Téléphone à valider (OTP = intégration à décider).
-Rôles : `parent`, `student`, `teacher`, `admin` dans `user_roles`, lus via fonction `has_role()` SECURITY DEFINER.
-RLS à prévoir :
-- profiles : lecture/écriture de son propre profil ; vue publique restreinte des profs (aucun tél/adresse).
-- children : accès parent propriétaire uniquement ; enfant lié en lecture seule.
-- offers/availabilities : lecture publique si offre active + prof approuvé ; écriture par le prof propriétaire.
-- bookings/sessions : visible par client, prof concerné, admin.
-- payments / escrow_ledger / payouts : **aucun accès direct client** ; écriture service_role uniquement.
-- addresses : propriétaire + prof de la réservation confirmée.
-- verifications (documents) : prof propriétaire + admin ; bucket privé + URLs signées.
-- audit_log : admin seul.
-
-## 8. Logiques métier
-**Réservation** : recalcul serveur du prix depuis l'offre → vérif disponibilité + anti-double-booking (contrainte d'exclusion sur créneau prof) → statut `en_attente_paiement` → paiement → `en_attente_confirmation` → acceptation prof (délai, sinon expiration + remboursement auto).
-**Récurrence** : la série génère N séances datées à la création ; règles d'annulation appliquées **par séance** ; annulation d'une série = somme des remboursements de chaque séance restante.
-**Paiement** : montant total encaissé à la réservation, réparti en holds par séance. Idempotence via référence provider.
-**Commission** : taux depuis `platform_settings`, figé (snapshot) sur chaque séance à la création ; prélevé uniquement à la libération.
-**Libération** : après fin de séance + délai de contestation, séance marquée effectuée → `release` (net prof) + `fee` (plateforme).
-**Remboursement** : annulation client ≥24 h = 100 %, 12–24 h = 50 %, <12 h = 0 % (référence : `start_at` exact, fuseau Afrique/Abidjan). Refus/annulation prof = 100 %. No-show client = prof payé. No-show prof = 100 % client.
-**Payout** : solde libéré → demande ou lot planifié → validation admin → transfert Mobile Money/banque → statut + référence.
-**Litiges** : ouverture jusqu'à N h après la séance → fonds de la séance gelés → arbitrage admin → décision (libérer / rembourser / partager) écrite au ledger.
-
-## 9. Intégrations — à VÉRIFIER avant implémentation
-- **Paiement Mobile Money CI (Orange/MTN/Moov/Wave)** : aucun escrow natif garanti. Options : agrégateur (CinetPay, PayDunya, Paystack…) ou Stripe (couverture CI à vérifier). **Décision requise.**
-- **Payout automatisé vers Mobile Money** : disponibilité API à confirmer ; sinon payouts manuels assistés en Phase 3.
-- Séquestre : très probablement **ledger interne** sur un compte marchand unique — implication juridique/comptable à valider.
-- Autres : OTP SMS, e-mails transactionnels, notifications push/WhatsApp, cartes/géocodage, stockage documents.
-
-## 10. Risques
-Technique : double réservation concurrente, fuseaux/DST, webhooks dupliqués ou perdus, réconciliation ledger, jobs cron non idempotents, réseau mobile instable.
-Sécurité : escalade de privilèges via rôles, fuite d'adresses/téléphones, documents d'identité en bucket public, prix manipulé côté client, accès mineurs, absence de journal d'audit financier, PII non chiffrées.
-
-## 11. Responsive
-Mobile-first (Android bas de gamme, data limitée) : nav bottom-bar sur mobile, recherche en pleine page, calendrier condensé, images optimisées, paiement en une colonne, états offline/erreurs explicites.
-
-## 12. Phases
-**P0 — Fondations** : objectif = socle. Design system, i18n FR, Cloud activé, auth + rôles + RLS, catalogue, profils parent/enfant/prof. Dépendances : aucune. Risques : modèle de rôles. Tests : RLS par rôle, inscription. Résultat : comptes et catalogue opérationnels.
-**P1 — Offre & découverte** : offres, niveaux, disponibilités, recherche/filtres, fiche prof publique. Dép. P0. Risques : perf recherche, fuite PII. Tests : filtres, RLS lecture publique. Résultat : catalogue de profs navigable.
-**P2 — Réservation sans paiement** : demande, acceptation/refus, séances, récurrence, annulations, planning. Dép. P1. Risques : concurrence créneaux, dates. Tests : anti-double-booking, génération de séries, fenêtres d'annulation. Résultat : réservation fonctionnelle.
-**P3 — Paiement & séquestre** : intégration provider validée, ledger, holds/libérations, commission, remboursements, webhooks. Dép. P2 + décision §9. Risques : bloquant provider, réconciliation. Tests : idempotence webhooks, matrice remboursements, invariants ledger. Résultat : flux monétaire complet.
-**P4 — Payouts, litiges, vérification** : moyens de réception, payouts, litiges, vérification identité/qualifications, avis. Dép. P3. Risques : payout manuel, stockage documents. Tests : gel des fonds, accès documents. Résultat : marketplace de confiance.
-**P5 — Back-office & scale** : admin complet, KPI, notifications, messagerie, audit, durcissement sécurité. Dép. P4. Tests : scan sécurité, charge. Résultat : plateforme exploitable.
-
-## Points nécessitant ta validation
-1. Provider de paiement et faisabilité du séquestre + payout Mobile Money.
-2. Taux de commission et délai de libération après séance.
-3. Délai d'acceptation prof et fenêtre d'ouverture de litige.
-4. Compte enfant connectable dès le MVP ou plus tard.
-5. Zones géographiques couvertes au lancement (Abidjan d'abord ?).
-6. Durée standard d'une séance (fixe ou définie par le prof).
+## Décisions / validations attendues avant de coder
+1. Direction visuelle (palette et typographie) — je peux proposer 2-3 options.
+2. Nom affiché et ton : « Faut Bara » tel quel, avec baseline ?
+3. Compte enfant connectable dès la Phase 0 ou plus tard (profil seul d'abord) ?
+4. Durée de séance libre par offre (ex. 60/90/120 min) — confirmé ?
+5. Zones au lancement : Abidjan (communes) puis autres villes ?
+6. Taux de commission et délai de libération après séance (peuvent rester paramétrables, valeurs par défaut à fixer).
