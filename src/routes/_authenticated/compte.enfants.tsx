@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionRoles } from "@/hooks/use-session-roles";
 
 export const Route = createFileRoute("/_authenticated/compte/enfants")({
   head: () => ({
@@ -21,6 +22,8 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 function ChildrenPage() {
   const { user } = Route.useRouteContext();
+  const { roles, rolesLoading } = useSessionRoles();
+  const isParent = roles.includes("parent");
   const queryClient = useQueryClient();
 
   const [firstName, setFirstName] = useState("");
