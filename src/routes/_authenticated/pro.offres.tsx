@@ -440,16 +440,15 @@ function TeacherOffersPage() {
             <button
               type="submit"
               disabled={saveMutation.isPending}
-              onClick={() => setForm({ ...form, status: "draft" })}
               className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground hover:bg-secondary disabled:opacity-60"
             >
               {saveMutation.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
               Enregistrer en brouillon
             </button>
             <button
-              type="submit"
+              type="button"
               disabled={saveMutation.isPending}
-              onClick={() => setForm({ ...form, status: "published" })}
+              onClick={() => submit(form, "published")}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
             >
               {saveMutation.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
