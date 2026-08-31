@@ -21,7 +21,8 @@ type Tab = {
   label: string;
   short: string;
   icon: LucideIcon;
-  link: Parameters<typeof Link>[0];
+  // linkOptions() valide la cible à la définition ; le spread reste générique.
+  link: Record<string, unknown>;
 };
 
 const learnerTabs: Tab[] = [
@@ -96,7 +97,7 @@ export function AppTabsBar({ role }: { role: AppRole | null }) {
       {tabs.map((tab) => (
         <Link
           key={tab.label}
-          {...tab.link}
+          {...(tab.link as { to: string })}
           activeOptions={{ exact: true }}
           className="group relative rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground data-[status=active]:text-primary"
         >
@@ -124,7 +125,7 @@ export function AppTabsMobileBar({ role }: { role: AppRole | null }) {
           return (
             <li key={tab.label}>
               <Link
-                {...tab.link}
+                {...(tab.link as { to: string })}
                 activeOptions={{ exact: true }}
                 className="group flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-semibold text-muted-foreground transition-colors data-[status=active]:text-primary"
               >
