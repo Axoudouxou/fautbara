@@ -10,11 +10,11 @@ import { AdminShell, useIsAdmin } from "@/components/admin-shell";
 export const Route = createFileRoute("/_authenticated/admin/offres")({
   head: () => ({
     meta: [
-      { title: "Modération des offres — Administration FAUT BARA" },
+      { title: "Modération des offres — Administration BARA" },
       {
         name: "description",
         content:
-          "Modération des offres de cours FAUT BARA : publication, retour en brouillon et archivage motivé.",
+          "Modération des offres de cours BARA : publication, retour en brouillon et archivage motivé.",
       },
       { name: "robots", content: "noindex" },
     ],

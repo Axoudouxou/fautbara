@@ -9,11 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/pro/disponibilites")({
   head: () => ({
     meta: [
-      { title: "Mes disponibilités — FAUT BARA" },
+      { title: "Mes disponibilités — BARA" },
       {
         name: "description",
         content:
-          "Définissez vos créneaux hebdomadaires et vos jours d'indisponibilité pour vos cours particuliers sur FAUT BARA.",
+          "Définissez vos créneaux hebdomadaires et vos jours d'indisponibilité pour vos cours particuliers sur BARA.",
       },
       { name: "robots", content: "noindex" },
     ],

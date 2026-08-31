@@ -6,13 +6,13 @@ export const Route = createFileRoute("/matieres/")({
   loader: () => getCatalog(),
   head: () => ({
     meta: [
-      { title: "Toutes les matières de cours particuliers — FAUT BARA" },
+      { title: "Toutes les matières de cours particuliers — BARA" },
       {
         name: "description",
         content:
-          "Soutien scolaire, préparation aux examens, langues étrangères et ivoiriennes, informatique, arts et supérieur : explorez toutes les matières enseignées sur FAUT BARA.",
+          "Soutien scolaire, préparation aux examens, langues étrangères et ivoiriennes, informatique, arts et supérieur : explorez toutes les matières enseignées sur BARA.",
       },
-      { property: "og:title", content: "Toutes les matières — FAUT BARA" },
+      { property: "og:title", content: "Toutes les matières — BARA" },
       {
         property: "og:description",
         content: "Explorez les matières et trouvez le professeur particulier qu'il vous faut.",

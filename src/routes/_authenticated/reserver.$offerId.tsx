@@ -11,7 +11,7 @@ import { useSessionRoles } from "@/hooks/use-session-roles";
 export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
   head: () => ({
     meta: [
-      { title: "Réserver un cours — FAUT BARA" },
+      { title: "Réserver un cours — BARA" },
       {
         name: "description",
         content:

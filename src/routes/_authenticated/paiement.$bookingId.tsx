@@ -19,7 +19,7 @@ import { formatDay, formatTimeRange } from "./compte.reservations";
 export const Route = createFileRoute("/_authenticated/paiement/$bookingId")({
   head: () => ({
     meta: [
-      { title: "Paiement de la séance — FAUT BARA" },
+      { title: "Paiement de la séance — BARA" },
       {
         name: "description",
         content:
@@ -39,7 +39,7 @@ const PAYMENT_STATUS: Record<string, { label: string; className: string }> = {
 };
 
 const ESCROW_STATUS: Record<string, string> = {
-  held: "Fonds conservés par FAUT BARA",
+  held: "Fonds conservés par BARA",
   released: "Fonds transmis au professeur",
   refunded: "Fonds restitués au parent",
 };
@@ -341,7 +341,7 @@ function PaymentPage() {
         <aside className="h-fit space-y-4 rounded-3xl border border-border bg-secondary/40 p-6 lg:sticky lg:top-24">
           <div className="inline-flex items-center gap-2 font-display font-bold text-foreground">
             <ShieldCheck className="size-5 text-primary" aria-hidden />
-            Séquestre FAUT BARA
+            Séquestre BARA
           </div>
           <p className="text-sm text-muted-foreground">
             Le montant est conservé par la plateforme puis transmis au professeur après la séance.

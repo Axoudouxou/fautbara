@@ -17,15 +17,15 @@ const ROLE_OPTIONS: { value: SignupRole; label: string; hint: string }[] = [
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Connexion — FAUT BARA" },
+      { title: "Connexion — BARA" },
       {
         name: "description",
-        content: "Connectez-vous ou créez votre compte FAUT BARA : parent, étudiant ou professeur particulier en Côte d'Ivoire.",
+        content: "Connectez-vous ou créez votre compte BARA : parent, étudiant ou professeur particulier en Côte d'Ivoire.",
       },
-      { property: "og:title", content: "Connexion — FAUT BARA" },
+      { property: "og:title", content: "Connexion — BARA" },
       {
         property: "og:description",
-        content: "Connectez-vous ou créez votre compte FAUT BARA : parent, étudiant ou professeur particulier en Côte d'Ivoire.",
+        content: "Connectez-vous ou créez votre compte BARA : parent, étudiant ou professeur particulier en Côte d'Ivoire.",
       },
     ],
   }),
@@ -127,7 +127,7 @@ function AuthPage() {
             {mode === "forgot" && "Mot de passe oublié"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin" && "Accédez à votre espace FAUT BARA."}
+            {mode === "signin" && "Accédez à votre espace BARA."}
             {mode === "signup" && "Rejoignez la communauté des cours particuliers en Côte d'Ivoire."}
             {mode === "forgot" && "Recevez un lien de réinitialisation par e-mail."}
           </p>

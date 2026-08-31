@@ -41,7 +41,7 @@ export function UpcomingHighlights({ city }: { city?: string | null }) {
     <section className="mt-8">
       <h2 className="font-display text-lg font-bold text-foreground sm:text-xl">À venir</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Les nouveautés FAUT BARA et ce qui arrive bientôt.
+        Les nouveautés BARA et ce qui arrive bientôt.
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">

@@ -8,8 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Nouveau mot de passe — FAUT BARA" },
-      { name: "description", content: "Définissez un nouveau mot de passe pour votre compte FAUT BARA." },
+      { title: "Nouveau mot de passe — BARA" },
+      { name: "description", content: "Définissez un nouveau mot de passe pour votre compte BARA." },
       { name: "robots", content: "noindex" },
     ],
   }),

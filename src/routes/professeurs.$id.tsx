@@ -28,14 +28,14 @@ export const Route = createFileRoute("/professeurs/$id")({
   head: ({ loaderData }) => {
     if (!loaderData?.profile) {
       return {
-        meta: [{ title: "Profil indisponible — FAUT BARA" }, { name: "robots", content: "noindex" }],
+        meta: [{ title: "Profil indisponible — BARA" }, { name: "robots", content: "noindex" }],
       };
     }
     const { profile } = loaderData;
-    const title = `${profile.display_name} — professeur particulier | FAUT BARA`;
+    const title = `${profile.display_name} — professeur particulier | BARA`;
     const description =
       profile.headline ??
-      `Découvrez le CV, les diplômes, les expériences et les avis de ${profile.display_name} sur FAUT BARA.`;
+      `Découvrez le CV, les diplômes, les expériences et les avis de ${profile.display_name} sur BARA.`;
     return {
       meta: [
         { title },
@@ -348,7 +348,7 @@ function TeacherPublicPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Stars value={review.rating} />
                     <span className="text-sm font-semibold text-foreground">
-                      {review.author_name ?? "Famille FAUT BARA"}
+                      {review.author_name ?? "Famille BARA"}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {new Date(review.created_at).toLocaleDateString("fr-FR")}

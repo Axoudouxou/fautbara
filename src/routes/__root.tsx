@@ -16,9 +16,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { AppTabsBar, AppTabsMobileBar, useAppNav } from "@/components/app-nav";
 
-const SITE_NAME = "FAUT BARA";
+const SITE_NAME = "BARA";
 const SITE_DESCRIPTION =
-  "FAUT BARA met en relation parents, élèves et professeurs particuliers en Côte d'Ivoire : trouvez, comparez et réservez des cours particuliers en toute confiance.";
+  "BARA met en relation parents, élèves et professeurs particuliers en Côte d'Ivoire : trouvez, comparez et réservez des cours particuliers en toute confiance.";
 
 function NotFoundComponent() {
   return (
@@ -130,12 +130,12 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-2" aria-label="FAUT BARA — accueil">
+        <Link to="/" className="flex items-center gap-2" aria-label="BARA — accueil">
           <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <GraduationCap className="size-5" aria-hidden />
           </span>
           <span className="font-display text-lg font-bold tracking-tight text-foreground">
-            FAUT BARA
+            BARA
           </span>
         </Link>
         {signedIn ? (
@@ -188,7 +188,7 @@ function SiteFooter() {
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <GraduationCap className="size-4" aria-hidden />
           </span>
-          <span className="font-display font-bold text-foreground">FAUT BARA</span>
+          <span className="font-display font-bold text-foreground">BARA</span>
         </div>
         <p className="text-sm text-muted-foreground">
           Cours particuliers en Côte d'Ivoire — Abidjan et bientôt partout ailleurs.

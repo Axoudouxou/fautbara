@@ -19,11 +19,11 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/pro/")({
   head: () => ({
     meta: [
-      { title: "Tableau de bord professeur — FAUT BARA" },
+      { title: "Tableau de bord professeur — BARA" },
       {
         name: "description",
         content:
-          "Pilotez votre activité de professeur particulier sur FAUT BARA : profil, offres de cours et visibilité.",
+          "Pilotez votre activité de professeur particulier sur BARA : profil, offres de cours et visibilité.",
       },
       { name: "robots", content: "noindex" },
     ],

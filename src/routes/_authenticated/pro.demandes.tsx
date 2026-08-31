@@ -12,10 +12,10 @@ import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 export const Route = createFileRoute("/_authenticated/pro/demandes")({
   head: () => ({
     meta: [
-      { title: "Demandes de cours — FAUT BARA" },
+      { title: "Demandes de cours — BARA" },
       {
         name: "description",
-        content: "Acceptez, refusez ou clôturez les demandes de cours reçues sur FAUT BARA.",
+        content: "Acceptez, refusez ou clôturez les demandes de cours reçues sur BARA.",
       },
       { name: "robots", content: "noindex" },
     ],

@@ -15,10 +15,10 @@ export const Route = createFileRoute("/matieres/$slug")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Matière indisponible — FAUT BARA" }, { name: "robots", content: "noindex" }],
+        meta: [{ title: "Matière indisponible — BARA" }, { name: "robots", content: "noindex" }],
       };
     }
-    const title = `Cours particuliers de ${loaderData.subject.name} en Côte d'Ivoire — FAUT BARA`;
+    const title = `Cours particuliers de ${loaderData.subject.name} en Côte d'Ivoire — BARA`;
     const description = `Trouvez un professeur particulier de ${loaderData.subject.name} à Abidjan et partout en Côte d'Ivoire : profils vérifiés, cours à domicile ou en ligne, tarif par séance.`;
     return {
       meta: [
@@ -80,7 +80,7 @@ function SubjectPage() {
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
             Les inscriptions de professeurs sont en cours. Vous enseignez cette matière ? Créez votre
-            profil professeur sur FAUT BARA.
+            profil professeur sur BARA.
           </p>
           <a
             href="/auth"

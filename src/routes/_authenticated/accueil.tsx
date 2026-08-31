@@ -17,11 +17,11 @@ import { UpcomingHighlights } from "@/components/upcoming-highlights";
 export const Route = createFileRoute("/_authenticated/accueil")({
   head: () => ({
     meta: [
-      { title: "Mon espace FAUT BARA" },
+      { title: "Mon espace BARA" },
       {
         name: "description",
         content:
-          "Votre accueil personnalisé FAUT BARA : prochaine séance, demandes de cours et nouveautés de la plateforme.",
+          "Votre accueil personnalisé BARA : prochaine séance, demandes de cours et nouveautés de la plateforme.",
       },
       { name: "robots", content: "noindex" },
     ],

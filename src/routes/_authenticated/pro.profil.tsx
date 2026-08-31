@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/pro/profil")({
   head: () => ({
     meta: [
-      { title: "Mon profil professeur — FAUT BARA" },
+      { title: "Mon profil professeur — BARA" },
       {
         name: "description",
         content:
@@ -1071,7 +1071,7 @@ function TeacherProfilePage() {
           <SectionTitle
             icon={ShieldCheck}
             title="Documents justificatifs (privés)"
-            description="CV, diplômes et pièce d'identité : visibles uniquement par vous et l'équipe FAUT BARA."
+            description="CV, diplômes et pièce d'identité : visibles uniquement par vous et l'équipe BARA."
           />
 
           <ul className="mt-5 space-y-3">

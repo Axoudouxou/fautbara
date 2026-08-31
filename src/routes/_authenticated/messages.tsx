@@ -16,11 +16,11 @@ import {
 export const Route = createFileRoute("/_authenticated/messages")({
   head: () => ({
     meta: [
-      { title: "Messagerie — FAUT BARA" },
+      { title: "Messagerie — BARA" },
       {
         name: "description",
         content:
-          "Échangez en privé avec vos professeurs FAUT BARA et retrouvez les devoirs et ressources partagés.",
+          "Échangez en privé avec vos professeurs BARA et retrouvez les devoirs et ressources partagés.",
       },
       { name: "robots", content: "noindex" },
     ],

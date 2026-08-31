@@ -10,7 +10,7 @@ import { STATUS_LABELS, formatTimeRange } from "./compte.reservations";
 export const Route = createFileRoute("/_authenticated/compte/calendrier")({
   head: () => ({
     meta: [
-      { title: "Mon calendrier de cours — FAUT BARA" },
+      { title: "Mon calendrier de cours — BARA" },
       {
         name: "description",
         content:
