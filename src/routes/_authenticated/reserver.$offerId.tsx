@@ -6,6 +6,7 @@ import { CalendarCheck, Clock, Home, Laptop, Loader2, MapPin } from "lucide-reac
 
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
+import { useSessionRoles } from "@/hooks/use-session-roles";
 
 export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
   head: () => ({
@@ -37,6 +38,9 @@ function BookingPage() {
   const { user } = Route.useRouteContext();
   const { offerId } = Route.useParams();
   const navigate = useNavigate();
+  const { roles, rolesLoading } = useSessionRoles();
+  const canBook = roles.includes("parent") || roles.includes("student");
+  const isParent = roles.includes("parent");
 
   const [childId, setChildId] = useState("");
   const [date, setDate] = useState("");
@@ -109,6 +113,7 @@ function BookingPage() {
 
   const childrenQuery = useQuery({
     queryKey: ["children", user.id],
+    enabled: isParent,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("children")
@@ -177,6 +182,28 @@ function BookingPage() {
         description: err instanceof Error ? err.message : undefined,
       }),
   });
+
+  if (!rolesLoading && !canBook) {
+    return (
+      <div className="container-page py-14">
+        <div className="max-w-md rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
+          <h1 className="font-display text-xl font-bold text-foreground">
+            Réservation réservée aux parents et apprenants
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Votre compte professeur ne permet pas de réserver un cours auprès d&apos;un autre
+            professeur.
+          </p>
+          <Link
+            to="/accueil"
+            className="mt-6 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            Retour à mon espace
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (offerQuery.isLoading) {
     return (
@@ -267,31 +294,33 @@ function BookingPage() {
             submit();
           }}
         >
-          <div>
-            <label htmlFor="bk-child" className="text-sm font-semibold text-foreground">
-              Pour qui ?
-            </label>
-            <select
-              id="bk-child"
-              value={childId}
-              onChange={(e) => setChildId(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Pour moi</option>
-              {children.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.first_name}
-                  {c.school_level ? ` — ${c.school_level}` : ""}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Besoin d&apos;ajouter un enfant ?{" "}
-              <Link to="/compte/enfants" className="font-semibold text-primary hover:underline">
-                Gérer les profils enfants
-              </Link>
-            </p>
-          </div>
+          {isParent && (
+            <div>
+              <label htmlFor="bk-child" className="text-sm font-semibold text-foreground">
+                Pour qui ?
+              </label>
+              <select
+                id="bk-child"
+                value={childId}
+                onChange={(e) => setChildId(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Pour moi</option>
+                {children.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.first_name}
+                    {c.school_level ? ` — ${c.school_level}` : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Besoin d&apos;ajouter un enfant ?{" "}
+                <Link to="/compte/enfants" className="font-semibold text-primary hover:underline">
+                  Gérer les profils enfants
+                </Link>
+              </p>
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>

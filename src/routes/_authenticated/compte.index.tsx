@@ -210,20 +210,23 @@ function AccountPage() {
         </section>
 
         <div className="space-y-4">
-          <Link
-            to="/compte/enfants"
-            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-          >
-            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-              <Baby className="size-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-display font-bold text-foreground">Mes enfants</span>
-              <span className="block text-sm text-muted-foreground">
-                Créez et gérez les profils pour lesquels vous réservez.
+          {roles.includes("parent") && (
+            <Link
+              to="/compte/enfants"
+              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+            >
+              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                <Baby className="size-5" aria-hidden />
               </span>
-            </span>
-          </Link>
+              <span>
+                <span className="block font-display font-bold text-foreground">Mes enfants</span>
+                <span className="block text-sm text-muted-foreground">
+                  Créez et gérez les profils pour lesquels vous réservez.
+                </span>
+              </span>
+            </Link>
+          )}
+
 
           <Link
             to="/compte/calendrier"
