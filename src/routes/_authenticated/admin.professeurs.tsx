@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/admin/professeurs")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: AdminTeachers;
+  component: AdminTeachers,
 });
 
 const STATUS_LABEL: Record<string, string> = {
