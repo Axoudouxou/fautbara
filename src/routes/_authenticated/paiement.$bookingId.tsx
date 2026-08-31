@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { formatSlot } from "./compte.reservations";
+import { formatDay, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/paiement/$bookingId")({
   head: () => ({
@@ -217,7 +217,9 @@ function PaymentPage() {
             <div className="mt-4 space-y-2 text-sm text-muted-foreground">
               <p className="inline-flex items-center gap-1.5">
                 <CalendarClock className="size-4" aria-hidden />
-                {formatSlot(booking.scheduled_at)} · {booking.duration_minutes} min
+                {formatDay(booking.scheduled_at)} ·{" "}
+                {formatTimeRange(booking.scheduled_at, booking.duration_minutes)} (
+                {booking.duration_minutes} min)
               </p>
               <p className="inline-flex items-center gap-1.5">
                 {booking.format === "online" ? (

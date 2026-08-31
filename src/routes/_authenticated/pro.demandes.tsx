@@ -197,7 +197,9 @@ function TeacherRequestsPage() {
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarClock className="size-4" aria-hidden />
-                  {formatSlot(r.scheduled_at)} · {r.duration_minutes} min
+                  {formatSlot(r.scheduled_at)} →{" "}
+                  {new Date(new Date(r.scheduled_at).getTime() + r.duration_minutes * 60_000).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}{" "}
+                  ({r.duration_minutes} min)
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   {r.format === "online" ? (
