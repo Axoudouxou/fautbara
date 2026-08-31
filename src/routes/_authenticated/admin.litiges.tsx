@@ -6,6 +6,8 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell, useIsAdmin } from "@/components/admin-shell";
+import { DisputeConversationViewer } from "@/components/dispute-conversation-viewer";
+
 
 export const Route = createFileRoute("/_authenticated/admin/litiges")({
   head: () => ({
