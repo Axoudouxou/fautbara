@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, BookOpen, Eye, Loader2, ShieldCheck, UserCog } from "lucide-react";
+import {
+  BadgeCheck,
+  BookOpen,
+  CalendarClock,
+  Eye,
+  Loader2,
+  ShieldCheck,
+  UserCog,
+} from "lucide-react";
+
 
 import { supabase } from "@/integrations/supabase/client";
 
