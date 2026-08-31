@@ -77,7 +77,7 @@ function AuthPage() {
         if (error) throw error;
       }
       toast.success(mode === "signin" ? "Bon retour !" : "Compte créé");
-      navigate({ to: "/compte" });
+      navigate({ to: "/accueil" });
     } catch (err) {
       toast.error("Une erreur est survenue", {
         description: err instanceof Error ? err.message : "Veuillez réessayer.",
