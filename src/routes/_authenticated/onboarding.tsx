@@ -191,14 +191,20 @@ const EMPTY_LEARNER_DATA: LearnerData = {
   availabilityPeriods: [],
 };
 
-const LEARNER_STEPS = 5;
-
 function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boolean }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  // Un étudiant/adulte n'a pas d'étape "pour qui" : la réponse est
+  // implicitement "self", et le parcours démarre directement à la matière.
+  const LEARNER_STEPS = isParent ? 5 : 4;
+  const contentStepOffset = isParent ? 0 : 1;
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<LearnerData>(EMPTY_LEARNER_DATA);
+  const [data, setData] = useState<LearnerData>(() => ({
+    ...EMPTY_LEARNER_DATA,
+    forWhom: isParent ? null : "self",
+  }));
   const [childNamePrefilled, setChildNamePrefilled] = useState(false);
+  const contentStep = step + contentStepOffset;
 
   const catalogQuery = useQuery({ queryKey: ["onboarding-catalog"], queryFn: () => getCatalog() });
 
@@ -316,7 +322,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
     <div className="container-page max-w-2xl py-10 sm:py-14">
       <ProgressBar step={step} total={LEARNER_STEPS} />
 
-      {step === 0 && (
+      {contentStep === 0 && (
         <StepShell
           title="Pour qui cherchez-vous un professeur ?"
           onSkip={() => skip({ forWhom: null, childName: "" })}
@@ -363,7 +369,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
         </StepShell>
       )}
 
-      {step === 1 && (
+      {contentStep === 1 && (
         <StepShell
           title="Quelle matière et quel budget ?"
           subtitle="Sélectionnez une ou plusieurs matières."
@@ -418,7 +424,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
         </StepShell>
       )}
 
-      {step === 2 && (
+      {contentStep === 2 && (
         <StepShell
           title="Quel système scolaire ?"
           onSkip={() =>
@@ -563,7 +569,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
         </StepShell>
       )}
 
-      {step === 3 && (
+      {contentStep === 3 && (
         <StepShell
           title="Vos préférences d'apprentissage"
           onSkip={() => skip({ learningStyle: null, objective: null })}
@@ -601,7 +607,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
         </StepShell>
       )}
 
-      {step === 4 && (
+      {contentStep === 4 && (
         <StepShell
           title="Format et disponibilités"
           onSkip={() =>
