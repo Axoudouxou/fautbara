@@ -90,10 +90,11 @@ function TeacherRequestsPage() {
         if (error) throw error;
         return;
       }
-      const { error } = await supabase
-        .from("bookings")
-        .update({ status, status_reason: reason ?? null })
-        .eq("id", id);
+      const { error } = await supabase.rpc("respond_booking_request", {
+        p_booking_id: id,
+        p_accept: status === "accepted",
+        ...(reason ? { p_reason: reason } : {}),
+      });
       if (error) throw error;
     },
     onSuccess: () => {

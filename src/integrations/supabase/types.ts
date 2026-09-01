@@ -1951,6 +1951,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      respond_booking_request: {
+        Args: { p_accept: boolean; p_booking_id: string; p_reason?: string }
+        Returns: undefined
+      }
       respond_reschedule: {
         Args: { p_accept: boolean; p_booking_id: string }
         Returns: {
