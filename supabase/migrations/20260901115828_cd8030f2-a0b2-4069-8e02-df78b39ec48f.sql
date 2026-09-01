@@ -1,4 +1,5 @@
 drop function if exists public.search_teachers(text,text,text,text,text,text,integer,integer,integer);
+drop function if exists public.search_teachers(text,text,text,text,text,text,integer,integer,smallint,integer,integer);
 
 create function public.search_teachers(
   p_query text default null,

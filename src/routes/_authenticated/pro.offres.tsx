@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 
 export const Route = createFileRoute("/_authenticated/pro/offres")({
+  validateSearch: (search) => z.object({ onboarding: z.boolean().optional() }).parse(search),
   head: () => ({
     meta: [
       { title: "Mes offres de cours — BARA" },
@@ -54,8 +56,10 @@ const EMPTY_FORM: FormState = {
 
 function TeacherOffersPage() {
   const { user } = Route.useRouteContext();
+  const search = Route.useSearch();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<FormState | null>(null);
+  const [onboardingPrefillDone, setOnboardingPrefillDone] = useState(false);
 
   const rolesQuery = useQuery({
     queryKey: ["roles", user.id],
@@ -73,14 +77,29 @@ function TeacherOffersPage() {
       const [subjects, levels] = await Promise.all([
         supabase
           .from("subjects")
-          .select("id, name, categories(name)")
+          .select("id, name, slug, categories(name)")
           .eq("is_active", true)
           .order("sort_order"),
-        supabase.from("levels").select("id, name, stage").order("sort_order"),
+        supabase.from("levels").select("id, name, slug, stage").order("sort_order"),
       ]);
       if (subjects.error) throw subjects.error;
       if (levels.error) throw levels.error;
       return { subjects: subjects.data, levels: levels.data };
+    },
+  });
+
+  const onboardingPrefsQuery = useQuery({
+    queryKey: ["onboarding-prefs", user.id],
+    enabled: isTeacher && Boolean(search.onboarding),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("learning_preferences")
+        .select("subject_slugs, level_slugs, preferred_communes, preferred_format")
+        .eq("user_id", user.id)
+        .eq("role_context", "teacher")
+        .maybeSingle();
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -99,6 +118,43 @@ function TeacherOffersPage() {
       return data;
     },
   });
+
+  useEffect(() => {
+    if (onboardingPrefillDone || !search.onboarding) return;
+    if (rolesQuery.isLoading || !isTeacher) return;
+    if (form || offersQuery.isLoading || (offersQuery.data?.length ?? 0) > 0) return;
+    if (!catalogQuery.data || onboardingPrefsQuery.isLoading) return;
+
+    const prefs = onboardingPrefsQuery.data;
+    setOnboardingPrefillDone(true);
+    if (!prefs) return;
+
+    const subjectSlug = prefs.subject_slugs[0];
+    const subject = catalogQuery.data.subjects.find((s) => s.slug === subjectSlug);
+    const levelIds = catalogQuery.data.levels
+      .filter((l) => prefs.level_slugs.includes(l.slug))
+      .map((l) => l.id);
+
+    setForm({
+      ...EMPTY_FORM,
+      subject_id: subject?.id ?? "",
+      offers_home: prefs.preferred_format !== "online",
+      offers_online: prefs.preferred_format === "online" || prefs.preferred_format === "both",
+      communes: prefs.preferred_communes,
+      levels: levelIds,
+    });
+  }, [
+    onboardingPrefillDone,
+    search.onboarding,
+    rolesQuery.isLoading,
+    isTeacher,
+    form,
+    offersQuery.isLoading,
+    offersQuery.data,
+    catalogQuery.data,
+    onboardingPrefsQuery.isLoading,
+    onboardingPrefsQuery.data,
+  ]);
 
   const saveMutation = useMutation({
     mutationFn: async (f: FormState) => {

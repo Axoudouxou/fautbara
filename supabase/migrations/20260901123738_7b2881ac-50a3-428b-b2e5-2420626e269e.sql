@@ -42,7 +42,7 @@ comment on column public.bookings.reschedule_count is
 
 -- Journal de chaque report effectif (accepté ou force majeure), pour trace
 -- et consultation admin — en particulier les déclarations de force majeure.
-create table public.reschedule_ledger (
+create table if not exists public.reschedule_ledger (
   id uuid primary key default gen_random_uuid(),
   booking_id uuid not null references public.bookings(id) on delete cascade,
   reschedule_number smallint not null,
@@ -57,12 +57,13 @@ create table public.reschedule_ledger (
   new_scheduled_at timestamptz not null,
   created_at timestamptz not null default now()
 );
-create index reschedule_ledger_booking_idx on public.reschedule_ledger (booking_id, created_at desc);
+create index if not exists reschedule_ledger_booking_idx on public.reschedule_ledger (booking_id, created_at desc);
 
 grant select on public.reschedule_ledger to authenticated;
 grant all on public.reschedule_ledger to service_role;
 alter table public.reschedule_ledger enable row level security;
 
+drop policy if exists "Parties read own reschedule ledger" on public.reschedule_ledger;
 create policy "Parties read own reschedule ledger" on public.reschedule_ledger
   for select to authenticated
   using (
@@ -73,13 +74,14 @@ create policy "Parties read own reschedule ledger" on public.reschedule_ledger
     )
   );
 
+drop policy if exists "Admins read all reschedule ledger" on public.reschedule_ledger;
 create policy "Admins read all reschedule ledger" on public.reschedule_ledger
   for select to authenticated
   using (public.has_role(auth.uid(), 'admin'));
 
 -- Crédit accordé au parent quand le professeur reporte tardivement,
 -- utilisable uniquement sur une future réservation avec ce même professeur.
-create table public.booking_reschedule_credits (
+create table if not exists public.booking_reschedule_credits (
   id uuid primary key default gen_random_uuid(),
   parent_id uuid not null references auth.users(id) on delete cascade,
   teacher_id uuid not null references auth.users(id) on delete cascade,
@@ -90,17 +92,19 @@ create table public.booking_reschedule_credits (
   created_at timestamptz not null default now(),
   applied_at timestamptz
 );
-create index booking_reschedule_credits_lookup_idx
+create index if not exists booking_reschedule_credits_lookup_idx
   on public.booking_reschedule_credits (parent_id, teacher_id, status);
 
 grant select on public.booking_reschedule_credits to authenticated;
 grant all on public.booking_reschedule_credits to service_role;
 alter table public.booking_reschedule_credits enable row level security;
 
+drop policy if exists "Parents read own reschedule credits" on public.booking_reschedule_credits;
 create policy "Parents read own reschedule credits" on public.booking_reschedule_credits
   for select to authenticated
   using (parent_id = auth.uid());
 
+drop policy if exists "Admins read all reschedule credits" on public.booking_reschedule_credits;
 create policy "Admins read all reschedule credits" on public.booking_reschedule_credits
   for select to authenticated
   using (public.has_role(auth.uid(), 'admin'));

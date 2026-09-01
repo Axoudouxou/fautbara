@@ -501,6 +501,7 @@ grant execute on function public.create_booking_payment(uuid) to authenticated;
 -- =========================================================
 
 drop function if exists public.admin_resolve_dispute(uuid, text, text, integer);
+drop function if exists public.admin_resolve_dispute(uuid, text, text, integer, timestamptz);
 
 create function public.admin_resolve_dispute(
   p_dispute_id uuid,

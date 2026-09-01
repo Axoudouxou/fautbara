@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
 import { AdminAlertsSection, LearnerTasksSection, TeacherTasksSection } from "@/components/home-role-sections";
 import { useConversations } from "@/lib/messaging";
+import { searchTeachers, type TeacherCard } from "@/lib/catalog.functions";
+import { budgetRangeToPriceArgs, type BudgetRange } from "@/lib/education";
 
 export const Route = createFileRoute("/_authenticated/accueil")({
   head: () => ({
@@ -210,6 +212,42 @@ function LearnerHome({
   const childName = upcoming?.children?.first_name ?? children[0]?.first_name ?? "";
   const teacherCard = useTeacherCard(upcoming?.teacher_id ?? last?.teacher_id ?? null);
   const teacher = teacherCard.data;
+
+  const isNew = !upcoming && !last;
+
+  const prefsQuery = useQuery({
+    queryKey: ["learning-preferences", userId],
+    enabled: isNew && !bookingsQuery.isLoading,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("learning_preferences")
+        .select("subject_slugs, level_slugs, budget_range, preferred_communes")
+        .eq("user_id", userId)
+        .eq("role_context", "learner")
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const prefs = prefsQuery.data;
+  const suggestedTeachersQuery = useQuery({
+    queryKey: ["suggested-teachers", userId, prefs],
+    enabled: isNew && Boolean(prefs),
+    queryFn: async () => {
+      const priceArgs = budgetRangeToPriceArgs((prefs?.budget_range as BudgetRange | null) ?? null);
+      const cards = await searchTeachers({
+        data: {
+          matiere: prefs?.subject_slugs?.[0],
+          niveau: prefs?.level_slugs?.[0],
+          commune: prefs?.preferred_communes?.[0],
+          ...priceArgs,
+        },
+      });
+      return cards.slice(0, 3);
+    },
+  });
+  const suggestedTeachers = suggestedTeachersQuery.data ?? [];
   const conversationsQuery = useConversations(userId, "learner");
   const conversations = conversationsQuery.data ?? [];
   const recentSubjectId = last?.teacher_offers?.subject_id ?? null;
@@ -344,10 +382,51 @@ function LearnerHome({
               méthode — avant de vous engager sur un cours régulier.
             </p>
             <div className="mt-5">
-              <Link to="/professeurs" search={{}} className={CTA}>
+              <Link
+                to="/professeurs"
+                search={{
+                  matiere: prefs?.subject_slugs?.[0],
+                  niveau: prefs?.level_slugs?.[0],
+                  commune: prefs?.preferred_communes?.[0],
+                  ...budgetRangeToPriceArgs((prefs?.budget_range as BudgetRange | null) ?? null),
+                }}
+                className={CTA}
+              >
                 Trouver un professeur
               </Link>
             </div>
+
+            {suggestedTeachers.length > 0 && (
+              <div className="mt-6 border-t border-border pt-5">
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                  Suggestions pour vous
+                </p>
+                <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {suggestedTeachers.map((t: TeacherCard) => (
+                    <li key={t.teacher_id}>
+                      <Link
+                        to="/professeurs/$id"
+                        params={{ id: t.teacher_id }}
+                        className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3 transition-colors hover:bg-secondary sm:flex-col sm:items-start"
+                      >
+                        <Avatar name={t.display_name} url={t.avatar_url} />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {t.display_name}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {t.subjects.slice(0, 2).join(", ")}
+                          </p>
+                          <p className="mt-0.5 text-xs font-semibold text-primary">
+                            {t.min_price_fcfa.toLocaleString("fr-FR")} FCFA
+                          </p>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </>
         )}
       </div>
