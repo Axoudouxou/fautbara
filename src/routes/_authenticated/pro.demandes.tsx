@@ -93,7 +93,7 @@ function TeacherRequestsPage() {
       const { error } = await supabase.rpc("respond_booking_request", {
         p_booking_id: id,
         p_accept: status === "accepted",
-        p_reason: reason ?? undefined,
+        ...(reason ? { p_reason: reason } : {}),
       });
       if (error) throw error;
     },
