@@ -442,8 +442,6 @@ export type Database = {
       }
       conversations: {
         Row: {
-          archived_by_learner: boolean
-          archived_by_teacher: boolean
           child_id: string | null
           created_at: string
           id: string
@@ -453,8 +451,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          archived_by_learner?: boolean
-          archived_by_teacher?: boolean
           child_id?: string | null
           created_at?: string
           id?: string
@@ -464,8 +460,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          archived_by_learner?: boolean
-          archived_by_teacher?: boolean
           child_id?: string | null
           created_at?: string
           id?: string
@@ -1762,10 +1756,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      get_teacher_busy_slots: {
-        Args: { p_from: string; p_teacher_id: string; p_to: string }
-        Returns: { duration_minutes: number; scheduled_at: string }[]
-      }
       get_teacher_full_public: { Args: { p_teacher_id: string }; Returns: Json }
       get_teacher_public: {
         Args: { p_teacher_id: string }
@@ -2069,26 +2059,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      set_conversation_archived: {
-        Args: { p_archived: boolean; p_conversation_id: string }
-        Returns: {
-          archived_by_learner: boolean
-          archived_by_teacher: boolean
-          child_id: string | null
-          created_at: string
-          id: string
-          last_message_at: string | null
-          learner_id: string
-          teacher_id: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "conversations"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       submit_teacher_verification: {
         Args: never
         Returns: {
@@ -2121,10 +2091,6 @@ export type Database = {
         }
       }
       teacher_recent_assignments: { Args: { p_limit?: number }; Returns: Json }
-      teacher_student_profile: {
-        Args: { p_child_id?: string; p_learner_id: string }
-        Returns: Json
-      }
     }
     Enums: {
       app_role: "parent" | "student" | "teacher" | "admin"

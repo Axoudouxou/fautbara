@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CommentFonctionneLePaiementRouteImport } from './routes/comment-fonctionne-le-paiement'
+import { Route as DevenirProfesseurRouteImport } from './routes/devenir-professeur'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAccueilRouteImport } from './routes/_authenticated/accueil'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
@@ -52,6 +54,17 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommentFonctionneLePaiementRoute =
+  CommentFonctionneLePaiementRouteImport.update({
+    id: '/comment-fonctionne-le-paiement',
+    path: '/comment-fonctionne-le-paiement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DevenirProfesseurRoute = DevenirProfesseurRouteImport.update({
+  id: '/devenir-professeur',
+  path: '/devenir-professeur',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -207,6 +220,8 @@ const ApiPublicBackendConfigRoute = ApiPublicBackendConfigRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
+  '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -238,6 +253,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
+  '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
   '/messages': typeof AuthenticatedMessagesRoute
@@ -271,6 +288,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
+  '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/accueil': typeof AuthenticatedAccueilRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
@@ -304,6 +323,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/comment-fonctionne-le-paiement'
+    | '/devenir-professeur'
     | '/reset-password'
     | '/accueil'
     | '/messages'
@@ -335,6 +356,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/comment-fonctionne-le-paiement'
+    | '/devenir-professeur'
     | '/reset-password'
     | '/accueil'
     | '/messages'
@@ -367,6 +390,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/comment-fonctionne-le-paiement'
+    | '/devenir-professeur'
     | '/reset-password'
     | '/_authenticated/accueil'
     | '/_authenticated/messages'
@@ -400,6 +425,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CommentFonctionneLePaiementRoute: typeof CommentFonctionneLePaiementRoute
+  DevenirProfesseurRoute: typeof DevenirProfesseurRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   MatieresSlugRoute: typeof MatieresSlugRoute
   ProfesseursIdRoute: typeof ProfesseursIdRoute
@@ -429,6 +456,20 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comment-fonctionne-le-paiement': {
+      id: '/comment-fonctionne-le-paiement'
+      path: '/comment-fonctionne-le-paiement'
+      fullPath: '/comment-fonctionne-le-paiement'
+      preLoaderRoute: typeof CommentFonctionneLePaiementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/devenir-professeur': {
+      id: '/devenir-professeur'
+      path: '/devenir-professeur'
+      fullPath: '/devenir-professeur'
+      preLoaderRoute: typeof DevenirProfesseurRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -678,6 +719,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CommentFonctionneLePaiementRoute: CommentFonctionneLePaiementRoute,
+  DevenirProfesseurRoute: DevenirProfesseurRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   MatieresSlugRoute: MatieresSlugRoute,
   ProfesseursIdRoute: ProfesseursIdRoute,
