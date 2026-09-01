@@ -175,6 +175,57 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_reschedule_credits: {
+        Row: {
+          amount_fcfa: number
+          applied_at: string | null
+          applied_to_booking_id: string | null
+          created_at: string
+          id: string
+          parent_id: string
+          source_booking_id: string
+          status: string
+          teacher_id: string
+        }
+        Insert: {
+          amount_fcfa: number
+          applied_at?: string | null
+          applied_to_booking_id?: string | null
+          created_at?: string
+          id?: string
+          parent_id: string
+          source_booking_id: string
+          status?: string
+          teacher_id: string
+        }
+        Update: {
+          amount_fcfa?: number
+          applied_at?: string | null
+          applied_to_booking_id?: string | null
+          created_at?: string
+          id?: string
+          parent_id?: string
+          source_booking_id?: string
+          status?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_reschedule_credits_applied_to_booking_id_fkey"
+            columns: ["applied_to_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_reschedule_credits_source_booking_id_fkey"
+            columns: ["source_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           address: string | null
@@ -190,10 +241,17 @@ export type Database = {
           id: string
           is_recurring: boolean
           message: string | null
+          no_show_reported_at: string | null
+          no_show_reported_by: string | null
           offer_id: string
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
+          reschedule_count: number
+          reschedule_previous_at: string | null
+          reschedule_proposed_at: string | null
+          reschedule_proposed_by: string | null
+          reschedule_proposed_fee_rate: number | null
           scheduled_at: string
           status: string
           status_reason: string | null
@@ -214,10 +272,17 @@ export type Database = {
           id?: string
           is_recurring?: boolean
           message?: string | null
+          no_show_reported_at?: string | null
+          no_show_reported_by?: string | null
           offer_id: string
           price_fcfa: number
           recurrence_end_date?: string | null
           requester_id: string
+          reschedule_count?: number
+          reschedule_previous_at?: string | null
+          reschedule_proposed_at?: string | null
+          reschedule_proposed_by?: string | null
+          reschedule_proposed_fee_rate?: number | null
           scheduled_at: string
           status?: string
           status_reason?: string | null
@@ -238,10 +303,17 @@ export type Database = {
           id?: string
           is_recurring?: boolean
           message?: string | null
+          no_show_reported_at?: string | null
+          no_show_reported_by?: string | null
           offer_id?: string
           price_fcfa?: number
           recurrence_end_date?: string | null
           requester_id?: string
+          reschedule_count?: number
+          reschedule_previous_at?: string | null
+          reschedule_proposed_at?: string | null
+          reschedule_proposed_by?: string | null
+          reschedule_proposed_fee_rate?: number | null
           scheduled_at?: string
           status?: string
           status_reason?: string | null
@@ -732,6 +804,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      reschedule_ledger: {
+        Row: {
+          booking_id: string
+          created_at: string
+          fee_amount_fcfa: number
+          fee_payee_id: string | null
+          fee_payer_id: string | null
+          fee_rate: number
+          force_majeure_reason: string | null
+          id: string
+          is_force_majeure: boolean
+          new_scheduled_at: string
+          previous_scheduled_at: string
+          requested_by: string
+          reschedule_number: number
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          fee_amount_fcfa?: number
+          fee_payee_id?: string | null
+          fee_payer_id?: string | null
+          fee_rate?: number
+          force_majeure_reason?: string | null
+          id?: string
+          is_force_majeure?: boolean
+          new_scheduled_at: string
+          previous_scheduled_at: string
+          requested_by: string
+          reschedule_number: number
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          fee_amount_fcfa?: number
+          fee_payee_id?: string | null
+          fee_payer_id?: string | null
+          fee_rate?: number
+          force_majeure_reason?: string | null
+          id?: string
+          is_force_majeure?: boolean
+          new_scheduled_at?: string
+          previous_scheduled_at?: string
+          requested_by?: string
+          reschedule_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reschedule_ledger_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -1310,10 +1438,17 @@ export type Database = {
           id: string
           is_recurring: boolean
           message: string | null
+          no_show_reported_at: string | null
+          no_show_reported_by: string | null
           offer_id: string
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
+          reschedule_count: number
+          reschedule_previous_at: string | null
+          reschedule_proposed_at: string | null
+          reschedule_proposed_by: string | null
+          reschedule_proposed_fee_rate: number | null
           scheduled_at: string
           status: string
           status_reason: string | null
@@ -1375,10 +1510,17 @@ export type Database = {
           id: string
           is_recurring: boolean
           message: string | null
+          no_show_reported_at: string | null
+          no_show_reported_by: string | null
           offer_id: string
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
+          reschedule_count: number
+          reschedule_previous_at: string | null
+          reschedule_proposed_at: string | null
+          reschedule_proposed_by: string | null
+          reschedule_proposed_fee_rate: number | null
           scheduled_at: string
           status: string
           status_reason: string | null
