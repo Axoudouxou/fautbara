@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { GraduationCap, Loader2 } from "lucide-react";
+import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
 import { needsOnboarding } from "@/lib/onboarding";
@@ -16,6 +17,8 @@ const ROLE_OPTIONS: { value: SignupRole; label: string; hint: string }[] = [
 ];
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search) =>
+    z.object({ role: z.enum(["parent", "student", "teacher"]).optional() }).parse(search),
   head: () => ({
     meta: [
       { title: "Connexion — BARA" },
@@ -35,11 +38,12 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("signin");
+  const search = Route.useSearch();
+  const [mode, setMode] = useState<Mode>(search.role ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [role, setRole] = useState<SignupRole>("parent");
+  const [role, setRole] = useState<SignupRole>(search.role ?? "parent");
   const [pending, setPending] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
 

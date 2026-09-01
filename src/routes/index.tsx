@@ -234,12 +234,12 @@ function Index() {
           <p className="mx-auto mt-3 max-w-xl text-primary-foreground/85">
             Créez votre profil, proposez vos matières et gérez vos cours en toute simplicité.
           </p>
-          <a
-            href="/auth"
+          <Link
+            to="/devenir-professeur"
             className="mt-6 inline-flex items-center justify-center rounded-full bg-card px-6 py-3 text-sm font-bold text-primary transition-colors hover:bg-secondary"
           >
             Devenir professeur
-          </a>
+          </Link>
         </div>
       </section>
     </div>
