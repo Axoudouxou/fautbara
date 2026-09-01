@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
 import { AdminAlertsSection, LearnerTasksSection, TeacherTasksSection } from "@/components/home-role-sections";
 import { useConversations } from "@/lib/messaging";
+import { useMessagingPanel } from "@/lib/messaging-panel-context";
 import { searchTeachers, type TeacherCard } from "@/lib/catalog.functions";
 import { budgetRangeToPriceArgs, type BudgetRange } from "@/lib/education";
 
@@ -97,6 +98,7 @@ const CTA =
 const CTA2 =
   "inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary";
 const CARD = "rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6";
+const ASSIGNMENT_STATUS_LABEL: Record<string, string> = { sent: "Envoyé", seen: "Vu", done: "Fait" };
 
 function HomeScreen() {
   const { user } = Route.useRouteContext();
@@ -571,6 +573,25 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
 
   const studentConversationsQuery = useConversations(userId, "teacher");
   const studentConversations = studentConversationsQuery.data ?? [];
+  const { openConversation } = useMessagingPanel();
+
+  const recentAssignmentsQuery = useQuery({
+    queryKey: ["teacher-recent-assignments-home", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("teacher_recent_assignments", { p_limit: 8 });
+      if (error) throw error;
+      return (data ?? []) as {
+        id: string;
+        title: string;
+        status: string;
+        created_at: string;
+        due_date: string | null;
+        conversation_id: string;
+        learner_name: string | null;
+      }[];
+    },
+  });
+  const recentAssignments = recentAssignmentsQuery.data ?? [];
 
   const bookings = bookingsQuery.data ?? [];
   const now = Date.now();
@@ -771,19 +792,53 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
             key: "students",
             label: "Mes élèves",
             to: "/pro/messages",
-            preview:
-              studentConversations.length > 0 ? (
-                <ul className="space-y-1.5 text-sm text-foreground">
-                  {studentConversations.slice(0, 3).map((sc) => (
-                    <li key={sc.id} className="truncate">
-                      {sc.otherName}
-                      {sc.children?.first_name ? ` · ${sc.children.first_name}` : ""}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">Aucun élève contacté pour l'instant.</p>
-              ),
+            preview: (
+              <div className="space-y-4">
+                {studentConversations.length > 0 ? (
+                  <ul className="space-y-1.5 text-sm text-foreground">
+                    {studentConversations.slice(0, 3).map((sc) => (
+                      <li key={sc.id} className="truncate">
+                        {sc.otherName}
+                        {sc.children?.first_name ? ` · ${sc.children.first_name}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Aucun élève contacté pour l'instant.</p>
+                )}
+
+                <div className={studentConversations.length > 0 ? "border-t border-border/60 pt-3" : ""}>
+                  <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                    Devoirs récents
+                  </p>
+                  {recentAssignments.length > 0 ? (
+                    <ul className="mt-2 space-y-1.5">
+                      {recentAssignments.slice(0, 4).map((a) => (
+                        <li key={a.id}>
+                          <button
+                            type="button"
+                            onClick={() => openConversation(a.conversation_id, "resources")}
+                            className="flex w-full items-center justify-between gap-2 rounded-lg py-0.5 text-left text-sm text-foreground hover:text-primary"
+                          >
+                            <span className="min-w-0 truncate">
+                              {a.title}
+                              <span className="text-muted-foreground"> · {a.learner_name ?? "Élève"}</span>
+                            </span>
+                            <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">
+                              {ASSIGNMENT_STATUS_LABEL[a.status] ?? a.status}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-1.5 text-sm text-muted-foreground">
+                      Aucun devoir envoyé pour l'instant.
+                    </p>
+                  )}
+                </div>
+              </div>
+            ),
           },
         ]}
       />
