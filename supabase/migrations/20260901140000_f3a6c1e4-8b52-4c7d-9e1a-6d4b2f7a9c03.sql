@@ -11,7 +11,7 @@ update public.profiles
    set onboarding_completed_at = now()
  where onboarding_completed_at is null;
 
-create table public.learning_preferences (
+create table if not exists public.learning_preferences (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null unique references auth.users(id) on delete cascade,
   role_context text not null check (role_context in ('learner', 'teacher')),
@@ -53,18 +53,22 @@ grant all on public.learning_preferences to service_role;
 
 alter table public.learning_preferences enable row level security;
 
+drop policy if exists "Users read own learning preferences" on public.learning_preferences;
 create policy "Users read own learning preferences" on public.learning_preferences
   for select to authenticated
   using (auth.uid() = user_id);
 
+drop policy if exists "Users insert own learning preferences" on public.learning_preferences;
 create policy "Users insert own learning preferences" on public.learning_preferences
   for insert to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users update own learning preferences" on public.learning_preferences;
 create policy "Users update own learning preferences" on public.learning_preferences
   for update to authenticated
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop trigger if exists learning_preferences_touch on public.learning_preferences;
 create trigger learning_preferences_touch before update on public.learning_preferences
   for each row execute function public.touch_updated_at();
