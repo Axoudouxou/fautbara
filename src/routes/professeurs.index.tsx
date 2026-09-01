@@ -296,7 +296,11 @@ function TeachersPage() {
       ) : (
         <ul className="mt-6 space-y-3">
           {teachers.map((teacher) => (
-            <TeacherRow key={teacher.teacher_id} teacher={teacher} activeSubjectName={activeSubjectName} />
+            <TeacherRow
+              key={teacher.teacher_id}
+              teacher={teacher}
+              {...(activeSubjectName ? { activeSubjectName } : {})}
+            />
           ))}
         </ul>
       )}
