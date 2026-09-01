@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const WEEKDAYS_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const SLOT_STEP_MINUTES = 60;
 const MIN_LEAD_HOURS = 24;
 
 type CalendarOffer = {
@@ -51,21 +50,31 @@ function overlaps(aStartMin: number, aDur: number, bStartMin: number, bDur: numb
   return aStartMin < bStartMin + bDur && bStartMin < aStartMin + aDur;
 }
 
-export function TeacherAvailabilityCalendar({
+/**
+ * Grille de créneaux réels d'un professeur (disponibilités hebdomadaires +
+ * exceptions + réservations déjà prises), réutilisée telle quelle sur la
+ * fiche professeur et dans le tunnel de réservation — un seul système de
+ * sélection de créneaux, pas deux. `durationMinutes` détermine le pas de
+ * la grille : 60 min par défaut (fiche professeur, offre pas encore
+ * choisie), ou la durée réelle de l'offre depuis le tunnel de réservation.
+ */
+export function AvailabilitySlotGrid({
   teacherId,
-  offers,
+  durationMinutes = 60,
+  initialDate,
+  selected,
+  onSelectSlot,
 }: {
   teacherId: string;
-  offers: CalendarOffer[];
+  durationMinutes?: number;
+  /** "YYYY-MM-DD" — ouvre la semaine/jour de ce créneau plutôt qu'aujourd'hui */
+  initialDate?: string;
+  selected?: { date: string; time: string } | null;
+  onSelectSlot: (date: string, time: string) => void;
 }) {
-  const navigate = useNavigate();
-  const [weekStart, setWeekStart] = useState(() => mondayOf(new Date()));
-  const [selectedDay, setSelectedDay] = useState(() => {
-    const today = mondayOf(new Date());
-    return today.getTime() === weekStart.getTime() ? new Date() : weekStart;
-  });
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
-  const [selectedOfferId, setSelectedOfferId] = useState<string>(offers[0]?.id ?? "");
+  const initial = initialDate ? new Date(`${initialDate}T00:00:00`) : new Date();
+  const [weekStart, setWeekStart] = useState(() => mondayOf(initial));
+  const [selectedDay, setSelectedDay] = useState(() => initial);
 
   const weekEnd = useMemo(() => addDays(weekStart, 7), [weekStart]);
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
@@ -133,14 +142,14 @@ export function TeacherAvailabilityCalendar({
     for (const window of availabilities.filter((a) => a.weekday === weekdayIndex)) {
       const start = hhmmToMinutes(window.start_time);
       const end = hhmmToMinutes(window.end_time);
-      for (let t = start; t + SLOT_STEP_MINUTES <= end; t += SLOT_STEP_MINUTES) {
-        if (partialBlocks.some((b) => overlaps(t, SLOT_STEP_MINUTES, b.start, b.end - b.start))) continue;
+      for (let t = start; t + durationMinutes <= end; t += durationMinutes) {
+        if (partialBlocks.some((b) => overlaps(t, durationMinutes, b.start, b.end - b.start))) continue;
 
         const slotDate = new Date(`${dateStr}T${minutesToHHMM(t)}:00`);
         const isBusy = busy.some((b) =>
           overlaps(
             slotDate.getTime() / 60_000,
-            SLOT_STEP_MINUTES,
+            durationMinutes,
             new Date(b.scheduled_at).getTime() / 60_000,
             b.duration_minutes,
           ),
@@ -156,18 +165,9 @@ export function TeacherAvailabilityCalendar({
       }
     }
     return slots;
-  }, [selectedDay, availabilitiesQuery.data, exceptionsQuery.data, busyQuery.data]);
+  }, [selectedDay, durationMinutes, availabilitiesQuery.data, exceptionsQuery.data, busyQuery.data]);
 
-  function pickSlot(time: string) {
-    const date = toDateStr(selectedDay);
-    if (offers.length <= 1) {
-      const offerId = offers[0]?.id;
-      if (!offerId) return;
-      navigate({ to: "/reserver/$offerId", params: { offerId }, search: { date, time } });
-      return;
-    }
-    setSelectedSlot({ date, time });
-  }
+  const selectedDateStr = toDateStr(selectedDay);
 
   return (
     <div className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5">
@@ -196,7 +196,7 @@ export function TeacherAvailabilityCalendar({
 
       <div className="mt-3 grid grid-cols-7 gap-1.5">
         {days.map((day, index) => {
-          const isSelected = toDateStr(day) === toDateStr(selectedDay);
+          const isSelected = toDateStr(day) === selectedDateStr;
           const isPast = toDateStr(day) < toDateStr(new Date());
           return (
             <button
@@ -228,28 +228,66 @@ export function TeacherAvailabilityCalendar({
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {daySlots.map((slot) => (
-              <button
-                key={slot.time}
-                type="button"
-                disabled={slot.disabled}
-                title={slot.reason}
-                onClick={() => pickSlot(slot.time)}
-                className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${
-                  slot.disabled
-                    ? "cursor-not-allowed border-border/60 text-muted-foreground/60"
-                    : "border-primary/40 text-foreground hover:border-primary hover:bg-primary-soft/50"
-                }`}
-              >
-                {slot.time}
-              </button>
-            ))}
+            {daySlots.map((slot) => {
+              const isChosen = selected?.date === selectedDateStr && selected?.time === slot.time;
+              return (
+                <button
+                  key={slot.time}
+                  type="button"
+                  disabled={slot.disabled}
+                  title={slot.reason}
+                  onClick={() => onSelectSlot(selectedDateStr, slot.time)}
+                  className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${
+                    slot.disabled
+                      ? "cursor-not-allowed border-border/60 text-muted-foreground/60"
+                      : isChosen
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-primary/40 text-foreground hover:border-primary hover:bg-primary-soft/50"
+                  }`}
+                >
+                  {slot.time}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
 
+      <p className="mt-3 text-xs text-muted-foreground">
+        Heures d'Abidjan. Réservation possible jusqu'à 24h avant le cours.
+      </p>
+    </div>
+  );
+}
+
+/** Grille de créneaux + choix de l'offre, pour la fiche professeur publique. */
+export function TeacherAvailabilityCalendar({
+  teacherId,
+  offers,
+}: {
+  teacherId: string;
+  offers: CalendarOffer[];
+}) {
+  const navigate = useNavigate();
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
+  const [selectedOfferId, setSelectedOfferId] = useState<string>(offers[0]?.id ?? "");
+
+  function handleSelectSlot(date: string, time: string) {
+    if (offers.length <= 1) {
+      const offerId = offers[0]?.id;
+      if (!offerId) return;
+      navigate({ to: "/reserver/$offerId", params: { offerId }, search: { date, time } });
+      return;
+    }
+    setSelectedSlot({ date, time });
+  }
+
+  return (
+    <div className="space-y-4">
+      <AvailabilitySlotGrid teacherId={teacherId} onSelectSlot={handleSelectSlot} selected={selectedSlot} />
+
       {selectedSlot ? (
-        <div className="mt-4 rounded-2xl border border-primary/30 bg-primary-soft/40 p-4">
+        <div className="rounded-2xl border border-primary/30 bg-primary-soft/40 p-4">
           <p className="text-sm font-semibold text-foreground">
             Créneau du{" "}
             {new Date(`${selectedSlot.date}T00:00:00`).toLocaleDateString("fr-FR", {
@@ -301,10 +339,6 @@ export function TeacherAvailabilityCalendar({
           </button>
         </div>
       ) : null}
-
-      <p className="mt-3 text-xs text-muted-foreground">
-        Heures d'Abidjan. Réservation possible jusqu'à 24h avant le cours.
-      </p>
     </div>
   );
 }
