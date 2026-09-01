@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, MessageSquare } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
@@ -15,6 +15,10 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { AppTabsBar, AppTabsMobileBar, useAppNav } from "@/components/app-nav";
+import { MessagingPanelProvider, useMessagingPanel } from "@/lib/messaging-panel-context";
+import { MessagingDrawer } from "@/components/messaging-drawer";
+import { useMessagingSide } from "@/hooks/use-messaging-side";
+import { useConversations } from "@/lib/messaging";
 
 const SITE_NAME = "BARA";
 const SITE_DESCRIPTION =
@@ -125,6 +129,31 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function MessagingHeaderTrigger() {
+  const { open } = useMessagingPanel();
+  const { side, userId } = useMessagingSide();
+  const conversationsQuery = useConversations(userId ?? "", side);
+  const unread = (conversationsQuery.data ?? [])
+    .filter((c) => !c.archived)
+    .reduce((sum, c) => sum + c.unread, 0);
+
+  return (
+    <button
+      type="button"
+      onClick={open}
+      aria-label={unread > 0 ? `Messagerie, ${unread} non lu${unread > 1 ? "s" : ""}` : "Messagerie"}
+      className="relative flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-secondary"
+    >
+      <MessageSquare className="size-5" aria-hidden />
+      {unread > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 flex min-w-[1.1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </button>
+  );
+}
+
 function SiteHeader() {
   const { signedIn, primaryRole } = useAppNav();
 
@@ -142,6 +171,7 @@ function SiteHeader() {
         {signedIn ? (
           <div className="flex items-center gap-2">
             <AppTabsBar role={primaryRole} />
+            <MessagingHeaderTrigger />
             <button
               type="button"
               onClick={() => {
@@ -226,16 +256,19 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
-        <SiteHeader />
-        <AppMain>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </AppMain>
-        <SiteFooter />
-      </div>
+      <MessagingPanelProvider>
+        <div className="flex min-h-screen flex-col">
+          <SiteHeader />
+          <AppMain>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </AppMain>
+          <SiteFooter />
+        </div>
 
-      <Toaster richColors position="top-center" />
+        <MessagingDrawer />
+        <Toaster richColors position="top-center" />
+      </MessagingPanelProvider>
     </QueryClientProvider>
   );
 }

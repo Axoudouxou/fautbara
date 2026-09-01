@@ -9,6 +9,8 @@ export type ConversationRow = {
   child_id: string | null;
   last_message_at: string | null;
   created_at: string;
+  archived_by_learner: boolean;
+  archived_by_teacher: boolean;
   children: { first_name: string; auth_user_id: string | null } | null;
 };
 
@@ -18,6 +20,7 @@ export type ConversationListItem = ConversationRow & {
   lastBody: string | null;
   lastAt: string | null;
   unread: number;
+  archived: boolean;
 };
 
 export type MessagingSide = "learner" | "teacher" | "child";
@@ -27,15 +30,16 @@ export type MessagingSide = "learner" | "teacher" | "child";
  * du dernier message et du nombre de messages non lus.
  * Rafraîchissement par polling (15 s) — pas de WebSocket à ce stade.
  */
-export function useConversations(userId: string, side: MessagingSide) {
+export function useConversations(userId: string, side: MessagingSide, enabled = Boolean(userId)) {
   return useQuery({
     queryKey: ["conversations", userId, side],
+    enabled,
     refetchInterval: 15000,
     queryFn: async (): Promise<ConversationListItem[]> => {
       let q = supabase
         .from("conversations")
         .select(
-          "id, learner_id, teacher_id, child_id, last_message_at, created_at, children(first_name, auth_user_id)",
+          "id, learner_id, teacher_id, child_id, last_message_at, created_at, archived_by_learner, archived_by_teacher, children(first_name, auth_user_id)",
         );
       if (side === "learner") q = q.eq("learner_id", userId);
       if (side === "teacher") q = q.eq("teacher_id", userId);
@@ -82,6 +86,7 @@ export function useConversations(userId: string, side: MessagingSide) {
             lastBody: last?.body ?? null,
             lastAt: last?.created_at ?? c.last_message_at ?? null,
             unread,
+            archived: side === "teacher" ? c.archived_by_teacher : c.archived_by_learner,
           };
         })
         .sort((a, b) => (b.lastAt ?? "").localeCompare(a.lastAt ?? ""));
@@ -113,4 +118,13 @@ export async function ensureConversation(params: {
 
   if (error) throw error;
   return data as unknown as { id: string };
+}
+
+/** Archive (ou désarchive) une conversation pour son propre côté uniquement. */
+export async function setConversationArchived(conversationId: string, archived: boolean) {
+  const { error } = await supabase.rpc("set_conversation_archived", {
+    p_conversation_id: conversationId,
+    p_archived: archived,
+  });
+  if (error) throw error;
 }

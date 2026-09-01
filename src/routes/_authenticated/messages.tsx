@@ -263,6 +263,9 @@ function MessagesPage() {
               conversationId={active.id}
               role={isChildAccount ? "child" : "learner"}
               userId={user.id}
+              teacherId={active.teacher_id}
+              learnerId={active.learner_id}
+              childId={active.child_id}
               title={active.otherName}
               subtitle={
                 active.children?.first_name
