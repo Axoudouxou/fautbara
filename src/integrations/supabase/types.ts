@@ -534,75 +534,6 @@ export type Database = {
           },
         ]
       }
-      learning_preferences: {
-        Row: {
-          availability_days: number[]
-          availability_periods: string[]
-          budget_range: string | null
-          child_name: string | null
-          created_at: string
-          filiere: string | null
-          for_whom: string | null
-          id: string
-          learning_style: string | null
-          level_other: string | null
-          level_slugs: string[]
-          objective: string | null
-          preferred_communes: string[]
-          preferred_format: string | null
-          role_context: string
-          school_system_other: string | null
-          school_systems: string[]
-          subject_slugs: string[]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          availability_days?: number[]
-          availability_periods?: string[]
-          budget_range?: string | null
-          child_name?: string | null
-          created_at?: string
-          filiere?: string | null
-          for_whom?: string | null
-          id?: string
-          learning_style?: string | null
-          level_other?: string | null
-          level_slugs?: string[]
-          objective?: string | null
-          preferred_communes?: string[]
-          preferred_format?: string | null
-          role_context: string
-          school_system_other?: string | null
-          school_systems?: string[]
-          subject_slugs?: string[]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          availability_days?: number[]
-          availability_periods?: string[]
-          budget_range?: string | null
-          child_name?: string | null
-          created_at?: string
-          filiere?: string | null
-          for_whom?: string | null
-          id?: string
-          learning_style?: string | null
-          level_other?: string | null
-          level_slugs?: string[]
-          objective?: string | null
-          preferred_communes?: string[]
-          preferred_format?: string | null
-          role_context?: string
-          school_system_other?: string | null
-          school_systems?: string[]
-          subject_slugs?: string[]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       levels: {
         Row: {
           created_at: string
@@ -846,7 +777,6 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
-          onboarding_completed_at: string | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -858,7 +788,6 @@ export type Database = {
           created_at?: string
           display_name: string
           id?: string
-          onboarding_completed_at?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -870,7 +799,6 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
-          onboarding_completed_at?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
