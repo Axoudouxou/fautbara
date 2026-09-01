@@ -9,12 +9,9 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   vite: {
     resolve: {
-      alias: [
-        {
-          find: "@/integrations/supabase/client",
-          replacement: "/src/lib/cloud-client.ts",
-        },
-      ],
+      alias: {
+        "@/integrations/supabase/client": `${process.cwd()}/src/lib/cloud-client.ts`,
+      },
     },
   },
   tanstackStart: {
