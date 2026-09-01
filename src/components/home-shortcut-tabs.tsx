@@ -1,11 +1,11 @@
-import { useState, type ComponentProps, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
 type ShortcutTab = {
   key: string;
   label: string;
-  to: ComponentProps<typeof Link>["to"];
+  to?: string;
   preview: ReactNode;
 };
 
@@ -41,12 +41,14 @@ export function HomeShortcutTabs({ tabs }: { tabs: ShortcutTab[] }) {
       </div>
       <div className="mt-3 rounded-2xl border border-border bg-card p-4">
         {current.preview}
-        <Link
-          to={current.to}
-          className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-        >
-          Voir tout <ArrowRight className="size-3.5" aria-hidden />
-        </Link>
+        {current.to && (
+          <Link
+            to={current.to}
+            className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+          >
+            Voir tout <ArrowRight className="size-3.5" aria-hidden />
+          </Link>
+        )}
       </div>
     </div>
   );
