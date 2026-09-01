@@ -120,9 +120,9 @@ function TeachersPage() {
       </header>
 
       <div className="mt-8 rounded-2xl border border-border/70 bg-card p-4 shadow-[var(--shadow-card)]">
-        {/* Ligne 1 : filtres principaux + recherche libre alignée à droite */}
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="min-w-[12rem] flex-1 sm:flex-none">
+        {/* Filtres principaux : une seule ligne cohérente */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <label className="min-w-0">
             <span className={fieldLabelClass}>Ce que je veux apprendre</span>
             <select
               className={selectClass}
@@ -144,9 +144,9 @@ function TeachersPage() {
             </select>
           </label>
 
-          <div className="min-w-[14rem] flex-1 sm:flex-none sm:w-64">
+          <div className="min-w-0">
             <span className={fieldLabelClass}>Tarif par séance (FCFA)</span>
-            <div className="rounded-xl border border-input bg-card px-3 py-2.5">
+            <div className="flex h-11 items-center rounded-xl border border-input bg-card px-3">
               <Slider
                 min={0}
                 max={PRICE_SLIDER_MAX}
@@ -160,17 +160,17 @@ function TeachersPage() {
                   })
                 }
               />
-              <p className="mt-2 text-center text-xs font-semibold text-foreground">
-                {priceRange[0].toLocaleString("fr-FR")} –{" "}
-                {priceRange[1] >= PRICE_SLIDER_MAX
-                  ? `${PRICE_SLIDER_MAX.toLocaleString("fr-FR")}+`
-                  : priceRange[1].toLocaleString("fr-FR")}{" "}
-                FCFA
-              </p>
             </div>
+            <p className="mt-1 text-center text-xs font-semibold text-foreground">
+              {priceRange[0].toLocaleString("fr-FR")} –{" "}
+              {priceRange[1] >= PRICE_SLIDER_MAX
+                ? `${PRICE_SLIDER_MAX.toLocaleString("fr-FR")}+`
+                : priceRange[1].toLocaleString("fr-FR")}{" "}
+              FCFA
+            </p>
           </div>
 
-          <label className="min-w-[10rem] flex-1 sm:flex-none">
+          <label className="min-w-0">
             <span className={fieldLabelClass}>Commune</span>
             <select
               className={selectClass}
@@ -186,7 +186,7 @@ function TeachersPage() {
             </select>
           </label>
 
-          <label className="min-w-[10rem] flex-1 sm:flex-none">
+          <label className="min-w-0">
             <span className={fieldLabelClass}>Disponibilités</span>
             <select
               className={selectClass}
@@ -202,7 +202,7 @@ function TeachersPage() {
             </select>
           </label>
 
-          <label className="ml-auto min-w-[14rem] flex-1 sm:flex-none">
+          <label className="min-w-0">
             <span className={fieldLabelClass}>Recherche</span>
             <div className="relative">
               <Search

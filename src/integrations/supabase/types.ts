@@ -1244,6 +1244,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _open_reschedule_limit_dispute: {
+        Args: {
+          b: Database["public"]["Tables"]["bookings"]["Row"]
+          p_new_scheduled_at: string
+        }
+        Returns: undefined
+      }
       admin_can_read_conversation: {
         Args: { p_conversation_id: string; p_user: string }
         Returns: boolean
@@ -1439,10 +1446,17 @@ export type Database = {
           id: string
           is_recurring: boolean
           message: string | null
+          no_show_reported_at: string | null
+          no_show_reported_by: string | null
           offer_id: string
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
+          reschedule_count: number
+          reschedule_previous_at: string | null
+          reschedule_proposed_at: string | null
+          reschedule_proposed_by: string | null
+          reschedule_proposed_fee_rate: number | null
           scheduled_at: string
           status: string
           status_reason: string | null
@@ -1544,10 +1558,17 @@ export type Database = {
           id: string
           is_recurring: boolean
           message: string | null
+          no_show_reported_at: string | null
+          no_show_reported_by: string | null
           offer_id: string
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
+          reschedule_count: number
+          reschedule_previous_at: string | null
+          reschedule_proposed_at: string | null
+          reschedule_proposed_by: string | null
+          reschedule_proposed_fee_rate: number | null
           scheduled_at: string
           status: string
           status_reason: string | null
@@ -1620,7 +1641,11 @@ export type Database = {
         }
       }
       force_majeure_reschedule: {
-        Args: { p_booking_id: string; p_new_scheduled_at: string; p_reason: string }
+        Args: {
+          p_booking_id: string
+          p_new_scheduled_at: string
+          p_reason: string
+        }
         Returns: {
           address: string | null
           cancelled_at: string | null
