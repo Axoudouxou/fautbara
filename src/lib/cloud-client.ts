@@ -37,9 +37,9 @@ function createCloudFetch(apiKey: string): typeof fetch {
 
 function createCloudClient() {
   const runtimeConfig = typeof window === "undefined" ? undefined : window.__BARA_BACKEND_CONFIG__;
-  const url = runtimeConfig?.url ?? import.meta.env.VITE_SUPABASE_URL;
+  const url = runtimeConfig?.url ?? import.meta.env["VITE_SUPABASE_URL"];
   const publishableKey =
-    runtimeConfig?.publishableKey ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    runtimeConfig?.publishableKey ?? import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
 
   if (!url || !publishableKey) {
     throw new Error("La configuration du backend BARA est indisponible.");
