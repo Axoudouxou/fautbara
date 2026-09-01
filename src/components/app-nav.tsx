@@ -53,12 +53,6 @@ const teacherTabs: Tab[] = [
     link: linkOptions({ to: "/pro/disponibilites" }),
   },
   { label: "Demandes", short: "Demandes", icon: Inbox, link: linkOptions({ to: "/pro/demandes" }) },
-  {
-    label: "Messages",
-    short: "Messages",
-    icon: MessageSquare,
-    link: linkOptions({ to: "/pro/messages" }),
-  },
   { label: "Paramètres", short: "Réglages", icon: Settings, link: linkOptions({ to: "/pro" }) },
 ];
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ClipboardList, Loader2, MessageSquare, Plus } from "lucide-react";
+import { Loader2, MessageSquare, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -31,12 +31,9 @@ type Pair = {
   subjects: string[];
 };
 
-const STATUS_LABEL: Record<string, string> = { sent: "Envoyé", seen: "Vu", done: "Fait" };
-
 function TeacherMessages() {
   const { user } = Route.useRouteContext();
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [showOverview, setShowOverview] = useState(false);
 
   const conversationsQuery = useConversations(user.id, "teacher");
   const conversations = conversationsQuery.data ?? [];
@@ -79,23 +76,6 @@ function TeacherMessages() {
     },
   });
 
-  const recentQuery = useQuery({
-    queryKey: ["teacher-recent-assignments", user.id],
-    enabled: showOverview,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("teacher_recent_assignments", { p_limit: 30 });
-      if (error) throw error;
-      return (data ?? []) as {
-        id: string;
-        title: string;
-        status: string;
-        created_at: string;
-        due_date: string | null;
-        learner_name: string | null;
-      }[];
-    },
-  });
-
   const openPair = useMutation({
     mutationFn: async (p: Pair) =>
       ensureConversation({ teacherId: user.id, learnerId: p.learnerId, childId: p.childId }),
@@ -125,69 +105,14 @@ function TeacherMessages() {
 
   return (
     <div className="container-page py-8 sm:py-12">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
-            Messagerie &amp; devoirs
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Une conversation par élève. Convenez de la logistique et envoyez des devoirs structurés.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setShowOverview((v) => !v)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
-          >
-            <ClipboardList className="size-3.5" aria-hidden />
-            {showOverview ? "Masquer" : "Devoirs récents"}
-          </button>
-          <Link
-            to="/pro"
-            className="inline-flex items-center rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
-          >
-            Tableau de bord
-          </Link>
-        </div>
+      <div>
+        <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+          Messagerie &amp; devoirs
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          Une conversation par élève. Convenez de la logistique et envoyez des devoirs structurés.
+        </p>
       </div>
-
-      {showOverview && (
-        <div className="mt-5 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <p className="font-display text-base font-bold text-foreground">
-            Devoirs donnés récemment
-          </p>
-          {recentQuery.isLoading && (
-            <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
-            </p>
-          )}
-          {!recentQuery.isLoading && (recentQuery.data?.length ?? 0) === 0 && (
-            <p className="mt-3 text-sm text-muted-foreground">Aucun devoir envoyé pour l&apos;instant.</p>
-          )}
-          <ul className="mt-3 space-y-2">
-            {(recentQuery.data ?? []).map((a) => (
-              <li
-                key={a.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border px-3.5 py-2.5 text-sm"
-              >
-                <span className="min-w-0">
-                  <span className="font-semibold text-foreground">{a.title}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    {a.learner_name ?? "Élève"} ·{" "}
-                    {new Date(a.created_at).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                    })}
-                  </span>
-                </span>
-                <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-secondary-foreground">
-                  {STATUS_LABEL[a.status] ?? a.status}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {conversationsQuery.isLoading && (
         <p className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">

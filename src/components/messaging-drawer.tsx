@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Archive, ArrowLeft, Expand, Loader2, MessageSquare, X } from "lucide-react";
 import { toast } from "sonner";
 
-import { useMessagingPanel } from "@/lib/messaging-panel-context";
+import { useMessagingPanel, type MessagingPanelTab } from "@/lib/messaging-panel-context";
 import { useMessagingSide } from "@/hooks/use-messaging-side";
 import {
   initials,
@@ -17,10 +17,11 @@ import { ConversationPanel } from "@/components/conversation-panel";
 type Tab = "all" | "unread" | "archived";
 
 export function MessagingDrawer() {
-  const { isOpen, close } = useMessagingPanel();
+  const { isOpen, close, openRequest } = useMessagingPanel();
   const { side, loading, signedIn, userId } = useMessagingSide();
   const [tab, setTab] = useState<Tab>("all");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [initialTab, setInitialTab] = useState<MessagingPanelTab | undefined>(undefined);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -37,13 +38,22 @@ export function MessagingDrawer() {
         : conversations.filter((c) => !c.archived);
   const unreadCount = conversations.filter((c) => !c.archived && c.unread > 0).length;
 
+  // Ouverture ciblée depuis ailleurs dans l'app (ex. un devoir cliqué sur l'accueil).
+  useEffect(() => {
+    if (!openRequest) return;
+    setActiveId(openRequest.conversationId);
+    setInitialTab(openRequest.tab);
+  }, [openRequest]);
+
   function openConversation(id: string) {
     setActiveId(id);
+    setInitialTab(undefined);
   }
 
   function handleClose() {
     close();
     setActiveId(null);
+    setInitialTab(undefined);
   }
 
   async function toggleArchive(conversation: ConversationListItem) {
@@ -72,7 +82,10 @@ export function MessagingDrawer() {
             <div className="flex items-center gap-2 border-b border-border px-3 py-3">
               <button
                 type="button"
-                onClick={() => setActiveId(null)}
+                onClick={() => {
+                  setActiveId(null);
+                  setInitialTab(undefined);
+                }}
                 aria-label="Retour à la liste"
                 className="flex size-9 items-center justify-center rounded-full text-foreground hover:bg-secondary"
               >
@@ -114,6 +127,7 @@ export function MessagingDrawer() {
                 subtitle={active.children?.first_name ? `Suivi de ${active.children.first_name}` : null}
                 learnerLabel={active.children?.first_name ?? active.otherName}
                 childAuthUserId={active.children?.auth_user_id ?? null}
+                initialTab={initialTab}
               />
             </div>
           </>

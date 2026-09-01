@@ -89,6 +89,7 @@ export function ConversationPanel({
   teacherId,
   learnerId,
   childId,
+  initialTab,
 }: {
   conversationId: string;
   role: PanelRole;
@@ -102,9 +103,13 @@ export function ConversationPanel({
   teacherId: string;
   learnerId: string;
   childId?: string | null;
+  /** ouvre directement sur cet onglet (ex. "resources" depuis un devoir cliqué ailleurs) */
+  initialTab?: "chat" | "resources";
 }) {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"chat" | "resources">(role === "child" ? "resources" : "chat");
+  const [tab, setTab] = useState<"chat" | "resources">(
+    role === "child" ? "resources" : (initialTab ?? "chat"),
+  );
   const [draft, setDraft] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
