@@ -1756,6 +1756,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_teacher_busy_slots: {
+        Args: { p_from: string; p_teacher_id: string; p_to: string }
+        Returns: { duration_minutes: number; scheduled_at: string }[]
+      }
       get_teacher_full_public: { Args: { p_teacher_id: string }; Returns: Json }
       get_teacher_public: {
         Args: { p_teacher_id: string }

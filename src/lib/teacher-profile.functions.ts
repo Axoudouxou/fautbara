@@ -49,6 +49,8 @@ export type TeacherFullProfile = {
     teaching_method: string | null;
     languages: string[] | null;
     intro_video_url: string | null;
+    students_count: number;
+    lessons_count: number;
   } | null;
   educations: TeacherEducation[];
   experiences: TeacherExperience[];

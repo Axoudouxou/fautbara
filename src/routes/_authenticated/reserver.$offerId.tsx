@@ -3,12 +3,20 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CalendarCheck, Clock, Home, Laptop, Loader2, MapPin } from "lucide-react";
+import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { useSessionRoles } from "@/hooks/use-session-roles";
 
 export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
+  validateSearch: (search) =>
+    z
+      .object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+      })
+      .parse(search),
   head: () => ({
     meta: [
       { title: "Réserver un cours — BARA" },
@@ -37,14 +45,15 @@ function weekdayIndex(date: Date) {
 function BookingPage() {
   const { user } = Route.useRouteContext();
   const { offerId } = Route.useParams();
+  const search = Route.useSearch();
   const navigate = useNavigate();
   const { roles, rolesLoading } = useSessionRoles();
   const canBook = roles.includes("parent") || roles.includes("student");
   const isParent = roles.includes("parent");
 
   const [childId, setChildId] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [date, setDate] = useState(search.date ?? "");
+  const [time, setTime] = useState(search.time ?? "");
   const [format, setFormat] = useState<"home" | "online">("home");
   const [commune, setCommune] = useState("");
   const [address, setAddress] = useState("");
