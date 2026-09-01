@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   BadgeCheck,
-  BookOpen,
   CalendarDays,
   GraduationCap,
+  Home,
   Laptop,
   MapPin,
   Search,
@@ -83,6 +83,10 @@ function TeachersPage() {
   const { catalog, teachers } = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
+
+  const activeSubjectName = search.matiere
+    ? catalog.subjects.find((s) => s.slug === search.matiere)?.name
+    : undefined;
 
   const [priceRange, setPriceRange] = useState<[number, number]>([
     search.prixMin ?? 0,
@@ -290,9 +294,9 @@ function TeachersPage() {
           </a>
         </div>
       ) : (
-        <ul className="mt-6 space-y-4">
+        <ul className="mt-6 space-y-3">
           {teachers.map((teacher) => (
-            <TeacherRow key={teacher.teacher_id} teacher={teacher} />
+            <TeacherRow key={teacher.teacher_id} teacher={teacher} activeSubjectName={activeSubjectName} />
           ))}
         </ul>
       )}
@@ -300,142 +304,146 @@ function TeachersPage() {
   );
 }
 
-function TeacherRow({ teacher }: { teacher: TeacherCard }) {
+function TeacherRow({
+  teacher,
+  activeSubjectName,
+}: {
+  teacher: TeacherCard;
+  activeSubjectName?: string;
+}) {
+  const subjectLabel = activeSubjectName ?? teacher.subjects[0];
+
   return (
-    <li className="rounded-2xl border border-border/70 bg-card p-5 transition-shadow hover:shadow-[var(--shadow-card)]">
-      <div className="flex flex-col gap-5 sm:flex-row">
+    <li className="rounded-2xl border border-border/70 bg-card p-4 transition-shadow hover:shadow-[var(--shadow-card)]">
+      <div className="flex gap-3">
         <Link
           to="/professeurs/$id"
           params={{ id: teacher.teacher_id }}
-          className="shrink-0 self-center sm:self-start"
+          className="shrink-0"
         >
           {teacher.avatar_url ? (
             <img
               src={teacher.avatar_url}
               alt={`Photo de ${teacher.display_name}`}
               loading="lazy"
-              className="size-28 rounded-2xl object-cover sm:size-32"
+              className="size-20 rounded-xl object-cover"
             />
           ) : (
-            <span className="flex size-28 items-center justify-center rounded-2xl bg-primary-soft font-display text-3xl font-bold text-primary-soft-foreground sm:size-32">
+            <span className="flex size-20 items-center justify-center rounded-xl bg-primary-soft font-display text-xl font-bold text-primary-soft-foreground">
               {initials(teacher.display_name) || "?"}
             </span>
           )}
         </Link>
 
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <Link
-                  to="/professeurs/$id"
-                  params={{ id: teacher.teacher_id }}
-                  className="font-display text-lg font-bold text-foreground hover:underline"
-                >
-                  {teacher.display_name}
-                </Link>
-                {teacher.identity_verified ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2.5 py-0.5 text-xs font-bold text-success">
-                    <BadgeCheck className="size-3.5" aria-hidden />
-                    Vérifié
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="size-3.5" aria-hidden />
-                  {teacher.commune ? `${teacher.commune}, ` : ""}
-                  {teacher.city ?? "Côte d'Ivoire"}
-                </span>
-                {teacher.years_experience ? (
-                  <span className="inline-flex items-center gap-1">
-                    <GraduationCap className="size-3.5" aria-hidden />
-                    {teacher.years_experience} an{teacher.years_experience > 1 ? "s" : ""}{" "}
-                    d'expérience
-                  </span>
-                ) : null}
-                {teacher.offers_online ? (
-                  <span className="inline-flex items-center gap-1">
-                    <Laptop className="size-3.5" aria-hidden />
-                    En ligne
-                  </span>
-                ) : null}
-              </p>
-
-              <ul className="mt-2 flex flex-wrap gap-1.5">
-                {teacher.subjects.slice(0, 4).map((subject) => (
-                  <li
-                    key={subject}
-                    className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground"
-                  >
-                    {subject}
-                  </li>
-                ))}
-              </ul>
-
-              {teacher.teaching_method ? (
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground">
-                  <BookOpen className="size-3.5 text-primary" aria-hidden />
-                  {teacher.teaching_method}
-                </p>
-              ) : null}
-
-              {teacher.bio ? (
-                <p className="mt-2 line-clamp-2 max-w-2xl text-sm text-muted-foreground sm:line-clamp-3">
-                  {teacher.bio}
-                </p>
-              ) : null}
-            </div>
-
-            {/* Colonne de droite : prix, statistiques, actions */}
-            <div className="flex w-full shrink-0 flex-row items-center justify-between gap-4 sm:w-auto sm:flex-col sm:items-end sm:justify-start">
-              <div className="text-left sm:text-right">
-                <p className="font-display text-xl font-bold text-foreground">
-                  {teacher.min_price_fcfa.toLocaleString("fr-FR")} FCFA
-                </p>
-                <p className="text-xs text-muted-foreground">/ séance</p>
-              </div>
-
-              <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:items-end">
-                {teacher.rating_count > 0 ? (
-                  <span className="inline-flex items-center gap-1 font-semibold text-foreground">
-                    <Star className="size-3.5 fill-primary text-primary" aria-hidden />
-                    {Number(teacher.rating_avg).toFixed(1)} ({teacher.rating_count} avis)
-                  </span>
-                ) : (
-                  <span>Pas encore d'avis</span>
-                )}
-                <span className="inline-flex items-center gap-1">
-                  <Users className="size-3.5" aria-hidden />
-                  {teacher.students_count} élève{teacher.students_count > 1 ? "s" : ""}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <CalendarDays className="size-3.5" aria-hidden />
-                  {teacher.lessons_count} cours donné{teacher.lessons_count > 1 ? "s" : ""}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-2 sm:ml-auto sm:w-52">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Link
               to="/professeurs/$id"
               params={{ id: teacher.teacher_id }}
-              className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              className="truncate font-display text-base font-bold text-foreground hover:underline"
             >
-              Voir le profil
+              {teacher.display_name}
             </Link>
-            {teacher.sample_offer_id ? (
-              <Link
-                to="/reserver/$offerId"
-                params={{ offerId: teacher.sample_offer_id }}
-                className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-              >
-                Réserver un cours d'essai
-              </Link>
+            {teacher.identity_verified ? (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-bold text-success">
+                <BadgeCheck className="size-3" aria-hidden />
+                Vérifié
+              </span>
             ) : null}
           </div>
+
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="size-3.5" aria-hidden />
+              {teacher.commune ? `${teacher.commune}, ` : ""}
+              {teacher.city ?? "Côte d'Ivoire"}
+            </span>
+            {teacher.years_experience ? (
+              <span className="inline-flex items-center gap-1">
+                <GraduationCap className="size-3.5" aria-hidden />
+                {teacher.years_experience} an{teacher.years_experience > 1 ? "s" : ""}
+              </span>
+            ) : null}
+            {teacher.offers_home ? (
+              <span className="inline-flex items-center gap-1">
+                <Home className="size-3.5" aria-hidden />
+                Domicile
+              </span>
+            ) : null}
+            {teacher.offers_online ? (
+              <span className="inline-flex items-center gap-1">
+                <Laptop className="size-3.5" aria-hidden />
+                En ligne
+              </span>
+            ) : null}
+          </p>
+
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {subjectLabel ? (
+              <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">
+                {subjectLabel}
+              </span>
+            ) : null}
+            {teacher.teaching_method ? (
+              <span className="rounded-full bg-secondary/60 px-2.5 py-1 text-xs text-muted-foreground">
+                {teacher.teaching_method}
+              </span>
+            ) : null}
+          </div>
+
+          {teacher.bio ? (
+            <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+              {teacher.bio}
+            </p>
+          ) : null}
         </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          {teacher.rating_count > 0 ? (
+            <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+              <Star className="size-3.5 fill-primary text-primary" aria-hidden />
+              {Number(teacher.rating_avg).toFixed(1)} ({teacher.rating_count})
+            </span>
+          ) : (
+            <span>Nouveau</span>
+          )}
+          <span className="inline-flex items-center gap-1">
+            <Users className="size-3.5" aria-hidden />
+            {teacher.students_count}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <CalendarDays className="size-3.5" aria-hidden />
+            {teacher.lessons_count}
+          </span>
+        </div>
+
+        <p className="text-right">
+          <span className="font-display text-base font-bold text-foreground">
+            {teacher.min_price_fcfa.toLocaleString("fr-FR")} FCFA
+          </span>
+          <span className="text-[11px] text-muted-foreground"> / séance</span>
+        </p>
+      </div>
+
+      <div className="mt-2 flex gap-2">
+        <Link
+          to="/professeurs/$id"
+          params={{ id: teacher.teacher_id }}
+          className="flex-1 inline-flex items-center justify-center rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:text-sm"
+        >
+          Voir le profil
+        </Link>
+        {teacher.sample_offer_id ? (
+          <Link
+            to="/reserver/$offerId"
+            params={{ offerId: teacher.sample_offer_id }}
+            className="flex-1 inline-flex items-center justify-center rounded-full border border-border px-2 py-2 text-center text-xs font-semibold leading-tight text-foreground transition-colors hover:bg-secondary sm:text-sm"
+          >
+            Réserver un cours d'essai
+          </Link>
+        ) : null}
       </div>
     </li>
   );
