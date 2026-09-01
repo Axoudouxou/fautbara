@@ -4,7 +4,15 @@ revoke execute on function public.admin_moderate_offer(uuid, text, text) from pu
 revoke execute on function public.admin_read_dispute_conversation(uuid) from public, anon;
 revoke execute on function public.admin_resolve_dispute(uuid, text, text, integer, timestamptz) from public, anon;
 revoke execute on function public.admin_review_teacher_document(uuid, text, text) from public, anon;
-revoke execute on function public.admin_set_teacher_verification(uuid, boolean, boolean, text) from public, anon;
+-- Le surcharge à 4 arguments a été supprimée par la migration
+-- 20260831130000 (remplacée par la version à 5 arguments) : REVOKE n'a
+-- pas de IF EXISTS, donc on l'ignore proprement si elle est absente.
+do $$
+begin
+  revoke execute on function public.admin_set_teacher_verification(uuid, boolean, boolean, text) from public, anon;
+exception when undefined_function then
+  null;
+end $$;
 revoke execute on function public.admin_set_teacher_verification(uuid, boolean, boolean, text, text) from public, anon;
 revoke execute on function public.cancel_booking(uuid, text) from public, anon;
 revoke execute on function public.cancel_booking_payment(uuid, text) from public, anon;
