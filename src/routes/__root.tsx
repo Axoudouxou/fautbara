@@ -115,6 +115,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="fr">
       <head>
         <HeadContent />
+        <script src="/api/public/backend-config" />
       </head>
       <body>
         {children}
