@@ -8,6 +8,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { useSessionRoles } from "@/hooks/use-session-roles";
+import { AvailabilitySlotGrid } from "@/components/teacher-availability-calendar";
 
 export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
   validateSearch: (search) =>
@@ -35,11 +36,6 @@ const WEEKDAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "
 
 function hhmm(value: string) {
   return value.slice(0, 5);
-}
-
-/** Date -> index 0 = lundi … 6 = dimanche */
-function weekdayIndex(date: Date) {
-  return (date.getDay() + 6) % 7;
 }
 
 function BookingPage() {
@@ -106,20 +102,6 @@ function BookingPage() {
     },
   });
 
-  const exceptionsQuery = useQuery({
-    queryKey: ["booking-exceptions", offer?.teacher_id],
-    enabled: Boolean(offer?.teacher_id),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("availability_exceptions")
-        .select("exception_date, start_time, end_time")
-        .eq("teacher_id", offer!.teacher_id)
-        .gte("exception_date", new Date().toISOString().slice(0, 10));
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const childrenQuery = useQuery({
     queryKey: ["children", user.id],
     enabled: isParent,
@@ -135,19 +117,7 @@ function BookingPage() {
   });
 
   const slots = slotsQuery.data ?? [];
-  const exceptions = exceptionsQuery.data ?? [];
   const children = childrenQuery.data ?? [];
-
-  const daySlots = useMemo(() => {
-    if (!date) return [];
-    const index = weekdayIndex(new Date(`${date}T00:00:00`));
-    return slots.filter((s) => s.weekday === index);
-  }, [date, slots]);
-
-  const dayBlocked = useMemo(() => {
-    if (!date) return false;
-    return exceptions.some((e) => e.exception_date === date && !e.start_time);
-  }, [date, exceptions]);
 
   const sessionRange = useMemo(() => {
     if (!date || !time || !offer) return { start: "", end: "" };
@@ -250,11 +220,7 @@ function BookingPage() {
 
   function submit() {
     if (!date || !time) {
-      toast.error("Choisissez une date et une heure");
-      return;
-    }
-    if (dayBlocked) {
-      toast.error("Le professeur est indisponible ce jour-là");
+      toast.error("Choisissez un créneau parmi les disponibilités du professeur");
       return;
     }
     if (new Date(`${date}T${time}:00`) <= new Date()) {
@@ -331,32 +297,21 @@ function BookingPage() {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="bk-date" className="text-sm font-semibold text-foreground">
-                Date de la première séance
-              </label>
-              <input
-                id="bk-date"
-                type="date"
-                required
-                min={new Date().toISOString().slice(0, 10)}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label htmlFor="bk-time" className="text-sm font-semibold text-foreground">
-                Heure de début
-              </label>
-              <input
-                id="bk-time"
-                type="time"
-                required
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className={inputClass}
+          <div>
+            <p className="text-sm font-semibold text-foreground">Créneau de la séance</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Choisissez un créneau parmi les disponibilités réelles du professeur.
+            </p>
+            <div className="mt-3">
+              <AvailabilitySlotGrid
+                teacherId={offer.teacher_id}
+                durationMinutes={offer.duration_minutes}
+                initialDate={search.date}
+                selected={date && time ? { date, time } : null}
+                onSelectSlot={(d, t) => {
+                  setDate(d);
+                  setTime(t);
+                }}
               />
             </div>
           </div>
@@ -375,28 +330,6 @@ function BookingPage() {
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Durée : {offer.duration_minutes} minutes (heure d&apos;Abidjan).
               </p>
-            </div>
-          )}
-
-
-
-          {date && (
-            <div className="rounded-2xl bg-secondary/50 px-4 py-3 text-sm">
-              {dayBlocked ? (
-                <p className="text-warning">Le professeur a signalé une indisponibilité ce jour-là.</p>
-              ) : daySlots.length > 0 ? (
-                <p className="text-muted-foreground">
-                  Créneaux habituels ce jour :{" "}
-                  <span className="font-semibold text-foreground">
-                    {daySlots.map((s) => `${hhmm(s.start_time)}–${hhmm(s.end_time)}`).join(", ")}
-                  </span>
-                </p>
-              ) : (
-                <p className="text-muted-foreground">
-                  Aucun créneau habituel déclaré ce jour : votre demande reste possible, le
-                  professeur confirmera.
-                </p>
-              )}
             </div>
           )}
 
