@@ -9,9 +9,14 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   vite: {
     resolve: {
-      alias: {
-        "@/integrations/supabase/client": `${process.cwd()}/src/lib/cloud-client.ts`,
-      },
+      // Array form replaces the preset's object aliases, so re-declare "@" here.
+      alias: [
+        {
+          find: /^@\/integrations\/supabase\/client$/,
+          replacement: `${process.cwd()}/src/lib/cloud-client.ts`,
+        },
+        { find: /^@\//, replacement: `${process.cwd()}/src/` },
+      ],
     },
   },
   tanstackStart: {
