@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
   BookOpen,
+  CalendarClock,
   CheckCircle2,
+  Clock,
   Download,
   Loader2,
   MessageSquare,
@@ -14,6 +17,11 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
+import {
+  useConversationSystemContext,
+  type ConversationTimelineEvent,
+} from "@/lib/conversation-system-events";
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const BUCKET = "message-files";
@@ -78,6 +86,9 @@ export function ConversationPanel({
   subtitle,
   learnerLabel,
   childAuthUserId,
+  teacherId,
+  learnerId,
+  childId,
 }: {
   conversationId: string;
   role: PanelRole;
@@ -87,6 +98,10 @@ export function ConversationPanel({
   /** prénom de l'apprenant (enfant ou adulte) pour les statuts */
   learnerLabel: string;
   childAuthUserId?: string | null;
+  /** identifiants du binôme, pour corréler les réservations réelles (cartes système) */
+  teacherId: string;
+  learnerId: string;
+  childId?: string | null;
 }) {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"chat" | "resources">(role === "child" ? "resources" : "chat");
@@ -95,6 +110,9 @@ export function ConversationPanel({
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const canChat = role !== "child";
+  const systemContextKey = ["conversation-system-context", teacherId, learnerId, childId ?? null];
+  const systemContextQuery = useConversationSystemContext(teacherId, learnerId, childId ?? null, canChat);
+  const systemContext = systemContextQuery.data;
 
   // Rafraîchissement quasi temps réel par polling (5 s) : simple, robuste hors WebSocket.
   const messagesQuery = useQuery({
@@ -131,6 +149,24 @@ export function ConversationPanel({
   const messages = messagesQuery.data ?? [];
   const assignments = assignmentsQuery.data ?? [];
 
+  type ThreadItem =
+    | { type: "message"; sortAt: string; message: MessageRow }
+    | { type: "system"; sortAt: string; event: ConversationTimelineEvent };
+
+  const threadItems = useMemo<ThreadItem[]>(() => {
+    const timelineItems: ThreadItem[] = (systemContext?.timeline ?? []).map((event) => ({
+      type: "system",
+      sortAt: event.sortAt,
+      event,
+    }));
+    const messageItems: ThreadItem[] = messages.map((message) => ({
+      type: "message",
+      sortAt: message.created_at,
+      message,
+    }));
+    return [...timelineItems, ...messageItems].sort((a, b) => a.sortAt.localeCompare(b.sortAt));
+  }, [messages, systemContext?.timeline]);
+
   // Marquer la conversation comme lue
   useEffect(() => {
     if (!canChat) return;
@@ -141,7 +177,7 @@ export function ConversationPanel({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "nearest" });
-  }, [messages.length, tab]);
+  }, [threadItems.length, tab]);
 
   // L'apprenant (ou l'enfant) marque automatiquement les devoirs comme vus
   useEffect(() => {
@@ -250,6 +286,56 @@ export function ConversationPanel({
         </div>
       </header>
 
+      {systemContext?.reminder && (
+        <div className="mx-4 mt-3 flex items-center gap-2 rounded-xl bg-warning-soft px-3 py-2 text-xs font-semibold text-warning sm:mx-6">
+          <Clock className="size-3.5 shrink-0" aria-hidden />
+          Séance à venir le{" "}
+          {new Date(systemContext.reminder.scheduledAt).toLocaleString("fr-FR", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
+        </div>
+      )}
+
+      {systemContext?.pending && (
+        <div className="mx-4 mt-3 rounded-2xl border border-primary/30 bg-primary-soft/40 p-4 sm:mx-6">
+          <div className="flex items-center gap-2">
+            <CalendarClock className="size-4 text-primary" aria-hidden />
+            <p className="text-sm font-semibold text-foreground">Proposition de report</p>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Ancien créneau :{" "}
+            <span className="font-semibold text-foreground">
+              {new Date(systemContext.pending.scheduled_at).toLocaleString("fr-FR", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Nouveau créneau proposé :{" "}
+            <span className="font-semibold text-foreground">
+              {new Date(systemContext.pending.reschedule_proposed_at!).toLocaleString("fr-FR", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </span>
+          </p>
+          <BookingLifecycleControls
+            booking={systemContext.pending}
+            role={role === "teacher" ? "teacher" : "learner"}
+            userId={userId}
+            invalidateKeys={[systemContextKey]}
+          />
+          <Link
+            to={role === "teacher" ? "/pro/demandes" : "/compte/reservations"}
+            className="mt-2 inline-block text-xs font-semibold text-primary hover:underline"
+          >
+            Voir les détails
+          </Link>
+        </div>
+      )}
+
       {tab === "chat" && canChat && (
         <>
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-5 sm:px-6" aria-live="polite">
@@ -258,13 +344,17 @@ export function ConversationPanel({
                 <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
               </p>
             )}
-            {!messagesQuery.isLoading && messages.length === 0 && (
+            {!messagesQuery.isLoading && threadItems.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 Aucun message pour l&apos;instant. Présentez-vous et convenez des détails pratiques
                 (créneau, adresse, matériel).
               </p>
             )}
-            {messages.map((m) => {
+            {threadItems.map((item) => {
+              if (item.type === "system") {
+                return <SystemEventCard key={item.event.id} event={item.event} />;
+              }
+              const m = item.message;
               const mine = m.sender_id === userId;
               return (
                 <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
@@ -568,5 +658,41 @@ function NewAssignmentForm({
         </button>
       </div>
     </form>
+  );
+}
+
+/** Carte structurée pour un événement de la réservation (pas du texte brut). */
+function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
+  const dateTime = (iso: string) =>
+    new Date(iso).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
+
+  if (event.kind === "trial_confirmed" || event.kind === "booking_confirmed") {
+    return (
+      <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
+        <p className="text-xs font-semibold text-foreground">
+          {event.kind === "trial_confirmed" ? "Cours d'essai confirmé" : "Réservation confirmée"}
+        </p>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">{dateTime(event.scheduledAt)}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
+      <p className="text-xs font-semibold text-foreground">
+        {event.forceMajeure ? "Report pour cas de force majeure" : "Report confirmé"}
+      </p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">
+        {dateTime(event.previousAt)} → {dateTime(event.newAt)}
+      </p>
+      {event.reason && (
+        <p className="mt-1 text-[11px] text-muted-foreground">Motif : {event.reason}</p>
+      )}
+      {event.feeRate > 0 && (
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Retenue appliquée : {Math.round(event.feeRate * 100)} %
+        </p>
+      )}
+    </div>
   );
 }

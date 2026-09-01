@@ -275,6 +275,9 @@ function TeacherMessages() {
               conversationId={active.id}
               role="teacher"
               userId={user.id}
+              teacherId={active.teacher_id}
+              learnerId={active.learner_id}
+              childId={active.child_id}
               title={active.children?.first_name ?? active.otherName}
               subtitle={
                 subjectsFor(active.learner_id, active.child_id).join(", ") ||
