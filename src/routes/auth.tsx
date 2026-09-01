@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { GraduationCap, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { needsOnboarding } from "@/lib/onboarding";
 
 type Mode = "signin" | "signup" | "forgot";
 type SignupRole = "parent" | "student" | "teacher";
@@ -42,6 +43,11 @@ function AuthPage() {
   const [pending, setPending] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
 
+  async function redirectAfterAuth(userId: string) {
+    const to = (await needsOnboarding(userId)) ? "/onboarding" : "/accueil";
+    navigate({ to });
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
@@ -63,7 +69,10 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            // Redirige vers une page authentifiée : "/" n'a aucune logique
+            // de redirection, un compte confirmé par e-mail y restait bloqué
+            // sans jamais atteindre /onboarding.
+            emailRedirectTo: `${window.location.origin}/accueil`,
             data: { display_name: displayName, role },
           },
         });
@@ -72,12 +81,14 @@ function AuthPage() {
           setSignupDone(true);
           return;
         }
+        toast.success("Compte créé");
+        if (data.user) await redirectAfterAuth(data.user.id);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        toast.success("Bon retour !");
+        await redirectAfterAuth(data.user.id);
       }
-      toast.success(mode === "signin" ? "Bon retour !" : "Compte créé");
-      navigate({ to: "/accueil" });
     } catch (err) {
       toast.error("Une erreur est survenue", {
         description: err instanceof Error ? err.message : "Veuillez réessayer.",
