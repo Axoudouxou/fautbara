@@ -38,6 +38,7 @@ import { Route as AuthenticatedProOffresRouteImport } from './routes/_authentica
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
 import { Route as AuthenticatedProVerificationRouteImport } from './routes/_authenticated/pro.verification'
 import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
+import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/backend-config'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -197,6 +198,11 @@ const AuthenticatedReserverOfferIdRoute =
     path: '/reserver/$offerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicBackendConfigRoute = ApiPublicBackendConfigRouteImport.update({
+  id: '/api/public/backend-config',
+  path: '/api/public/backend-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/pro/profil': typeof AuthenticatedProProfilRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
+  '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/compte/': typeof AuthenticatedCompteIndexRoute
   '/pro/': typeof AuthenticatedProIndexRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/pro/profil': typeof AuthenticatedProProfilRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
+  '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/compte': typeof AuthenticatedCompteIndexRoute
   '/pro': typeof AuthenticatedProIndexRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
   '/_authenticated/pro/verification': typeof AuthenticatedProVerificationRoute
   '/_authenticated/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
+  '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/compte/': typeof AuthenticatedCompteIndexRoute
   '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
@@ -318,6 +327,7 @@ export interface FileRouteTypes {
     | '/pro/profil'
     | '/pro/verification'
     | '/reserver/$offerId'
+    | '/api/public/backend-config'
     | '/admin/'
     | '/compte/'
     | '/pro/'
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/pro/profil'
     | '/pro/verification'
     | '/reserver/$offerId'
+    | '/api/public/backend-config'
     | '/admin'
     | '/compte'
     | '/pro'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/profil'
     | '/_authenticated/pro/verification'
     | '/_authenticated/reserver/$offerId'
+    | '/api/public/backend-config'
     | '/_authenticated/admin/'
     | '/_authenticated/compte/'
     | '/_authenticated/pro/'
@@ -393,6 +405,7 @@ export interface RootRouteChildren {
   ProfesseursIdRoute: typeof ProfesseursIdRoute
   MatieresIndexRoute: typeof MatieresIndexRoute
   ProfesseursIndexRoute: typeof ProfesseursIndexRoute
+  ApiPublicBackendConfigRoute: typeof ApiPublicBackendConfigRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -600,6 +613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReserverOfferIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/backend-config': {
+      id: '/api/public/backend-config'
+      path: '/api/public/backend-config'
+      fullPath: '/api/public/backend-config'
+      preLoaderRoute: typeof ApiPublicBackendConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -663,6 +683,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfesseursIdRoute: ProfesseursIdRoute,
   MatieresIndexRoute: MatieresIndexRoute,
   ProfesseursIndexRoute: ProfesseursIndexRoute,
+  ApiPublicBackendConfigRoute: ApiPublicBackendConfigRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
