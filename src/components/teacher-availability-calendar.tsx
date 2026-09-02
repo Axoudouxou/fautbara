@@ -224,11 +224,23 @@ export function AvailabilitySlotGrid({
         {days.map((day, index) => {
           const isSelected = toDateStr(day) === selectedDateStr;
           const isPast = toDateStr(day) < toDateStr(new Date());
+          const state = dayStates[index]!;
+          const noFreeSlot = !loading && state.free === 0;
+          const disabled = isPast || noFreeSlot;
           return (
             <button
               key={toDateStr(day)}
               type="button"
-              disabled={isPast}
+              disabled={disabled}
+              title={
+                isPast
+                  ? undefined
+                  : state.fullyBooked
+                    ? "Journée complète"
+                    : noFreeSlot
+                      ? "Aucun créneau disponible"
+                      : undefined
+              }
               onClick={() => setSelectedDay(day)}
               className={`flex flex-col items-center gap-0.5 rounded-xl py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                 isSelected
@@ -238,6 +250,18 @@ export function AvailabilitySlotGrid({
             >
               <span>{WEEKDAYS_SHORT[index]}</span>
               <span>{day.getDate()}</span>
+              <span
+                aria-hidden
+                className={`mt-0.5 size-1.5 rounded-full ${
+                  loading
+                    ? "bg-transparent"
+                    : state.free > 0
+                      ? isSelected
+                        ? "bg-primary-foreground"
+                        : "bg-primary"
+                      : "bg-transparent"
+                }`}
+              />
             </button>
           );
         })}
@@ -262,13 +286,16 @@ export function AvailabilitySlotGrid({
                   type="button"
                   disabled={slot.disabled}
                   title={slot.reason}
+                  aria-label={slot.booked ? `${slot.time} — déjà réservé` : slot.time}
                   onClick={() => onSelectSlot(selectedDateStr, slot.time)}
                   className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition-colors ${
-                    slot.disabled
-                      ? "cursor-not-allowed border-border/60 text-muted-foreground/60"
-                      : isChosen
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-primary/40 text-foreground hover:border-primary hover:bg-primary-soft/50"
+                    slot.booked
+                      ? "cursor-not-allowed border-border/60 bg-secondary/50 text-muted-foreground/70 line-through"
+                      : slot.disabled
+                        ? "cursor-not-allowed border-border/60 text-muted-foreground/60"
+                        : isChosen
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-primary/40 text-foreground hover:border-primary hover:bg-primary-soft/50"
                   }`}
                 >
                   {slot.time}
@@ -277,7 +304,13 @@ export function AvailabilitySlotGrid({
             })}
           </div>
         )}
+        {!loading && daySlots.some((s) => s.booked) && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Les horaires barrés sont déjà réservés.
+          </p>
+        )}
       </div>
+
 
       <p className="mt-3 text-xs text-muted-foreground">
         Heures d'Abidjan. Réservation possible jusqu'à 24h avant le cours.
