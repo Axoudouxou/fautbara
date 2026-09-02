@@ -141,7 +141,7 @@ function HomeScreen() {
 
   const firstName = (profileQuery.data?.display_name ?? "").split(" ")[0] ?? "";
 
-  if (roles.includes("admin")) return <AdminHome />;
+  if (roles.includes("admin")) return <AdminHome userId={user.id} />;
   if (roles.includes("teacher")) return <TeacherHome userId={user.id} firstName={firstName} />;
 
   return <LearnerHome userId={user.id} firstName={firstName} isParent={roles.includes("parent")} />;
