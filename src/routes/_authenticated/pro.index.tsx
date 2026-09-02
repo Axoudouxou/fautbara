@@ -88,20 +88,6 @@ function TeacherDashboard() {
     },
   });
 
-  const walletQuery = useQuery({
-    queryKey: ["wallet", user.id],
-    enabled: isTeacher,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wallets")
-        .select("balance_fcfa")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data?.balance_fcfa ?? 0;
-    },
-  });
-
   if (rolesQuery.isLoading) {
     return (
       <div className="container-page flex items-center gap-2 py-16 text-sm text-muted-foreground">
@@ -208,11 +194,9 @@ function TeacherDashboard() {
             <Wallet className="size-5" aria-hidden />
           </span>
           <div>
-            <p className="text-sm text-muted-foreground">Solde de mon portefeuille</p>
-            <p className="mt-0.5 font-display text-2xl font-bold text-foreground">
-              {walletQuery.isLoading
-                ? "…"
-                : `${(walletQuery.data ?? 0).toLocaleString("fr-FR")} FCFA`}
+            <p className="font-display text-lg font-bold text-foreground">Mon portefeuille</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Suivez vos revenus encaissés et demandez un retrait Mobile Money.
             </p>
           </div>
         </div>
