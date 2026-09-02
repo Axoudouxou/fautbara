@@ -155,7 +155,7 @@ function MessagingHeaderTrigger() {
 }
 
 function SiteHeader() {
-  const { signedIn, primaryRole } = useAppNav();
+  const { signedIn, primaryRole, isChild } = useAppNav();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -170,7 +170,7 @@ function SiteHeader() {
         </Link>
         {signedIn ? (
           <div className="flex items-center gap-2">
-            <AppTabsBar role={primaryRole} />
+            <AppTabsBar role={primaryRole} isChild={isChild} />
             <MessagingHeaderTrigger />
             <button
               type="button"
@@ -230,11 +230,11 @@ function SiteFooter() {
 }
 
 function AppMain({ children }: { children: ReactNode }) {
-  const { signedIn, primaryRole } = useAppNav();
+  const { signedIn, primaryRole, isChild } = useAppNav();
   return (
     <>
       <main className={signedIn ? "flex-1 pb-24 md:pb-0" : "flex-1"}>{children}</main>
-      {signedIn ? <AppTabsMobileBar role={primaryRole} /> : null}
+      {signedIn ? <AppTabsMobileBar role={primaryRole} isChild={isChild} /> : null}
     </>
   );
 }

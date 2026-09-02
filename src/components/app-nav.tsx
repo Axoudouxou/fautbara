@@ -124,8 +124,8 @@ export function tabsForRole(role: AppRole | null, isChild = false): Tab[] {
 }
 
 /** Onglets applicatifs affichés dans le header (tablette et desktop). */
-export function AppTabsBar({ role }: { role: AppRole | null }) {
-  const tabs = tabsForRole(role);
+export function AppTabsBar({ role, isChild = false }: { role: AppRole | null; isChild?: boolean }) {
+  const tabs = tabsForRole(role, isChild);
   return (
     <nav
       className="hidden items-center gap-1 md:flex"
@@ -149,8 +149,8 @@ export function AppTabsBar({ role }: { role: AppRole | null }) {
 }
 
 /** Barre de navigation basse, mobile-first. */
-export function AppTabsMobileBar({ role }: { role: AppRole | null }) {
-  const tabs = tabsForRole(role);
+export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | null; isChild?: boolean }) {
+  const tabs = tabsForRole(role, isChild);
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
@@ -181,6 +181,6 @@ export function AppTabsMobileBar({ role }: { role: AppRole | null }) {
 
 /** Header + bottom bar applicatifs, ou null si l'utilisateur n'est pas connecté. */
 export function useAppNav() {
-  const { ready, signedIn, primaryRole, rolesLoading } = useSessionRoles();
-  return { ready, signedIn, primaryRole, rolesLoading };
+  const { ready, signedIn, primaryRole, isChild, rolesLoading } = useSessionRoles();
+  return { ready, signedIn, primaryRole, isChild, rolesLoading };
 }
