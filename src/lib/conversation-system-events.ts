@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Attendance, HomeworkDone, ProgressLevel } from "@/lib/session-reports";
 
 export type PendingRescheduleBooking = {
   id: string;
@@ -29,6 +30,17 @@ export type ConversationTimelineEvent =
       forceMajeure: boolean;
       reason: string | null;
       feeRate: number;
+    }
+  | {
+      kind: "session_report";
+      id: string;
+      sortAt: string;
+      attendance: Attendance;
+      contentNote: string;
+      progressLevel: ProgressLevel;
+      homeworkDone: HomeworkDone | null;
+      engagementRating: number;
+      nextSteps: string | null;
     };
 
 export type ConversationSystemContext = {
@@ -71,15 +83,26 @@ export function useConversationSystemContext(
 
       const rows = bookings ?? [];
       const ids = rows.map((b) => b.id);
-      const ledgerRes =
+      const [ledgerRes, reportsRes] = await Promise.all([
         ids.length > 0
-          ? await supabase
+          ? supabase
               .from("reschedule_ledger")
               .select("id, booking_id, created_at, previous_scheduled_at, new_scheduled_at, is_force_majeure, force_majeure_reason, fee_rate")
               .in("booking_id", ids)
               .order("created_at", { ascending: true })
-          : { data: [], error: null };
+          : Promise.resolve({ data: [], error: null }),
+        ids.length > 0
+          ? supabase
+              .from("session_reports")
+              .select(
+                "id, created_at, attendance, content_note, progress_level, homework_done, engagement_rating, next_steps",
+              )
+              .in("booking_id", ids)
+              .order("created_at", { ascending: true })
+          : Promise.resolve({ data: [], error: null }),
+      ]);
       if (ledgerRes.error) throw ledgerRes.error;
+      if (reportsRes.error) throw reportsRes.error;
 
       const pending = rows.find((b) => b.reschedule_proposed_at) ?? null;
 
@@ -111,6 +134,17 @@ export function useConversationSystemContext(
           forceMajeure: l.is_force_majeure,
           reason: l.force_majeure_reason,
           feeRate: Number(l.fee_rate),
+        })),
+        ...(reportsRes.data ?? []).map((r) => ({
+          kind: "session_report" as const,
+          id: `session-report-${r.id}`,
+          sortAt: r.created_at,
+          attendance: r.attendance as Attendance,
+          contentNote: r.content_note,
+          progressLevel: r.progress_level as ProgressLevel,
+          homeworkDone: r.homework_done as HomeworkDone | null,
+          engagementRating: r.engagement_rating,
+          nextSteps: r.next_steps,
         })),
       ].sort((a, b) => a.sortAt.localeCompare(b.sortAt));
 

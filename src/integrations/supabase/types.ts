@@ -983,6 +983,69 @@ export type Database = {
           },
         ]
       }
+      session_reports: {
+        Row: {
+          attendance: string
+          booking_id: string
+          child_id: string | null
+          content_note: string
+          created_at: string
+          engagement_rating: number
+          homework_done: string | null
+          id: string
+          learner_id: string
+          next_steps: string | null
+          progress_level: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          attendance: string
+          booking_id: string
+          child_id?: string | null
+          content_note: string
+          created_at?: string
+          engagement_rating: number
+          homework_done?: string | null
+          id?: string
+          learner_id: string
+          next_steps?: string | null
+          progress_level: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          attendance?: string
+          booking_id?: string
+          child_id?: string | null
+          content_note?: string
+          created_at?: string
+          engagement_rating?: number
+          homework_done?: string | null
+          id?: string
+          learner_id?: string
+          next_steps?: string | null
+          progress_level?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_reports_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_reports_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subjects: {
         Row: {
           category_id: string
