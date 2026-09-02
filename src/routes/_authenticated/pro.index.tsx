@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   UserCog,
+  Wallet,
 } from "lucide-react";
 
 
