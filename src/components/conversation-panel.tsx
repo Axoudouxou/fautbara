@@ -109,7 +109,7 @@ export function ConversationPanel({
   learnerId: string;
   childId?: string | null;
   /** ouvre directement sur cet onglet (ex. "resources" depuis un devoir cliqué ailleurs) */
-  initialTab?: "chat" | "resources";
+  initialTab?: "chat" | "resources" | undefined;
 }) {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"chat" | "resources">(
@@ -705,7 +705,7 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
   const dateTime = (iso: string) =>
     new Date(iso).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 
-  if (event.kind === "trial_confirmed" || event.kind === "booking_confirmed") {
+  if (event.kind !== "reschedule_done") {
     return (
       <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
         <p className="text-xs font-semibold text-foreground">
@@ -754,7 +754,12 @@ function StudentProfileCard({
   query,
   fallbackName,
 }: {
-  query: { data?: StudentProfile; isLoading: boolean; isError: boolean; refetch: () => void };
+  query: {
+    data?: StudentProfile | undefined;
+    isLoading: boolean;
+    isError: boolean;
+    refetch: () => void;
+  };
   fallbackName: string;
 }) {
   const profile = query.data;
