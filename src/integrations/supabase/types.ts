@@ -755,6 +755,11 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          provider_notified_at: string | null
+          provider_redirect_url: string | null
+          provider_reference: string | null
+          provider_request_id: string | null
+          provider_status: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
@@ -778,6 +783,11 @@ export type Database = {
           paid_at?: string | null
           payer_id: string
           provider?: string
+          provider_notified_at?: string | null
+          provider_redirect_url?: string | null
+          provider_reference?: string | null
+          provider_request_id?: string | null
+          provider_status?: string | null
           refund_fcfa?: number
           refund_rate?: number | null
           refunded_at?: string | null
@@ -801,6 +811,11 @@ export type Database = {
           paid_at?: string | null
           payer_id?: string
           provider?: string
+          provider_notified_at?: string | null
+          provider_redirect_url?: string | null
+          provider_reference?: string | null
+          provider_request_id?: string | null
+          provider_status?: string | null
           refund_fcfa?: number
           refund_rate?: number | null
           refunded_at?: string | null
@@ -1627,6 +1642,11 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          provider_notified_at: string | null
+          provider_redirect_url: string | null
+          provider_reference: string | null
+          provider_request_id: string | null
+          provider_status: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
@@ -1743,6 +1763,11 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          provider_notified_at: string | null
+          provider_redirect_url: string | null
+          provider_reference: string | null
+          provider_request_id: string | null
+          provider_status: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
@@ -1882,6 +1907,11 @@ export type Database = {
           paid_at: string | null
           payer_id: string
           provider: string
+          provider_notified_at: string | null
+          provider_redirect_url: string | null
+          provider_reference: string | null
+          provider_request_id: string | null
+          provider_status: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
