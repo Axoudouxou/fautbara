@@ -25,59 +25,101 @@ type Tab = {
   link: Record<string, unknown>;
 };
 
-const learnerTabs: Tab[] = [
-  { label: "Accueil", short: "Accueil", icon: Home, link: linkOptions({ to: "/accueil" }) },
-  {
-    label: "Trouver un professeur",
-    short: "Rechercher",
-    icon: Search,
-    link: linkOptions({ to: "/professeurs", search: {} }),
-  },
-  { label: "Messages", short: "Messages", icon: MessageSquare, link: linkOptions({ to: "/messages" }) },
+const searchTab: Tab = {
+  label: "Rechercher",
+  short: "Rechercher",
+  icon: Search,
+  link: linkOptions({ to: "/professeurs", search: {} }),
+};
+
+const accountTab: Tab = {
+  label: "Mon compte",
+  short: "Compte",
+  icon: UserCog,
+  link: linkOptions({ to: "/compte" }),
+};
+
+const homeTab: Tab = {
+  label: "Accueil",
+  short: "Accueil",
+  icon: Home,
+  link: linkOptions({ to: "/accueil" }),
+};
+
+/** Parent : Accueil · Mes enfants · Mes cours · Rechercher · Mon compte */
+const parentTabs: Tab[] = [
+  homeTab,
+  { label: "Mes enfants", short: "Enfants", icon: Baby, link: linkOptions({ to: "/compte/enfants" }) },
   {
     label: "Mes cours",
     short: "Mes cours",
     icon: CalendarDays,
     link: linkOptions({ to: "/compte/reservations" }),
   },
-  { label: "Mon compte", short: "Compte", icon: UserCog, link: linkOptions({ to: "/compte" }) },
+  searchTab,
+  accountTab,
 ];
 
-const teacherTabs: Tab[] = [
-  { label: "Accueil", short: "Accueil", icon: Home, link: linkOptions({ to: "/accueil" }) },
-  { label: "Mes offres", short: "Offres", icon: BookOpen, link: linkOptions({ to: "/pro/offres" }) },
+/** Étudiant / adulte : Accueil · Mes cours · Rechercher · Messages · Mon compte */
+const studentTabs: Tab[] = [
+  homeTab,
   {
-    label: "Disponibilités",
-    short: "Dispos",
-    icon: CalendarClock,
-    link: linkOptions({ to: "/pro/disponibilites" }),
+    label: "Mes cours",
+    short: "Mes cours",
+    icon: CalendarDays,
+    link: linkOptions({ to: "/compte/reservations" }),
   },
+  searchTab,
+  { label: "Messages", short: "Messages", icon: MessageSquare, link: linkOptions({ to: "/messages" }) },
+  accountTab,
+];
+
+/** Enfant : consultation seulement, aucun accès financier. */
+const childTabs: Tab[] = [
+  homeTab,
+  {
+    label: "Mes cours",
+    short: "Mes cours",
+    icon: CalendarDays,
+    link: linkOptions({ to: "/compte/calendrier" }),
+  },
+  { label: "Devoirs", short: "Devoirs", icon: ClipboardList, link: linkOptions({ to: "/devoirs" }) },
+  { label: "Messages", short: "Messages", icon: MessageSquare, link: linkOptions({ to: "/messages" }) },
+];
+
+/** Intervenant : Accueil · Mes cours · Mes offres · Demandes · Mon compte */
+const teacherTabs: Tab[] = [
+  homeTab,
+  { label: "Mes cours", short: "Mes cours", icon: CalendarDays, link: linkOptions({ to: "/pro/cours" }) },
+  { label: "Mes offres", short: "Offres", icon: BookOpen, link: linkOptions({ to: "/pro/offres" }) },
   { label: "Demandes", short: "Demandes", icon: Inbox, link: linkOptions({ to: "/pro/demandes" }) },
-  { label: "Mon compte", short: "Compte", icon: UserCog, link: linkOptions({ to: "/compte" }) },
+  accountTab,
 ];
 
 const adminTabs: Tab[] = [
   {
-    label: "Tableau de bord",
+    label: "Dashboard",
     short: "Bord",
     icon: LayoutDashboard,
     link: linkOptions({ to: "/admin" }),
   },
   {
-    label: "Vérifications",
-    short: "Vérifs",
-    icon: BadgeCheck,
+    label: "Utilisateurs",
+    short: "Users",
+    icon: Users,
     link: linkOptions({ to: "/admin/professeurs" }),
   },
-  { label: "Litiges", short: "Litiges", icon: Gavel, link: linkOptions({ to: "/admin/litiges" }) },
-  { label: "Offres", short: "Offres", icon: BookOpen, link: linkOptions({ to: "/admin/offres" }) },
-  { label: "Utilisateurs", short: "Users", icon: Users, link: linkOptions({ to: "/accueil" }) },
+  { label: "Modération", short: "Modér.", icon: Gavel, link: linkOptions({ to: "/admin/litiges" }) },
+  { label: "Catalogue", short: "Offres", icon: BookOpen, link: linkOptions({ to: "/admin/offres" }) },
+  { label: "Finances", short: "Finances", icon: Wallet, link: linkOptions({ to: "/admin/retraits" }) },
 ];
 
-export function tabsForRole(role: AppRole | null): Tab[] {
-  if (role === "admin") return adminTabs.slice(0, 4);
+export function tabsForRole(role: AppRole | null, isChild = false): Tab[] {
+  if (role === "admin") return adminTabs;
   if (role === "teacher") return teacherTabs;
-  return learnerTabs;
+  if (role === "parent") return parentTabs;
+  if (isChild) return childTabs;
+  return studentTabs;
 }
 
 /** Onglets applicatifs affichés dans le header (tablette et desktop). */
