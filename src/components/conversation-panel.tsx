@@ -754,7 +754,12 @@ function StudentProfileCard({
   query,
   fallbackName,
 }: {
-  query: { data?: StudentProfile; isLoading: boolean; isError: boolean; refetch: () => void };
+  query: {
+    data?: StudentProfile | undefined;
+    isLoading: boolean;
+    isError: boolean;
+    refetch: () => void;
+  };
   fallbackName: string;
 }) {
   const profile = query.data;
