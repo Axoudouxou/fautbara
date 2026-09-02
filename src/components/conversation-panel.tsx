@@ -109,7 +109,7 @@ export function ConversationPanel({
   learnerId: string;
   childId?: string | null;
   /** ouvre directement sur cet onglet (ex. "resources" depuis un devoir cliqué ailleurs) */
-  initialTab?: "chat" | "resources";
+  initialTab?: "chat" | "resources" | undefined;
 }) {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"chat" | "resources">(
