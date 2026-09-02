@@ -68,7 +68,7 @@ export function AvailabilitySlotGrid({
   teacherId: string;
   durationMinutes?: number;
   /** "YYYY-MM-DD" — ouvre la semaine/jour de ce créneau plutôt qu'aujourd'hui */
-  initialDate?: string;
+  initialDate?: string | undefined;
   selected?: { date: string; time: string } | null;
   onSelectSlot: (date: string, time: string) => void;
 }) {
