@@ -265,9 +265,6 @@ function LearnerHome({
     (b) => new Date(b.scheduled_at).getTime() <= thisWeekEnd && new Date(b.scheduled_at).getTime() > now,
   );
 
-  const teacherOffers = offersQuery.data ?? [];
-  const publishedOffers = teacherOffers.filter((o) => o.status === "published");
-
   if (bookingsQuery.isLoading) {
     return (
       <div className="container-page flex items-center gap-2 py-16 text-sm text-muted-foreground">
@@ -633,6 +630,9 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
   const next = bookings.find(
     (b) => b.status === "accepted" && new Date(b.scheduled_at).getTime() > now,
   );
+  const teacherOffers = offersQuery.data ?? [];
+  const publishedOffers = teacherOffers.filter((o) => o.status === "published");
+
   const c = completenessQuery.data;
   const missing = c
     ? [
