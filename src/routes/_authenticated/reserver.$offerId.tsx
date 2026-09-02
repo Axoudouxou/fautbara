@@ -131,33 +131,35 @@ function BookingPage() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!offer) throw new Error("Offre indisponible");
-      const { error } = await supabase.from("bookings").insert({
-        requester_id: user.id,
-        child_id: childId || null,
-        teacher_id: offer.teacher_id,
-        offer_id: offer.id,
-        scheduled_at: new Date(`${date}T${time}:00`).toISOString(),
-        duration_minutes: offer.duration_minutes,
-        price_fcfa: offer.price_fcfa,
-        format,
-        city: offer.city,
-        commune: format === "home" ? commune || null : null,
-        address: format === "home" ? address.trim() || null : null,
-        message: message.trim() || null,
-        is_recurring: isRecurring,
-        recurrence_end_date: isRecurring && recurrenceEnd ? recurrenceEnd : null,
-        status: "pending",
+      const { data, error } = await supabase.rpc("lock_slot_and_create_booking", {
+        p_offer_id: offer.id,
+        p_child_id: childId || null,
+        p_scheduled_at: new Date(`${date}T${time}:00`).toISOString(),
+        p_format: format,
+        p_commune: format === "home" ? commune || null : null,
+        p_address: format === "home" ? address.trim() || null : null,
+        p_message: message.trim() || null,
+        p_is_recurring: isRecurring,
+        p_recurrence_end_date: isRecurring && recurrenceEnd ? recurrenceEnd : null,
       });
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      toast.success("Demande envoyée", {
-        description: "Le professeur reçoit votre demande et vous répondra rapidement.",
+    onSuccess: (booking) => {
+      if (booking?.status === "pending_payment") {
+        toast.success("Créneau réservé pour 15 minutes", {
+          description: "Réglez la séance avant la fin du compte à rebours pour la confirmer.",
+        });
+        navigate({ to: "/paiement/$bookingId", params: { bookingId: booking.id } });
+        return;
+      }
+      toast.success("Cours d'essai confirmé", {
+        description: "C'est votre première séance avec ce professeur : elle est gratuite et déjà confirmée.",
       });
       navigate({ to: "/compte/reservations" });
     },
     onError: (err) =>
-      toast.error("Demande impossible", {
+      toast.error("Réservation impossible", {
         description: err instanceof Error ? err.message : undefined,
       }),
   });
@@ -252,7 +254,8 @@ function BookingPage() {
         Réserver un cours
       </h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Votre demande est envoyée au professeur. Aucun paiement n&apos;est demandé à cette étape.
+        Ce créneau est un créneau réel de l&apos;agenda du professeur : il est verrouillé 15 minutes
+        pour vous le temps de payer, sans attendre son acceptation.
       </p>
 
       {isOwnOffer && (
@@ -454,7 +457,7 @@ function BookingPage() {
             ) : (
               <CalendarCheck className="size-4" aria-hidden />
             )}
-            Envoyer ma demande
+            Réserver ce créneau
           </button>
         </form>
 
@@ -492,8 +495,8 @@ function BookingPage() {
           </div>
 
           <p className="mt-5 text-xs text-muted-foreground">
-            Aucun paiement en ligne à cette étape : le règlement se fait directement avec le
-            professeur jusqu&apos;à l&apos;ouverture des paiements sécurisés.
+            Première séance avec ce professeur : elle est gratuite et confirmée immédiatement.
+            Sinon, le créneau est verrouillé 15 minutes le temps de régler le paiement en ligne.
           </p>
         </aside>
       </div>

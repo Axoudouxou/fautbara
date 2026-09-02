@@ -8,6 +8,7 @@ import {
   Loader2,
   ShieldCheck,
   Smartphone,
+  Timer,
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -71,6 +72,12 @@ function formatFcfa(value: number) {
   return `${value.toLocaleString("fr-FR")} FCFA`;
 }
 
+function formatCountdown(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
 function PaymentPage() {
   const { bookingId } = Route.useParams();
   const { user } = Route.useRouteContext();
@@ -84,13 +91,17 @@ function PaymentPage() {
       const { data, error } = await supabase
         .from("bookings")
         .select(
-          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, status, is_recurring, requester_id, teacher_id, children(first_name), teacher_offers(title, subjects(name))",
+          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, status, status_reason, hold_expires_at, is_recurring, requester_id, teacher_id, children(first_name), teacher_offers(title, subjects(name))",
         )
         .eq("id", bookingId)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
+    // Tant que le verrou de 15 minutes tient, on surveille une confirmation
+    // (webhook) ou une expiration (cron) sans que l'utilisateur ait à
+    // recharger la page.
+    refetchInterval: (query) => (query.state.data?.status === "pending_payment" ? 4000 : false),
   });
 
   const paymentQuery = useQuery({
@@ -106,6 +117,7 @@ function PaymentPage() {
       if (error) throw error;
       return data;
     },
+    refetchInterval: (query) => (query.state.data?.status === "pending" ? 4000 : false),
   });
 
   const refresh = () => {
@@ -132,13 +144,14 @@ function PaymentPage() {
       }),
   });
 
-  // Au retour de Jèko (successUrl / errorUrl), on ne fait jamais confiance à
-  // l'URL elle-même : on revérifie le statut réel auprès du serveur, qui
-  // relit l'état authoritatif auprès de Jèko avant de mettre à jour la DB.
+  // Au retour de Jèko (successUrl / errorUrl : ?paiement=succes|echec), on ne
+  // fait jamais confiance à l'URL elle-même : on revérifie le statut réel
+  // auprès du serveur, qui relit l'état authoritatif auprès de Jèko avant de
+  // mettre à jour la DB (Jèko n'envoie pas de webhook pour un échec).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const status = params.get("status");
-    if (!status) return;
+    const paiement = params.get("paiement");
+    if (!paiement) return;
     window.history.replaceState(null, "", window.location.pathname);
 
     invokeEdgeFunction<{ status?: string }>("jeko-check-payment-status", { bookingId })
@@ -153,6 +166,24 @@ function PaymentPage() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
+
+  // Compte à rebours du verrou de 15 minutes : recalculé à chaque seconde à
+  // partir de hold_expires_at (horodatage serveur), donc cohérent même après
+  // un rechargement de page ou un changement d'onglet — jamais un simple
+  // décompte local qui repartirait de 15:00 au retour sur la page.
+  const [now, setNow] = useState(() => Date.now());
+  const holdExpiresAt = bookingQuery.data?.status === "pending_payment"
+    ? bookingQuery.data.hold_expires_at
+    : null;
+  useEffect(() => {
+    if (!holdExpiresAt) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [holdExpiresAt]);
+  const secondsLeft = holdExpiresAt
+    ? Math.max(0, Math.round((new Date(holdExpiresAt).getTime() - now) / 1000))
+    : null;
+  const holdExpired = secondsLeft === 0;
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
@@ -206,7 +237,14 @@ function PaymentPage() {
         className: "bg-muted text-muted-foreground",
       })
     : { label: "Non initié", className: "bg-muted text-muted-foreground" };
-  const bookingAccepted = booking.status === "accepted" || booking.status === "completed";
+  const canPay =
+    booking.status === "accepted" ||
+    booking.status === "completed" ||
+    (booking.status === "pending_payment" && !holdExpired);
+  const holdReleased =
+    booking.status === "cancelled" &&
+    (booking.status_reason?.toLowerCase().includes("délai de paiement") ||
+      booking.status_reason?.toLowerCase().includes("paiement échoué"));
 
   return (
     <div className="container-page py-10 sm:py-14">
@@ -231,6 +269,47 @@ function PaymentPage() {
           {status.label}
         </span>
       </div>
+
+      {isPayer && booking.status === "pending_payment" && secondsLeft !== null && (
+        <div
+          className={`mt-6 flex items-center gap-4 rounded-3xl border px-5 py-4 ${
+            holdExpired
+              ? "border-destructive/30 bg-destructive-soft"
+              : secondsLeft <= 60
+                ? "border-destructive/30 bg-destructive-soft"
+                : "border-warning/30 bg-warning-soft"
+          }`}
+        >
+          <Timer
+            className={`size-8 shrink-0 ${holdExpired || secondsLeft <= 60 ? "text-destructive" : "text-warning"}`}
+            aria-hidden
+          />
+          <div>
+            <p
+              className={`font-display text-2xl font-bold tabular-nums ${
+                holdExpired || secondsLeft <= 60 ? "text-destructive" : "text-warning"
+              }`}
+            >
+              {holdExpired ? "Délai écoulé" : formatCountdown(secondsLeft)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {holdExpired
+                ? "Le créneau est en cours de libération : quelqu'un d'autre peut désormais le réserver."
+                : "Ce créneau vous est réservé le temps de finaliser le paiement. Passé ce délai, il redevient disponible."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isPayer && holdReleased && (
+        <div className="mt-6 rounded-3xl border border-destructive/30 bg-destructive-soft px-5 py-4">
+          <p className="font-semibold text-destructive">Ce créneau n&apos;est plus réservé</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {booking.status_reason ?? "Le paiement n'a pas abouti à temps."} Vous pouvez choisir un
+            autre créneau dans l&apos;agenda du professeur.
+          </p>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
@@ -267,9 +346,11 @@ function PaymentPage() {
           {isPayer && (
             <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
               <h2 className="font-display font-bold text-foreground">Moyen de paiement</h2>
-              {!bookingAccepted ? (
+              {!canPay ? (
                 <p className="mt-3 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning">
-                  Le professeur doit d&apos;abord accepter votre demande avant le paiement.
+                  {holdExpired
+                    ? "Le délai de paiement de ce créneau est écoulé."
+                    : "Cette réservation n'est pas en attente de paiement."}
                 </p>
               ) : (
                 <>
@@ -311,6 +392,7 @@ function PaymentPage() {
                       </button>
                     )}
                     {payment &&
+                      booking.status !== "pending_payment" &&
                       payment.status !== "cancelled" &&
                       payment.status !== "refunded" &&
                       payment.escrow_status !== "released" && (
