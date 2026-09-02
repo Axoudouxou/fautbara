@@ -96,8 +96,8 @@ export function useConversationSystemContext(
 
       const firstBookingId = rows[0]?.id ?? null;
       const timeline: ConversationTimelineEvent[] = [
-        ...rows.map((b) => ({
-          kind: (b.id === firstBookingId ? "trial_confirmed" : "booking_confirmed") as const,
+        ...rows.map((b): ConversationTimelineEvent => ({
+          kind: b.id === firstBookingId ? "trial_confirmed" : "booking_confirmed",
           id: `booking-${b.id}`,
           sortAt: b.created_at,
           scheduledAt: b.scheduled_at,
