@@ -1,9 +1,9 @@
 import { Link, linkOptions } from "@tanstack/react-router";
 import {
-  BadgeCheck,
+  Baby,
   BookOpen,
-  CalendarClock,
   CalendarDays,
+  ClipboardList,
   Gavel,
   Home,
   Inbox,
@@ -12,6 +12,7 @@ import {
   Search,
   UserCog,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
