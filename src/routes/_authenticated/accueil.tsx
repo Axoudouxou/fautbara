@@ -863,7 +863,7 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
 
 /* ---------------- Admin ---------------- */
 
-function AdminHome() {
+function AdminHome({ userId }: { userId: string }) {
   const statsQuery = useQuery({
     queryKey: ["admin-home-stats"],
     queryFn: async () => {
@@ -955,7 +955,7 @@ function AdminHome() {
       </div>
 
       <div className="mt-8">
-        <NotificationsFeed userId={user.id} />
+        <NotificationsFeed userId={userId} />
       </div>
 
       <AdminAlertsSection />
