@@ -2234,6 +2234,10 @@ export type Database = {
           refund_rate: number
         }[]
       }
+      release_escrow_to_teacher: {
+        Args: { p_booking_id: string }
+        Returns: undefined
+      }
       report_parent_no_show: {
         Args: { p_booking_id: string }
         Returns: {
