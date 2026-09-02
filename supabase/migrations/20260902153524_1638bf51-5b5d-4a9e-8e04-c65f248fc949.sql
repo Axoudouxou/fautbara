@@ -1,4 +1,4 @@
-create table public.session_reports (
+create table if not exists public.session_reports (
   id uuid primary key default gen_random_uuid(),
   booking_id uuid not null unique references public.bookings(id) on delete cascade,
   teacher_id uuid not null references auth.users(id) on delete cascade,
@@ -14,9 +14,10 @@ create table public.session_reports (
   updated_at timestamptz not null default now()
 );
 
-create index session_reports_learner_idx on public.session_reports (learner_id, created_at desc);
-create index session_reports_teacher_idx on public.session_reports (teacher_id, created_at desc);
+create index if not exists session_reports_learner_idx on public.session_reports (learner_id, created_at desc);
+create index if not exists session_reports_teacher_idx on public.session_reports (teacher_id, created_at desc);
 
+drop trigger if exists session_reports_touch on public.session_reports;
 create trigger session_reports_touch before update on public.session_reports
   for each row execute function public.touch_updated_at();
 
@@ -25,6 +26,7 @@ grant all on public.session_reports to service_role;
 
 alter table public.session_reports enable row level security;
 
+drop policy if exists "Teacher creates report for own completed booking" on public.session_reports;
 create policy "Teacher creates report for own completed booking" on public.session_reports
   for insert to authenticated
   with check (
@@ -40,11 +42,13 @@ create policy "Teacher creates report for own completed booking" on public.sessi
     )
   );
 
+drop policy if exists "Teacher updates own report" on public.session_reports;
 create policy "Teacher updates own report" on public.session_reports
   for update to authenticated
   using (teacher_id = auth.uid())
   with check (teacher_id = auth.uid());
 
+drop policy if exists "Teacher and recipient read session reports" on public.session_reports;
 create policy "Teacher and recipient read session reports" on public.session_reports
   for select to authenticated
   using (teacher_id = auth.uid() or learner_id = auth.uid());
