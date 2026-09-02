@@ -19,12 +19,11 @@ import { startJekoPayment, syncJekoPayment } from "@/lib/payments.functions";
 import { formatDay, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/paiement/$bookingId")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    paiement:
-      search["paiement"] === "succes" || search["paiement"] === "echec"
-        ? (search["paiement"] as "succes" | "echec")
-        : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { paiement?: "succes" | "echec" } =>
+    search["paiement"] === "succes" || search["paiement"] === "echec"
+      ? { paiement: search["paiement"] as "succes" | "echec" }
+      : {},
+
   head: () => ({
     meta: [
       { title: "Paiement de la séance — BARA" },
