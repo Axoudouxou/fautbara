@@ -8,6 +8,7 @@ import {
   Laptop,
   Loader2,
   Sparkles,
+  Wallet,
   UserPlus,
 } from "lucide-react";
 
@@ -263,6 +264,9 @@ function LearnerHome({
   const thisWeek = pendingOrAccepted.filter(
     (b) => new Date(b.scheduled_at).getTime() <= thisWeekEnd && new Date(b.scheduled_at).getTime() > now,
   );
+
+  const teacherOffers = offersQuery.data ?? [];
+  const publishedOffers = teacherOffers.filter((o) => o.status === "published");
 
   if (bookingsQuery.isLoading) {
     return (
@@ -576,6 +580,31 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
     },
   });
 
+  const walletQuery = useQuery({
+    queryKey: ["wallet", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("balance_fcfa")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.balance_fcfa ?? 0;
+    },
+  });
+
+  const offersQuery = useQuery({
+    queryKey: ["home-teacher-offers", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("teacher_offers")
+        .select("id, status, price_fcfa")
+        .eq("teacher_id", userId);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const studentConversationsQuery = useConversations(userId, "teacher");
   const studentConversations = studentConversationsQuery.data ?? [];
   const { openConversation } = useMessagingPanel();
@@ -748,6 +777,60 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
           </>
         )}
       </div>
+
+      <section className="mt-6 flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <Wallet className="size-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-sm text-muted-foreground">Solde de mon portefeuille</p>
+            <p className="mt-0.5 font-display text-2xl font-bold text-foreground">
+              {walletQuery.isLoading
+                ? "…"
+                : `${(walletQuery.data ?? 0).toLocaleString("fr-FR")} FCFA`}
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/compte/portefeuille"
+          className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          Voir mon portefeuille
+        </Link>
+      </section>
+
+      <section className="mt-6 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-lg font-bold text-foreground">Tableau de bord</h2>
+          <Link
+            to="/pro"
+            className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Ouvrir l&apos;espace professeur
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <p className="text-sm text-muted-foreground">Offres créées</p>
+            <p className="mt-1 font-display text-2xl font-bold text-foreground">{teacherOffers.length}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <p className="text-sm text-muted-foreground">Offres publiées</p>
+            <p className="mt-1 font-display text-2xl font-bold text-foreground">
+              {publishedOffers.length}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-background p-4">
+            <p className="text-sm text-muted-foreground">Tarif le plus bas</p>
+            <p className="mt-1 font-display text-2xl font-bold text-foreground">
+              {teacherOffers.length > 0
+                ? `${Math.min(...teacherOffers.map((o) => o.price_fcfa)).toLocaleString("fr-FR")} F`
+                : "—"}
+            </p>
+          </div>
+        </div>
+      </section>
 
       <HomeShortcutTabs
         tabs={[
