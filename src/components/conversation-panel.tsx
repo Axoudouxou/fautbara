@@ -11,9 +11,11 @@ import {
   GraduationCap,
   Loader2,
   MessageSquare,
+  NotebookText,
   Paperclip,
   Send,
   Sparkles,
+  Star,
   UserRound,
   X,
 } from "lucide-react";
@@ -27,6 +29,7 @@ import {
 } from "@/lib/conversation-system-events";
 import { useStudentProfile, type StudentProfile } from "@/lib/messaging";
 import { LEARNING_STYLES, LEARNING_OBJECTIVES, SCHOOL_SYSTEMS } from "@/lib/education";
+import { ATTENDANCE_OPTIONS, HOMEWORK_DONE_OPTIONS, PROGRESS_LEVELS } from "@/lib/session-reports";
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const BUCKET = "message-files";
@@ -109,10 +112,10 @@ export function ConversationPanel({
   learnerId: string;
   childId?: string | null;
   /** ouvre directement sur cet onglet (ex. "resources" depuis un devoir cliqué ailleurs) */
-  initialTab?: "chat" | "resources" | undefined;
+  initialTab?: "chat" | "resources" | "journal" | undefined;
 }) {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"chat" | "resources">(
+  const [tab, setTab] = useState<"chat" | "resources" | "journal">(
     role === "child" ? "resources" : (initialTab ?? "chat"),
   );
   const [draft, setDraft] = useState("");
@@ -121,6 +124,8 @@ export function ConversationPanel({
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const canChat = role !== "child";
+  // Le compte-rendu va au parent (ou à l'apprenant direct), jamais au compte enfant.
+  const canViewJournal = role !== "child";
   const systemContextKey = ["conversation-system-context", teacherId, learnerId, childId ?? null];
   const systemContextQuery = useConversationSystemContext(teacherId, learnerId, childId ?? null, canChat);
   const systemContext = systemContextQuery.data;
@@ -179,6 +184,12 @@ export function ConversationPanel({
     }));
     return [...timelineItems, ...messageItems].sort((a, b) => a.sortAt.localeCompare(b.sortAt));
   }, [messages, systemContext?.timeline]);
+
+  // Journal de bord : historique des comptes-rendus, du plus ancien au plus récent.
+  const reportEvents = (systemContext?.timeline ?? []).filter(
+    (event): event is Extract<ConversationTimelineEvent, { kind: "session_report" }> =>
+      event.kind === "session_report",
+  );
 
   // Marquer la conversation comme lue
   useEffect(() => {
@@ -322,6 +333,20 @@ export function ConversationPanel({
           >
             <BookOpen className="size-3.5" aria-hidden /> Devoirs &amp; ressources
           </button>
+          {canViewJournal && (
+            <button
+              role="tab"
+              aria-selected={tab === "journal"}
+              onClick={() => setTab("journal")}
+              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
+                tab === "journal"
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border text-foreground hover:bg-secondary"
+              }`}
+            >
+              <NotebookText className="size-3.5" aria-hidden /> Journal de bord
+            </button>
+          )}
         </div>
       </header>
 
@@ -565,6 +590,32 @@ export function ConversationPanel({
           </ul>
         </div>
       )}
+
+      {tab === "journal" && canViewJournal && (
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">
+          <p className="text-xs text-muted-foreground">
+            Historique des comptes-rendus de séance, consultable à tout moment. Aucune notification
+            n&apos;est envoyée : revenez ici quand vous le souhaitez.
+          </p>
+          {systemContextQuery.isLoading && (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
+            </p>
+          )}
+          {!systemContextQuery.isLoading && reportEvents.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Aucun compte-rendu pour l&apos;instant. Il apparaîtra ici après la première séance
+              clôturée par le professeur.
+            </p>
+          )}
+          {reportEvents.length > 1 && <EngagementSparkline events={reportEvents} />}
+          <ul className="space-y-3">
+            {[...reportEvents].reverse().map((event) => (
+              <SessionReportEntry key={event.id} event={event} />
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -705,13 +756,22 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
   const dateTime = (iso: string) =>
     new Date(iso).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 
-  if (event.kind !== "reschedule_done") {
+  if (event.kind === "trial_confirmed" || event.kind === "booking_confirmed") {
     return (
       <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
         <p className="text-xs font-semibold text-foreground">
           {event.kind === "trial_confirmed" ? "Cours d'essai confirmé" : "Réservation confirmée"}
         </p>
         <p className="mt-0.5 text-[11px] text-muted-foreground">{dateTime(event.scheduledAt)}</p>
+      </div>
+    );
+  }
+
+  if (event.kind === "session_report") {
+    return (
+      <div className="mx-auto max-w-[90%] rounded-2xl border border-primary/30 bg-primary-soft/40 px-4 py-3">
+        <p className="text-center text-xs font-semibold text-foreground">Compte-rendu de séance</p>
+        <SessionReportEntry event={event} compact />
       </div>
     );
   }
@@ -732,6 +792,78 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
           Retenue appliquée : {Math.round(event.feeRate * 100)} %
         </p>
       )}
+    </div>
+  );
+}
+
+/** Détail d'un compte-rendu : réutilisé dans la carte système du fil et dans le journal de bord. */
+function SessionReportEntry({
+  event,
+  compact,
+}: {
+  event: Extract<ConversationTimelineEvent, { kind: "session_report" }>;
+  compact?: boolean;
+}) {
+  const attendanceLabel = ATTENDANCE_OPTIONS.find((o) => o.value === event.attendance)?.label ?? event.attendance;
+  const progressLabel = PROGRESS_LEVELS.find((o) => o.value === event.progressLevel)?.label ?? event.progressLevel;
+  const homeworkLabel = event.homeworkDone
+    ? (HOMEWORK_DONE_OPTIONS.find((o) => o.value === event.homeworkDone)?.label ?? event.homeworkDone)
+    : null;
+  const date = new Date(event.sortAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+
+  return (
+    <div className={compact ? "mt-2 text-left text-xs" : "rounded-2xl border border-border bg-card p-4 text-sm"}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-semibold text-foreground">{date}</p>
+        <div className="flex items-center gap-0.5" aria-label={`Engagement : ${event.engagementRating} sur 5`}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star
+              key={n}
+              className={`size-3.5 ${n <= event.engagementRating ? "fill-primary text-primary" : "text-muted-foreground"}`}
+              aria-hidden
+            />
+          ))}
+        </div>
+      </div>
+      <p className="mt-1 text-muted-foreground">
+        {attendanceLabel} · {event.contentNote}
+      </p>
+      <p className="mt-1 text-muted-foreground">Avancement : {progressLabel}</p>
+      {homeworkLabel && (
+        <p className="mt-1 text-muted-foreground">Travail fait depuis la dernière fois : {homeworkLabel}</p>
+      )}
+      {event.nextSteps && (
+        <p className="mt-1 text-muted-foreground">Pour la prochaine fois : {event.nextSteps}</p>
+      )}
+    </div>
+  );
+}
+
+/** Tendance légère de l'engagement dans le temps — un repère visuel, pas un indicateur institutionnel. */
+function EngagementSparkline({
+  events,
+}: {
+  events: Extract<ConversationTimelineEvent, { kind: "session_report" }>[];
+}) {
+  const width = 240;
+  const height = 40;
+  const padding = 6;
+  const points = events.map((event, i) => {
+    const x = padding + (i / Math.max(events.length - 1, 1)) * (width - padding * 2);
+    const y = height - padding - ((event.engagementRating - 1) / 4) * (height - padding * 2);
+    return { x, y };
+  });
+  const path = points.map((p) => `${p.x},${p.y}`).join(" ");
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className="text-xs font-semibold text-foreground">Tendance de l&apos;engagement</p>
+      <svg viewBox={`0 0 ${width} ${height}`} className="mt-2 h-10 w-full max-w-[240px]" aria-hidden>
+        <polyline points={path} fill="none" stroke="var(--color-primary)" strokeWidth={2} />
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={2.5} fill="var(--color-primary)" />
+        ))}
+      </svg>
     </div>
   );
 }

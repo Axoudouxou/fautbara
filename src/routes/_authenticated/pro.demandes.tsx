@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarClock, Check, Home, Laptop, Loader2, Repeat, X } from "lucide-react";
+import { CalendarClock, Check, FileText, Home, Laptop, Loader2, Repeat, X } from "lucide-react";
 
 import { useState } from "react";
 
@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
 import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
+import { SessionReportForm } from "@/components/session-report-form";
+import type { SessionReport } from "@/lib/session-reports";
 
 export const Route = createFileRoute("/_authenticated/pro/demandes")({
   head: () => ({
@@ -48,6 +50,7 @@ function TeacherRequestsPage() {
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const [reportBookingId, setReportBookingId] = useState<string | null>(null);
 
   const rolesQuery = useQuery({
     queryKey: ["roles", user.id],
@@ -66,7 +69,7 @@ function TeacherRequestsPage() {
       const { data, error } = await supabase
         .from("bookings")
         .select(
-          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, address, message, status, status_reason, is_recurring, recurrence_end_date, requester_id, reschedule_count, reschedule_proposed_at, reschedule_proposed_by, reschedule_proposed_fee_rate, children(first_name, school_level), teacher_offers(title, subjects(name))",
+          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, address, message, status, status_reason, is_recurring, recurrence_end_date, requester_id, child_id, reschedule_count, reschedule_proposed_at, reschedule_proposed_by, reschedule_proposed_fee_rate, children(first_name, school_level), teacher_offers(title, subjects(name))",
         )
         .eq("teacher_id", user.id)
         .order("scheduled_at", { ascending: true });
@@ -74,6 +77,20 @@ function TeacherRequestsPage() {
       return data;
     },
   });
+
+  const reportsQuery = useQuery({
+    queryKey: ["teacher-session-reports", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("session_reports")
+        .select("*")
+        .eq("teacher_id", user.id);
+      if (error) throw error;
+      return data as SessionReport[];
+    },
+  });
+  const reportByBooking = new Map((reportsQuery.data ?? []).map((r) => [r.booking_id, r]));
 
   const statusMutation = useMutation({
     mutationFn: async ({
@@ -97,9 +114,11 @@ function TeacherRequestsPage() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       toast.success("Demande mise à jour");
       queryClient.invalidateQueries({ queryKey: ["teacher-bookings", user.id] });
+      // Une fois la séance clôturée, on invite le professeur à remplir son compte-rendu.
+      if (variables.status === "completed") setReportBookingId(variables.id);
     },
     onError: (err) =>
       toast.error("Mise à jour impossible", {
@@ -290,6 +309,16 @@ function TeacherRequestsPage() {
                     <Check className="size-3.5" aria-hidden /> Marquer comme terminée
                   </button>
                 )}
+                {r.status === "completed" && (
+                  <button
+                    type="button"
+                    onClick={() => setReportBookingId(r.id)}
+                    className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
+                  >
+                    <FileText className="size-3.5" aria-hidden />
+                    {reportByBooking.has(r.id) ? "Modifier le compte-rendu" : "Compte-rendu de séance"}
+                  </button>
+                )}
                 {(r.status === "pending" || r.status === "accepted") && (
                   <button
                     type="button"
@@ -322,6 +351,24 @@ function TeacherRequestsPage() {
           invalidateKeys={[["teacher-bookings", user.id]]}
         />
       )}
+
+      {reportBookingId &&
+        (() => {
+          const booking = requests.find((r) => r.id === reportBookingId);
+          if (!booking) return null;
+          return (
+            <SessionReportForm
+              bookingId={booking.id}
+              teacherId={user.id}
+              learnerId={booking.requester_id}
+              childId={booking.child_id}
+              recipientLabel={booking.children?.first_name ?? "l'apprenant"}
+              existing={reportByBooking.get(booking.id) ?? null}
+              onClose={() => setReportBookingId(null)}
+              invalidateKeys={[["teacher-session-reports", user.id]]}
+            />
+          );
+        })()}
     </div>
   );
 }
