@@ -760,6 +760,7 @@ export type Database = {
           provider_reference: string | null
           provider_request_id: string | null
           provider_status: string | null
+          provider_transaction_id: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
@@ -788,6 +789,7 @@ export type Database = {
           provider_reference?: string | null
           provider_request_id?: string | null
           provider_status?: string | null
+          provider_transaction_id?: string | null
           refund_fcfa?: number
           refund_rate?: number | null
           refunded_at?: string | null
@@ -816,6 +818,7 @@ export type Database = {
           provider_reference?: string | null
           provider_request_id?: string | null
           provider_status?: string | null
+          provider_transaction_id?: string | null
           refund_fcfa?: number
           refund_rate?: number | null
           refunded_at?: string | null
@@ -1647,6 +1650,7 @@ export type Database = {
           provider_reference: string | null
           provider_request_id: string | null
           provider_status: string | null
+          provider_transaction_id: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
@@ -1768,6 +1772,7 @@ export type Database = {
           provider_reference: string | null
           provider_request_id: string | null
           provider_status: string | null
+          provider_transaction_id: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
@@ -1887,6 +1892,48 @@ export type Database = {
         Args: { p_other: string; p_user: string }
         Returns: boolean
       }
+      jeko_save_payment_request: {
+        Args: {
+          p_booking_id: string
+          p_method: string
+          p_provider_reference: string
+        }
+        Returns: {
+          amount_fcfa: number
+          booking_id: string
+          cancelled_at: string | null
+          commission_fcfa: number
+          commission_rate: number
+          created_at: string
+          escrow_release_at: string | null
+          escrow_status: string
+          id: string
+          method: string
+          paid_at: string | null
+          payer_id: string
+          provider: string
+          provider_notified_at: string | null
+          provider_redirect_url: string | null
+          provider_reference: string | null
+          provider_request_id: string | null
+          provider_status: string | null
+          provider_transaction_id: string | null
+          refund_fcfa: number
+          refund_rate: number | null
+          refunded_at: string | null
+          released_at: string | null
+          status: string
+          teacher_id: string
+          teacher_payout_fcfa: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
@@ -1912,6 +1959,7 @@ export type Database = {
           provider_reference: string | null
           provider_request_id: string | null
           provider_status: string | null
+          provider_transaction_id: string | null
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
