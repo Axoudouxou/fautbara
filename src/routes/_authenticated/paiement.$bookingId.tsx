@@ -106,40 +106,47 @@ function PaymentPage() {
     queryClient.invalidateQueries({ queryKey: ["my-bookings", user.id] });
   };
 
-  const initMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.rpc("create_booking_payment", { p_booking_id: bookingId });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Paiement préparé");
-      refresh();
-    },
-    onError: (err) =>
-      toast.error("Impossible de préparer le paiement", {
-        description: err instanceof Error ? err.message : undefined,
-      }),
-  });
+  const startPayment = useServerFn(startJekoPayment);
+  const syncPayment = useServerFn(syncJekoPayment);
 
   const payMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.rpc("mark_payment_paid", {
-        p_booking_id: bookingId,
-        p_method: method,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Séance marquée comme payée", {
-        description: "Simulation : aucun argent réel n'a été débité.",
-      });
-      refresh();
+    mutationFn: async () => startPayment({ data: { bookingId, method } }),
+    onSuccess: (result) => {
+      toast.success("Redirection vers votre application de paiement…");
+      window.location.href = result.redirectUrl;
     },
     onError: (err) =>
       toast.error("Paiement impossible", {
         description: err instanceof Error ? err.message : undefined,
       }),
   });
+
+  const syncMutation = useMutation({
+    mutationFn: async () => syncPayment({ data: { bookingId } }),
+    onSuccess: (result) => {
+      refresh();
+      if (result.status === "paid") toast.success("Paiement confirmé, merci !");
+      else
+        toast.info("Paiement non confirmé pour le moment", {
+          description: "Si vous venez de payer, la confirmation peut prendre quelques instants.",
+        });
+    },
+    onError: (err) =>
+      toast.error("Vérification impossible", {
+        description: err instanceof Error ? err.message : undefined,
+      }),
+  });
+
+  // Retour depuis Jèko : on vérifie l'issue réelle du paiement côté serveur.
+  const syncedRef = useRef(false);
+  useEffect(() => {
+    if (!search.paiement || syncedRef.current) return;
+    syncedRef.current = true;
+    if (search.paiement === "succes") syncMutation.mutate();
+    else toast.error("Le paiement n'a pas abouti. Vous pouvez réessayer.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.paiement]);
+
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
