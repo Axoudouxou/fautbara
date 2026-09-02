@@ -13,6 +13,7 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
+import { NotificationsFeed } from "@/components/notifications-feed";
 import { AdminAlertsSection, LearnerTasksSection, TeacherTasksSection } from "@/components/home-role-sections";
 import { useConversations } from "@/lib/messaging";
 import { useMessagingPanel } from "@/lib/messaging-panel-context";
@@ -499,6 +500,10 @@ function LearnerHome({
         ]}
       />
 
+      <div className="mt-8">
+        <NotificationsFeed userId={userId} />
+      </div>
+
       <LearnerTasksSection
         userId={userId}
         isParent={isParent}
@@ -843,6 +848,10 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
         ]}
       />
 
+      <div className="mt-8">
+        <NotificationsFeed userId={userId} />
+      </div>
+
       <TeacherTasksSection
         userId={userId}
         missingProfileItems={missing as string[]}
@@ -943,6 +952,10 @@ function AdminHome() {
         <Link to="/admin/offres" className={`${CARD} font-display font-bold text-foreground`}>
           Modération des offres
         </Link>
+      </div>
+
+      <div className="mt-8">
+        <NotificationsFeed userId={user.id} />
       </div>
 
       <AdminAlertsSection />

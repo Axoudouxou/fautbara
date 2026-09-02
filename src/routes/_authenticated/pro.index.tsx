@@ -18,6 +18,7 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import { DOSSIER_LABEL, dossierStatus } from "@/lib/verification";
+import { NotificationsFeed } from "@/components/notifications-feed";
 
 export const Route = createFileRoute("/_authenticated/pro/")({
   head: () => ({
@@ -169,6 +170,10 @@ function TeacherDashboard() {
       </p>
 
       <VerificationBanner teacher={teacher} />
+
+      <div className="mt-6">
+        <NotificationsFeed userId={user.id} />
+      </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">

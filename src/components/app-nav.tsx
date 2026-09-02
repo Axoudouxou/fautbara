@@ -10,7 +10,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   Search,
-  Settings,
+  UserCog,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -40,7 +40,7 @@ const learnerTabs: Tab[] = [
     icon: CalendarDays,
     link: linkOptions({ to: "/compte/reservations" }),
   },
-  { label: "Paramètres", short: "Réglages", icon: Settings, link: linkOptions({ to: "/compte" }) },
+  { label: "Mon compte", short: "Compte", icon: UserCog, link: linkOptions({ to: "/compte" }) },
 ];
 
 const teacherTabs: Tab[] = [
@@ -53,7 +53,7 @@ const teacherTabs: Tab[] = [
     link: linkOptions({ to: "/pro/disponibilites" }),
   },
   { label: "Demandes", short: "Demandes", icon: Inbox, link: linkOptions({ to: "/pro/demandes" }) },
-  { label: "Paramètres", short: "Réglages", icon: Settings, link: linkOptions({ to: "/pro" }) },
+  { label: "Mon compte", short: "Compte", icon: UserCog, link: linkOptions({ to: "/compte" }) },
 ];
 
 const adminTabs: Tab[] = [

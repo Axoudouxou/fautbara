@@ -18,7 +18,6 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { NotificationsFeed } from "@/components/notifications-feed";
 import { DOSSIER_LABEL, KIND_LABEL, VERIFICATION_KINDS, dossierStatus } from "@/lib/verification";
 
 export const Route = createFileRoute("/_authenticated/pro/verification")({
@@ -213,8 +212,6 @@ function TeacherVerification() {
         decidedAt={teacher?.verification_decided_at ?? null}
         submittedAt={teacher?.verification_submitted_at ?? null}
       />
-
-      <NotificationsFeed userId={user.id} />
 
       <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] md:p-7">
         <div className="flex items-center justify-between gap-3">
