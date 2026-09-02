@@ -11,6 +11,7 @@ import {
   LogOut,
   Search,
   ShieldCheck,
+  Wallet,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -210,6 +211,21 @@ function AccountPage() {
         </section>
 
         <div className="space-y-4">
+          <Link
+            to="/compte/portefeuille"
+            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+          >
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+              <Wallet className="size-5" aria-hidden />
+            </span>
+            <span>
+              <span className="block font-display font-bold text-foreground">Mon portefeuille</span>
+              <span className="block text-sm text-muted-foreground">
+                Solde, remboursements et demandes de retrait.
+              </span>
+            </span>
+          </Link>
+
           {roles.includes("parent") && (
             <Link
               to="/compte/enfants"

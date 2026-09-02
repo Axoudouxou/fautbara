@@ -10,6 +10,7 @@ const LINKS = [
   { to: "/admin/professeurs" as const, label: "Professeurs" },
   { to: "/admin/offres" as const, label: "Modération des offres" },
   { to: "/admin/litiges" as const, label: "Litiges" },
+  { to: "/admin/retraits" as const, label: "Retraits" },
 ];
 
 export function useIsAdmin(userId: string) {

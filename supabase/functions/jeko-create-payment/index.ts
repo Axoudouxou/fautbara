@@ -64,6 +64,14 @@ Deno.serve(async (req) => {
     if (!payment) {
       return jsonResponse({ error: "Paiement introuvable" }, 404);
     }
+    if (payment.status === "paid") {
+      // Entièrement réglé par le portefeuille avant même d'arriver ici (le
+      // client appelle create_booking_payment en premier) : rien à faire
+      // côté Jèko. Ne devrait normalement pas être atteint puisque le
+      // client ne relance pas cet appel dans ce cas, mais reste un
+      // comportement sain plutôt qu'une erreur si jamais il l'est.
+      return jsonResponse({ alreadyPaid: true });
+    }
     if (payment.status !== "pending") {
       return jsonResponse({ error: "Ce paiement est déjà finalisé ou annulé" }, 409);
     }

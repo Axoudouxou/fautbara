@@ -84,6 +84,8 @@ function PaymentPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [method, setMethod] = useState(METHODS[0]!.value);
+  const [useWallet, setUseWallet] = useState(true);
+  const [walletAmountInput, setWalletAmountInput] = useState("");
 
   const bookingQuery = useQuery({
     queryKey: ["payment-booking", bookingId],
@@ -110,7 +112,7 @@ function PaymentPage() {
       const { data, error } = await supabase
         .from("payments")
         .select(
-          "id, status, escrow_status, amount_fcfa, commission_fcfa, commission_rate, teacher_payout_fcfa, escrow_release_at, method, paid_at",
+          "id, status, escrow_status, amount_fcfa, wallet_used_fcfa, commission_fcfa, commission_rate, teacher_payout_fcfa, escrow_release_at, method, paid_at",
         )
         .eq("booking_id", bookingId)
         .maybeSingle();
@@ -120,6 +122,19 @@ function PaymentPage() {
     refetchInterval: (query) => (query.state.data?.status === "pending" ? 4000 : false),
   });
 
+  const walletQuery = useQuery({
+    queryKey: ["wallet", user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("balance_fcfa")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.balance_fcfa ?? 0;
+    },
+  });
+
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["payment", bookingId] });
     queryClient.invalidateQueries({ queryKey: ["my-bookings", user.id] });
@@ -127,6 +142,22 @@ function PaymentPage() {
 
   const startPayment = useMutation({
     mutationFn: async () => {
+      // Établit d'abord la ligne de paiement avec le montant portefeuille
+      // choisi (le serveur le plafonne de toute façon au solde réel) : un
+      // rappel ultérieur (y compris depuis jeko-create-payment) renvoie
+      // cette même ligne sans jamais redébiter le portefeuille.
+      const walletToUse = useWallet ? Number(walletAmountInput) || 0 : 0;
+      const { data: payment, error } = await supabase.rpc("create_booking_payment", {
+        p_booking_id: bookingId,
+        p_wallet_amount_fcfa: walletToUse,
+      });
+      if (error) throw error;
+
+      if (payment.status === "paid") {
+        // Entièrement réglé par le portefeuille : rien à demander à Jèko.
+        return null;
+      }
+
       const data = await invokeEdgeFunction<{ redirectUrl?: string }>("jeko-create-payment", {
         bookingId,
         paymentMethod: method,
@@ -135,6 +166,13 @@ function PaymentPage() {
       return data.redirectUrl;
     },
     onSuccess: (redirectUrl) => {
+      if (!redirectUrl) {
+        toast.success("Paiement réglé depuis votre portefeuille", {
+          description: "La séance est confirmée.",
+        });
+        refresh();
+        return;
+      }
       // Quitte l'application : le checkout Jèko est hébergé.
       window.location.assign(redirectUrl);
     },
@@ -246,6 +284,20 @@ function PaymentPage() {
     (booking.status_reason?.toLowerCase().includes("délai de paiement") ||
       booking.status_reason?.toLowerCase().includes("paiement échoué"));
 
+  // Le choix du montant portefeuille n'est proposé qu'avant la toute
+  // première tentative de paiement : une fois la ligne payments créée, le
+  // montant retenu est définitif (voir create_booking_payment, idempotent).
+  const walletBalance = walletQuery.data ?? 0;
+  const showWalletOption = !payment && canPay && walletBalance > 0;
+  const walletMax = Math.min(walletBalance, booking.price_fcfa);
+  const requestedWalletAmount = useWallet
+    ? Math.min(walletAmountInput === "" ? walletMax : Number(walletAmountInput) || 0, walletMax)
+    : 0;
+  const previewAmountDue = payment
+    ? payment.amount_fcfa
+    : Math.max(0, booking.price_fcfa - requestedWalletAmount);
+  const fullyCoveredByWallet = showWalletOption && requestedWalletAmount > 0 && previewAmountDue === 0;
+
   return (
     <div className="container-page py-10 sm:py-14">
       <Link
@@ -354,28 +406,63 @@ function PaymentPage() {
                 </p>
               ) : (
                 <>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {METHODS.map((m) => {
-                      const Icon = m.icon;
-                      const active = method === m.value;
-                      return (
-                        <button
-                          key={m.value}
-                          type="button"
-                          onClick={() => setMethod(m.value)}
-                          disabled={payment?.status === "paid"}
-                          className={`flex items-center gap-3 rounded-2xl border p-4 text-left text-sm font-semibold transition-colors disabled:opacity-60 ${
-                            active
-                              ? "border-primary bg-primary-soft text-primary-soft-foreground"
-                              : "border-border text-foreground hover:bg-secondary"
-                          }`}
-                        >
-                          <Icon className="size-5" aria-hidden />
-                          {m.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {showWalletOption && (
+                    <div className="mt-4 rounded-2xl border border-border p-4">
+                      <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={useWallet}
+                          onChange={(e) => setUseWallet(e.target.checked)}
+                          className="size-4 rounded border-input"
+                        />
+                        Utiliser mon portefeuille ({formatFcfa(walletBalance)} disponibles)
+                      </label>
+                      {useWallet && (
+                        <div className="mt-3">
+                          <label
+                            htmlFor="wallet-amount"
+                            className="text-xs font-semibold text-muted-foreground"
+                          >
+                            Montant à utiliser (max. {formatFcfa(walletMax)})
+                          </label>
+                          <input
+                            id="wallet-amount"
+                            type="text"
+                            inputMode="numeric"
+                            value={walletAmountInput}
+                            onChange={(e) => setWalletAmountInput(e.target.value.replace(/\D/g, ""))}
+                            placeholder={walletMax.toLocaleString("fr-FR")}
+                            className="mt-1 w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {!fullyCoveredByWallet && (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {METHODS.map((m) => {
+                        const Icon = m.icon;
+                        const active = method === m.value;
+                        return (
+                          <button
+                            key={m.value}
+                            type="button"
+                            onClick={() => setMethod(m.value)}
+                            disabled={payment?.status === "paid"}
+                            className={`flex items-center gap-3 rounded-2xl border p-4 text-left text-sm font-semibold transition-colors disabled:opacity-60 ${
+                              active
+                                ? "border-primary bg-primary-soft text-primary-soft-foreground"
+                                : "border-border text-foreground hover:bg-secondary"
+                            }`}
+                          >
+                            <Icon className="size-5" aria-hidden />
+                            {m.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   <div className="mt-5 flex flex-wrap gap-3">
                     {(!payment || payment.status === "pending") && (
@@ -388,7 +475,9 @@ function PaymentPage() {
                         {startPayment.isPending && (
                           <Loader2 className="size-4 animate-spin" aria-hidden />
                         )}
-                        Payer {formatFcfa(payment?.amount_fcfa ?? booking.price_fcfa)}
+                        {fullyCoveredByWallet
+                          ? "Confirmer avec mon portefeuille"
+                          : `Payer ${formatFcfa(payment?.amount_fcfa ?? previewAmountDue)}`}
                       </button>
                     )}
                     {payment &&
@@ -435,9 +524,23 @@ function PaymentPage() {
 
           <dl className="space-y-2 border-t border-border/70 pt-4 text-sm">
             <div className="flex justify-between gap-3">
-              <dt className="text-muted-foreground">Montant de la séance</dt>
+              <dt className="text-muted-foreground">Prix de la séance</dt>
+              <dd className="font-semibold text-foreground">{formatFcfa(booking.price_fcfa)}</dd>
+            </div>
+            {(payment?.wallet_used_fcfa ?? requestedWalletAmount) > 0 && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Réglé par le portefeuille</dt>
+                <dd className="text-foreground">
+                  − {formatFcfa(payment?.wallet_used_fcfa ?? requestedWalletAmount)}
+                </dd>
+              </div>
+            )}
+            <div className="flex justify-between gap-3">
+              <dt className="font-semibold text-foreground">
+                {payment ? "Encaissé via Mobile Money" : "Reste à payer"}
+              </dt>
               <dd className="font-semibold text-foreground">
-                {formatFcfa(payment?.amount_fcfa ?? booking.price_fcfa)}
+                {formatFcfa(payment?.amount_fcfa ?? previewAmountDue)}
               </dd>
             </div>
             {payment && (
