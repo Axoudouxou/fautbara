@@ -123,7 +123,7 @@ function AdminDisputes() {
     <AdminShell
       userId={user.id}
       title="Litiges"
-      description="Instruisez les litiges déclarés par les parents, élèves et professeurs. Le remboursement décidé est enregistré à titre de décision : aucun mouvement d'argent réel n'est effectué."
+      description="Instruisez les litiges déclarés par les parents, élèves et professeurs. Un remboursement décidé est crédité immédiatement sur le portefeuille BARA du demandeur."
     >
       {(forceMajeureQuery.data?.length ?? 0) > 0 && (
         <div className="mb-6 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">

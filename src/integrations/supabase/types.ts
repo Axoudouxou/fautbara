@@ -175,56 +175,126 @@ export type Database = {
         }
         Relationships: []
       }
-      booking_reschedule_credits: {
+      wallets: {
+        Row: {
+          balance_fcfa: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_fcfa?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_fcfa?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
         Row: {
           amount_fcfa: number
-          applied_at: string | null
-          applied_to_booking_id: string | null
+          balance_after: number
+          booking_id: string | null
           created_at: string
           id: string
-          parent_id: string
-          source_booking_id: string
-          status: string
-          teacher_id: string
+          kind: string
+          payment_id: string | null
+          reason: string
+          type: string
+          user_id: string
+          withdrawal_request_id: string | null
         }
         Insert: {
           amount_fcfa: number
-          applied_at?: string | null
-          applied_to_booking_id?: string | null
+          balance_after: number
+          booking_id?: string | null
           created_at?: string
           id?: string
-          parent_id: string
-          source_booking_id: string
-          status?: string
-          teacher_id: string
+          kind: string
+          payment_id?: string | null
+          reason: string
+          type: string
+          user_id: string
+          withdrawal_request_id?: string | null
         }
         Update: {
           amount_fcfa?: number
-          applied_at?: string | null
-          applied_to_booking_id?: string | null
+          balance_after?: number
+          booking_id?: string | null
           created_at?: string
           id?: string
-          parent_id?: string
-          source_booking_id?: string
-          status?: string
-          teacher_id?: string
+          kind?: string
+          payment_id?: string | null
+          reason?: string
+          type?: string
+          user_id?: string
+          withdrawal_request_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "booking_reschedule_credits_applied_to_booking_id_fkey"
-            columns: ["applied_to_booking_id"]
+            foreignKeyName: "wallet_transactions_booking_id_fkey"
+            columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "booking_reschedule_credits_source_booking_id_fkey"
-            columns: ["source_booking_id"]
+            foreignKeyName: "wallet_transactions_payment_id_fkey"
+            columns: ["payment_id"]
             isOneToOne: false
-            referencedRelation: "bookings"
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_withdrawal_request_id_fkey"
+            columns: ["withdrawal_request_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_withdrawal_requests"
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallet_withdrawal_requests: {
+        Row: {
+          admin_note: string | null
+          amount_fcfa: number
+          id: string
+          method: string
+          phone: string
+          processed_at: string | null
+          processed_by: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount_fcfa: number
+          id?: string
+          method: string
+          phone: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount_fcfa?: number
+          id?: string
+          method?: string
+          phone?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       bookings: {
         Row: {
@@ -787,6 +857,7 @@ export type Database = {
           teacher_id: string
           teacher_payout_fcfa: number
           updated_at: string
+          wallet_used_fcfa: number
         }
         Insert: {
           amount_fcfa: number
@@ -816,6 +887,7 @@ export type Database = {
           teacher_id: string
           teacher_payout_fcfa: number
           updated_at?: string
+          wallet_used_fcfa?: number
         }
         Update: {
           amount_fcfa?: number
@@ -845,6 +917,7 @@ export type Database = {
           teacher_id?: string
           teacher_payout_fcfa?: number
           updated_at?: string
+          wallet_used_fcfa?: number
         }
         Relationships: [
           {
@@ -1781,7 +1854,7 @@ export type Database = {
         Returns: string
       }
       create_booking_payment: {
-        Args: { p_booking_id: string }
+        Args: { p_booking_id: string; p_wallet_amount_fcfa?: number }
         Returns: {
           amount_fcfa: number
           booking_id: string
@@ -1810,6 +1883,7 @@ export type Database = {
           teacher_id: string
           teacher_payout_fcfa: number
           updated_at: string
+          wallet_used_fcfa: number
         }
         SetofOptions: {
           from: "*"
@@ -1817,6 +1891,85 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      credit_wallet: {
+        Args: {
+          p_amount_fcfa: number
+          p_booking_id?: string
+          p_kind: string
+          p_payment_id?: string
+          p_reason: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      debit_wallet: {
+        Args: {
+          p_amount_fcfa: number
+          p_booking_id?: string
+          p_kind: string
+          p_payment_id?: string
+          p_reason: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      request_wallet_withdrawal: {
+        Args: { p_amount_fcfa: number; p_method: string; p_phone: string }
+        Returns: {
+          admin_note: string | null
+          amount_fcfa: number
+          id: string
+          method: string
+          phone: string
+          processed_at: string | null
+          processed_by: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_process_wallet_withdrawal: {
+        Args: { p_admin_note?: string; p_request_id: string; p_status: string }
+        Returns: {
+          admin_note: string | null
+          amount_fcfa: number
+          id: string
+          method: string
+          phone: string
+          processed_at: string | null
+          processed_by: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_list_wallet_withdrawals: {
+        Args: { p_status?: string }
+        Returns: {
+          admin_note: string | null
+          amount_fcfa: number
+          display_name: string | null
+          id: string
+          method: string
+          phone: string
+          processed_at: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }[]
       }
       ensure_conversation: {
         Args: {

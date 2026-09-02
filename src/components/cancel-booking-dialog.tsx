@@ -144,8 +144,8 @@ export function CancelBookingDialog({
         </div>
 
         <p className="mt-3 text-xs text-muted-foreground">
-          Le remboursement est calculé côté serveur selon les conditions de la plateforme. Aucun
-          mouvement d&apos;argent réel n&apos;est effectué à ce stade.
+          Le remboursement est calculé côté serveur selon les conditions de la plateforme et
+          crédité immédiatement sur votre portefeuille BARA (réutilisable ou retirable).
         </p>
       </div>
     </div>
