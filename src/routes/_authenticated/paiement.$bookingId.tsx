@@ -294,25 +294,12 @@ function PaymentPage() {
 
                   <p className="mt-4 inline-flex items-start gap-2 rounded-2xl bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
                     <Lock className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    Aucun opérateur de paiement n&apos;est encore connecté : cette étape simule le
-                    règlement pour valider le parcours. Aucun montant réel n&apos;est débité.
+                    Paiement sécurisé par Jèko. Vous serez redirigé vers votre application Mobile
+                    Money pour valider le montant, puis ramené sur cette page.
                   </p>
 
                   <div className="mt-5 flex flex-wrap gap-3">
-                    {!payment && (
-                      <button
-                        type="button"
-                        onClick={() => initMutation.mutate()}
-                        disabled={initMutation.isPending}
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-                      >
-                        {initMutation.isPending && (
-                          <Loader2 className="size-4 animate-spin" aria-hidden />
-                        )}
-                        Préparer le paiement
-                      </button>
-                    )}
-                    {payment?.status === "pending" && (
+                    {payment?.status !== "paid" && (
                       <button
                         type="button"
                         onClick={() => payMutation.mutate()}
@@ -322,9 +309,23 @@ function PaymentPage() {
                         {payMutation.isPending && (
                           <Loader2 className="size-4 animate-spin" aria-hidden />
                         )}
-                        Payer {formatFcfa(payment.amount_fcfa)}
+                        Payer {formatFcfa(payment?.amount_fcfa ?? booking.price_fcfa)}
                       </button>
                     )}
+                    {payment?.status === "pending" && (
+                      <button
+                        type="button"
+                        onClick={() => syncMutation.mutate()}
+                        disabled={syncMutation.isPending}
+                        className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-secondary disabled:opacity-60"
+                      >
+                        {syncMutation.isPending && (
+                          <Loader2 className="size-4 animate-spin" aria-hidden />
+                        )}
+                        J&apos;ai déjà payé, vérifier
+                      </button>
+                    )}
+
                     {payment &&
                       payment.status !== "cancelled" &&
                       payment.status !== "refunded" &&
