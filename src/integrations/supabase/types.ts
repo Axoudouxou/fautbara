@@ -1795,6 +1795,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_profile_counterpart: {
+        Args: { p_other: string; p_user: string }
+        Returns: boolean
+      }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
