@@ -4,26 +4,31 @@
 // dialogue avec Jèko se fait ici, côté serveur.
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 import { createJekoPaymentRequest, type JekoPaymentMethod } from "../_shared/jeko.ts";
+import { CORS_HEADERS, jsonResponse } from "../_shared/cors.ts";
 
 const ALLOWED_METHODS: JekoPaymentMethod[] = ["wave", "orange", "mtn", "moov", "djamo"];
 
 Deno.serve(async (req) => {
+  // Préflight navigateur : doit répondre 2xx avec les en-têtes CORS.
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Méthode non autorisée" }), { status: 405 });
+    return jsonResponse({ error: "Méthode non autorisée" }, 405);
   }
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Authentification requise" }), { status: 401 });
+      return jsonResponse({ error: "Authentification requise" }, 401);
     }
 
     const { bookingId, paymentMethod } = await req.json();
     if (typeof bookingId !== "string" || !bookingId) {
-      return new Response(JSON.stringify({ error: "bookingId requis" }), { status: 400 });
+      return jsonResponse({ error: "bookingId requis" }, 400);
     }
     if (!ALLOWED_METHODS.includes(paymentMethod)) {
-      return new Response(JSON.stringify({ error: "Moyen de paiement invalide" }), { status: 400 });
+      return jsonResponse({ error: "Moyen de paiement invalide" }, 400);
     }
 
     // Client au nom de l'utilisateur appelant : RLS et auth.uid() s'appliquent
@@ -39,7 +44,7 @@ Deno.serve(async (req) => {
       error: userError,
     } = await userClient.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Session invalide" }), { status: 401 });
+      return jsonResponse({ error: "Session invalide" }, 401);
     }
 
     // Idempotent : calcule (ou relit) le montant dû, net des éventuels
@@ -48,13 +53,10 @@ Deno.serve(async (req) => {
       .rpc("create_booking_payment", { p_booking_id: bookingId })
       .single();
     if (paymentError) {
-      return new Response(JSON.stringify({ error: paymentError.message }), { status: 400 });
+      return jsonResponse({ error: paymentError.message }, 400);
     }
     if (payment.status !== "pending") {
-      return new Response(
-        JSON.stringify({ error: "Ce paiement est déjà finalisé ou annulé" }),
-        { status: 409 },
-      );
+      return jsonResponse({ error: "Ce paiement est déjà finalisé ou annulé" }, 409);
     }
 
     const appUrl = Deno.env.get("PUBLIC_APP_URL");
@@ -81,12 +83,10 @@ Deno.serve(async (req) => {
     });
     if (saveError) throw saveError;
 
-    return new Response(JSON.stringify({ redirectUrl: jekoPayment.redirectUrl }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse({ redirectUrl: jekoPayment.redirectUrl });
   } catch (err) {
     console.error("jeko-create-payment error:", err);
     const message = err instanceof Error ? err.message : "Erreur inattendue";
-    return new Response(JSON.stringify({ error: message }), { status: 500 });
+    return jsonResponse({ error: message }, 500);
   }
 });
