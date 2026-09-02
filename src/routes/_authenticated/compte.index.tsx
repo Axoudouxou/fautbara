@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SectionTabs, accountTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/compte/")({
   head: () => ({
@@ -117,6 +118,7 @@ function AccountPage() {
             Mon compte
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
+          <SectionTabs items={accountTabs(roles.includes("teacher"))} />
         </div>
         <button
           type="button"

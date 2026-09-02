@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SectionTabs, accountTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/compte/portefeuille")({
   head: () => ({
@@ -152,6 +153,7 @@ function WalletPage() {
         Les remboursements (annulation, absence du professeur, report tardif) sont crédités ici et
         réutilisables sur n&apos;importe quelle réservation, ou retirables vers Mobile Money.
       </p>
+      <SectionTabs items={accountTabs(isTeacherAccount)} />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="space-y-4">

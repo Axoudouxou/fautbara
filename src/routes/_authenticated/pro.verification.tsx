@@ -19,6 +19,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { DOSSIER_LABEL, KIND_LABEL, VERIFICATION_KINDS, dossierStatus } from "@/lib/verification";
+import { SectionTabs, accountTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/pro/verification")({
   head: () => ({
@@ -204,6 +205,7 @@ function TeacherVerification() {
           Trois pièces à déposer, une étape à la fois. Vos documents restent strictement privés :
           seuls vous et l'équipe BARA y avez accès.
         </p>
+        <SectionTabs items={accountTabs(true)} />
       </div>
 
       <StatusBanner
