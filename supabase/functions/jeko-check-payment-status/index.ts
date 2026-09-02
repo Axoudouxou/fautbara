@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ status: "pending" });
     }
 
-    const finalStatus = await applyJekoPaymentStatus(serviceClient, payment.id, jekoResult);
+    const finalStatus = await applyJekoPaymentStatus(serviceClient, payment.id, bookingId, jekoResult);
     return jsonResponse({ status: finalStatus });
   } catch (err) {
     console.error("jeko-check-payment-status error:", err);

@@ -149,10 +149,11 @@ export function extractPaymentRequestId(body: unknown): string | null {
 export async function applyJekoPaymentStatus(
   serviceClient: SupabaseClient,
   paymentId: string,
+  bookingId: string,
   jekoResult: JekoPaymentRequest,
 ): Promise<"paid" | "cancelled" | "pending"> {
   if (jekoResult.status === "success") {
-    const { error } = await serviceClient
+    const { data, error } = await serviceClient
       .from("payments")
       .update({
         status: "paid",
@@ -161,18 +162,35 @@ export async function applyJekoPaymentStatus(
         provider_transaction_id: jekoResult.transaction?.id ?? null,
       })
       .eq("id", paymentId)
-      .eq("status", "pending");
+      .eq("status", "pending")
+      .select("id");
     if (error) throw error;
+    if (data && data.length > 0) {
+      // Bascule la réservation (verrou de 15 min → confirmée) et notifie le
+      // professeur ; no-op si elle n'était pas en pending_payment (ancien
+      // flux "accepted" déjà en place, ou déjà confirmée par ailleurs).
+      const { error: confirmError } = await serviceClient.rpc("confirm_paid_booking", {
+        p_booking_id: bookingId,
+      });
+      if (confirmError) throw confirmError;
+    }
     return "paid";
   }
 
   if (jekoResult.status === "error") {
-    const { error } = await serviceClient
+    const { data, error } = await serviceClient
       .from("payments")
       .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
       .eq("id", paymentId)
-      .eq("status", "pending");
+      .eq("status", "pending")
+      .select("id");
     if (error) throw error;
+    if (data && data.length > 0) {
+      const { error: cancelError } = await serviceClient.rpc("cancel_unpaid_booking_hold", {
+        p_booking_id: bookingId,
+      });
+      if (cancelError) throw cancelError;
+    }
     return "cancelled";
   }
 
