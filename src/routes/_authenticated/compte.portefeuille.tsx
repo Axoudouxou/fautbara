@@ -56,6 +56,16 @@ function WalletPage() {
   const [method, setMethod] = useState(METHODS[0]!.value);
   const [phone, setPhone] = useState("");
 
+  const rolesQuery = useQuery({
+    queryKey: ["roles", user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (error) throw error;
+      return data.map((r) => r.role as string);
+    },
+  });
+  const isTeacherAccount = rolesQuery.data?.includes("teacher") ?? false;
+
   const walletQuery = useQuery({
     queryKey: ["wallet", user.id],
     queryFn: async () => {
