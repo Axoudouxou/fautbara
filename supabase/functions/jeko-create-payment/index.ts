@@ -59,8 +59,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Ce paiement est déjà finalisé ou annulé" }, 409);
     }
 
-    const appUrl = Deno.env.get("PUBLIC_APP_URL");
-    if (!appUrl) throw new Error("Configuration manquante (PUBLIC_APP_URL)");
+    // L'URL de retour suit l'origine réelle de l'appel (aperçu, domaine
+    // publié, local) ; PUBLIC_APP_URL sert seulement de repli.
+    const origin = req.headers.get("Origin");
+    const appUrl = (origin ?? Deno.env.get("PUBLIC_APP_URL") ?? "").replace(/\/$/, "");
+    if (!appUrl) throw new Error("Origine de l'application introuvable");
 
     const jekoPayment = await createJekoPaymentRequest({
       amountFcfa: payment.amount_fcfa,
@@ -68,9 +71,10 @@ Deno.serve(async (req) => {
       // jamais la même référence auprès de Jèko.
       reference: `${payment.id}-${Date.now()}`,
       paymentMethod,
-      successUrl: `${appUrl}/paiement/${bookingId}?status=success`,
-      errorUrl: `${appUrl}/paiement/${bookingId}?status=error`,
+      successUrl: `${appUrl}/paiement/${bookingId}?paiement=succes`,
+      errorUrl: `${appUrl}/paiement/${bookingId}?paiement=echec`,
     });
+
 
     if (!jekoPayment.redirectUrl) {
       throw new Error("Jèko n'a renvoyé aucune URL de paiement");
