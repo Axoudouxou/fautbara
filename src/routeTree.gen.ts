@@ -41,6 +41,7 @@ import { Route as AuthenticatedProProfilRouteImport } from './routes/_authentica
 import { Route as AuthenticatedProVerificationRouteImport } from './routes/_authenticated/pro.verification'
 import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
 import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/backend-config'
+import { Route as ApiPublicWebhooksJekoRouteImport } from './routes/api/public/webhooks/jeko'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -216,6 +217,11 @@ const ApiPublicBackendConfigRoute = ApiPublicBackendConfigRouteImport.update({
   path: '/api/public/backend-config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksJekoRoute = ApiPublicWebhooksJekoRouteImport.update({
+  id: '/api/public/webhooks/jeko',
+  path: '/api/public/webhooks/jeko',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/compte/': typeof AuthenticatedCompteIndexRoute
   '/pro/': typeof AuthenticatedProIndexRoute
+  '/api/public/webhooks/jeko': typeof ApiPublicWebhooksJekoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/compte': typeof AuthenticatedCompteIndexRoute
   '/pro': typeof AuthenticatedProIndexRoute
+  '/api/public/webhooks/jeko': typeof ApiPublicWebhooksJekoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/compte/': typeof AuthenticatedCompteIndexRoute
   '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
+  '/api/public/webhooks/jeko': typeof ApiPublicWebhooksJekoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/compte/'
     | '/pro/'
+    | '/api/public/webhooks/jeko'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/compte'
     | '/pro'
+    | '/api/public/webhooks/jeko'
   id:
     | '__root__'
     | '/'
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/compte/'
     | '/_authenticated/pro/'
+    | '/api/public/webhooks/jeko'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -433,6 +445,7 @@ export interface RootRouteChildren {
   MatieresIndexRoute: typeof MatieresIndexRoute
   ProfesseursIndexRoute: typeof ProfesseursIndexRoute
   ApiPublicBackendConfigRoute: typeof ApiPublicBackendConfigRoute
+  ApiPublicWebhooksJekoRoute: typeof ApiPublicWebhooksJekoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -661,6 +674,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBackendConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/jeko': {
+      id: '/api/public/webhooks/jeko'
+      path: '/api/public/webhooks/jeko'
+      fullPath: '/api/public/webhooks/jeko'
+      preLoaderRoute: typeof ApiPublicWebhooksJekoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -727,6 +747,7 @@ const rootRouteChildren: RootRouteChildren = {
   MatieresIndexRoute: MatieresIndexRoute,
   ProfesseursIndexRoute: ProfesseursIndexRoute,
   ApiPublicBackendConfigRoute: ApiPublicBackendConfigRoute,
+  ApiPublicWebhooksJekoRoute: ApiPublicWebhooksJekoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
