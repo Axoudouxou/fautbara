@@ -684,30 +684,45 @@ export type Database = {
         Row: {
           body: string | null
           created_at: string
+          dispatch_attempts: number
+          email_error: string | null
+          email_sent_at: string | null
+          email_status: string
           id: string
           kind: string
           link: string | null
           read_at: string | null
+          recipient_email: string | null
           title: string
           user_id: string
         }
         Insert: {
           body?: string | null
           created_at?: string
+          dispatch_attempts?: number
+          email_error?: string | null
+          email_sent_at?: string | null
+          email_status?: string
           id?: string
           kind?: string
           link?: string | null
           read_at?: string | null
+          recipient_email?: string | null
           title: string
           user_id: string
         }
         Update: {
           body?: string | null
           created_at?: string
+          dispatch_attempts?: number
+          email_error?: string | null
+          email_sent_at?: string | null
+          email_status?: string
           id?: string
           kind?: string
           link?: string | null
           read_at?: string | null
+          recipient_email?: string | null
           title?: string
           user_id?: string
         }

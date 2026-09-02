@@ -43,6 +43,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState<SignupRole>(search.role ?? "parent");
   const [pending, setPending] = useState(false);
   const [signupDone, setSignupDone] = useState(false);
@@ -69,6 +70,14 @@ function AuthPage() {
       }
 
       if (mode === "signup") {
+        const cleanedPhone = phone.trim();
+        if (!/^\+?[0-9 ]{8,}$/.test(cleanedPhone)) {
+          toast.error("Numéro de téléphone invalide", {
+            description: "Exemple : +225 07 00 00 00 00",
+          });
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -77,7 +86,7 @@ function AuthPage() {
             // de redirection, un compte confirmé par e-mail y restait bloqué
             // sans jamais atteindre /onboarding.
             emailRedirectTo: `${window.location.origin}/accueil`,
-            data: { display_name: displayName, role },
+            data: { display_name: displayName, role, phone: cleanedPhone },
           },
         });
         if (error) throw error;
@@ -182,6 +191,21 @@ function AuthPage() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Ex. Awa Koné"
+                    className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="signup-phone" className="text-sm font-semibold text-foreground">
+                    Téléphone
+                  </label>
+                  <input
+                    id="signup-phone"
+                    type="tel"
+                    required
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+225 07 00 00 00 00"
                     className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
                   />
                 </div>
