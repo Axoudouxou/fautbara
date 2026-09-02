@@ -49,11 +49,20 @@ Deno.serve(async (req) => {
 
     // Idempotent : calcule (ou relit) le montant dû, net des éventuels
     // crédits de report, et crée la ligne payments si elle n'existe pas.
-    const { data: payment, error: paymentError } = await userClient
+    interface PaymentRow {
+      id: string;
+      amount_fcfa: number;
+      status: string;
+    }
+    const { data: rawPayment, error: paymentError } = await userClient
       .rpc("create_booking_payment", { p_booking_id: bookingId })
       .single();
     if (paymentError) {
       return jsonResponse({ error: paymentError.message }, 400);
+    }
+    const payment = rawPayment as PaymentRow | null;
+    if (!payment) {
+      return jsonResponse({ error: "Paiement introuvable" }, 404);
     }
     if (payment.status !== "pending") {
       return jsonResponse({ error: "Ce paiement est déjà finalisé ou annulé" }, 409);
