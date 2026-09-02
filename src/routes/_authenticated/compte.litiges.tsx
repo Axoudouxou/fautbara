@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Gavel, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SectionTabs, learnerCoursesTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/compte/litiges")({
   head: () => ({
@@ -52,6 +53,7 @@ function MyDisputes() {
         Chaque litige est examiné par l&apos;équipe BARA. La décision et le remboursement
         éventuel apparaissent ici.
       </p>
+      <SectionTabs items={learnerCoursesTabs} />
       <Link
         to="/compte/reservations"
         className="mt-4 inline-flex rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"

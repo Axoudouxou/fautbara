@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { CalendarOff, Clock, Loader2, Plus, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SectionTabs, teacherOffersTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/pro/disponibilites")({
   head: () => ({
@@ -258,6 +259,7 @@ function TeacherAvailabilityPage() {
         d&apos;absence exceptionnelle. Ces informations aident les familles à vous contacter au bon
         moment.
       </p>
+      <SectionTabs items={teacherOffersTabs} />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">

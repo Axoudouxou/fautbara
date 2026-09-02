@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
+import { SectionTabs, teacherOffersTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/pro/offres")({
   validateSearch: (search) => z.object({ onboarding: z.boolean().optional() }).parse(search),
@@ -318,6 +319,7 @@ function TeacherOffersPage() {
           </button>
         )}
       </div>
+      <SectionTabs items={teacherOffersTabs} />
 
       {form && (
         <form

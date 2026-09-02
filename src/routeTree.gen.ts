@@ -16,6 +16,7 @@ import { Route as CommentFonctionneLePaiementRouteImport } from './routes/commen
 import { Route as DevenirProfesseurRouteImport } from './routes/devenir-professeur'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAccueilRouteImport } from './routes/_authenticated/accueil'
+import { Route as AuthenticatedDevoirsRouteImport } from './routes/_authenticated/devoirs'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedComptePortefeuilleRouteImport } from './routes/_a
 import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_authenticated/compte.reservations'
 import { Route as AuthenticatedPaiementBookingIdRouteImport } from './routes/_authenticated/paiement.$bookingId'
 import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticated/pro.index'
+import { Route as AuthenticatedProCoursRouteImport } from './routes/_authenticated/pro.cours'
 import { Route as AuthenticatedProDemandesRouteImport } from './routes/_authenticated/pro.demandes'
 import { Route as AuthenticatedProDisponibilitesRouteImport } from './routes/_authenticated/pro.disponibilites'
 import { Route as AuthenticatedProMessagesRouteImport } from './routes/_authenticated/pro.messages'
@@ -77,6 +79,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const AuthenticatedAccueilRoute = AuthenticatedAccueilRouteImport.update({
   id: '/accueil',
   path: '/accueil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDevoirsRoute = AuthenticatedDevoirsRouteImport.update({
+  id: '/devoirs',
+  path: '/devoirs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
@@ -185,6 +192,11 @@ const AuthenticatedProIndexRoute = AuthenticatedProIndexRouteImport.update({
   path: '/pro/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProCoursRoute = AuthenticatedProCoursRouteImport.update({
+  id: '/pro/cours',
+  path: '/pro/cours',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProDemandesRoute =
   AuthenticatedProDemandesRouteImport.update({
     id: '/pro/demandes',
@@ -238,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
+  '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -254,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
+  '/pro/cours': typeof AuthenticatedProCoursRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/messages': typeof AuthenticatedProMessagesRoute
@@ -273,6 +287,7 @@ export interface FileRoutesByTo {
   '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
+  '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -289,6 +304,7 @@ export interface FileRoutesByTo {
   '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
+  '/pro/cours': typeof AuthenticatedProCoursRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/messages': typeof AuthenticatedProMessagesRoute
@@ -310,6 +326,7 @@ export interface FileRoutesById {
   '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/accueil': typeof AuthenticatedAccueilRoute
+  '/_authenticated/devoirs': typeof AuthenticatedDevoirsRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -326,6 +343,7 @@ export interface FileRoutesById {
   '/_authenticated/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/_authenticated/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
+  '/_authenticated/pro/cours': typeof AuthenticatedProCoursRoute
   '/_authenticated/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/_authenticated/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/_authenticated/pro/messages': typeof AuthenticatedProMessagesRoute
@@ -347,6 +365,7 @@ export interface FileRouteTypes {
     | '/devenir-professeur'
     | '/reset-password'
     | '/accueil'
+    | '/devoirs'
     | '/messages'
     | '/onboarding'
     | '/matieres/$slug'
@@ -363,6 +382,7 @@ export interface FileRouteTypes {
     | '/compte/portefeuille'
     | '/compte/reservations'
     | '/paiement/$bookingId'
+    | '/pro/cours'
     | '/pro/demandes'
     | '/pro/disponibilites'
     | '/pro/messages'
@@ -382,6 +402,7 @@ export interface FileRouteTypes {
     | '/devenir-professeur'
     | '/reset-password'
     | '/accueil'
+    | '/devoirs'
     | '/messages'
     | '/onboarding'
     | '/matieres/$slug'
@@ -398,6 +419,7 @@ export interface FileRouteTypes {
     | '/compte/portefeuille'
     | '/compte/reservations'
     | '/paiement/$bookingId'
+    | '/pro/cours'
     | '/pro/demandes'
     | '/pro/disponibilites'
     | '/pro/messages'
@@ -418,6 +440,7 @@ export interface FileRouteTypes {
     | '/devenir-professeur'
     | '/reset-password'
     | '/_authenticated/accueil'
+    | '/_authenticated/devoirs'
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
     | '/matieres/$slug'
@@ -434,6 +457,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compte/portefeuille'
     | '/_authenticated/compte/reservations'
     | '/_authenticated/paiement/$bookingId'
+    | '/_authenticated/pro/cours'
     | '/_authenticated/pro/demandes'
     | '/_authenticated/pro/disponibilites'
     | '/_authenticated/pro/messages'
@@ -510,6 +534,13 @@ declare module '@tanstack/react-router' {
       path: '/accueil'
       fullPath: '/accueil'
       preLoaderRoute: typeof AuthenticatedAccueilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/devoirs': {
+      id: '/_authenticated/devoirs'
+      path: '/devoirs'
+      fullPath: '/devoirs'
+      preLoaderRoute: typeof AuthenticatedDevoirsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/messages': {
@@ -645,6 +676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/cours': {
+      id: '/_authenticated/pro/cours'
+      path: '/pro/cours'
+      fullPath: '/pro/cours'
+      preLoaderRoute: typeof AuthenticatedProCoursRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pro/demandes': {
       id: '/_authenticated/pro/demandes'
       path: '/pro/demandes'
@@ -706,6 +744,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccueilRoute: typeof AuthenticatedAccueilRoute
+  AuthenticatedDevoirsRoute: typeof AuthenticatedDevoirsRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedAdminLitigesRoute: typeof AuthenticatedAdminLitigesRoute
@@ -718,6 +757,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComptePortefeuilleRoute: typeof AuthenticatedComptePortefeuilleRoute
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
   AuthenticatedPaiementBookingIdRoute: typeof AuthenticatedPaiementBookingIdRoute
+  AuthenticatedProCoursRoute: typeof AuthenticatedProCoursRoute
   AuthenticatedProDemandesRoute: typeof AuthenticatedProDemandesRoute
   AuthenticatedProDisponibilitesRoute: typeof AuthenticatedProDisponibilitesRoute
   AuthenticatedProMessagesRoute: typeof AuthenticatedProMessagesRoute
@@ -732,6 +772,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccueilRoute: AuthenticatedAccueilRoute,
+  AuthenticatedDevoirsRoute: AuthenticatedDevoirsRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedAdminLitigesRoute: AuthenticatedAdminLitigesRoute,
@@ -744,6 +785,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComptePortefeuilleRoute: AuthenticatedComptePortefeuilleRoute,
   AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
   AuthenticatedPaiementBookingIdRoute: AuthenticatedPaiementBookingIdRoute,
+  AuthenticatedProCoursRoute: AuthenticatedProCoursRoute,
   AuthenticatedProDemandesRoute: AuthenticatedProDemandesRoute,
   AuthenticatedProDisponibilitesRoute: AuthenticatedProDisponibilitesRoute,
   AuthenticatedProMessagesRoute: AuthenticatedProMessagesRoute,

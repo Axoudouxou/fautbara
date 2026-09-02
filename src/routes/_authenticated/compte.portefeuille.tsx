@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SectionTabs, accountTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/compte/portefeuille")({
   head: () => ({
@@ -54,6 +55,16 @@ function WalletPage() {
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState(METHODS[0]!.value);
   const [phone, setPhone] = useState("");
+
+  const rolesQuery = useQuery({
+    queryKey: ["roles", user.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (error) throw error;
+      return data.map((r) => r.role as string);
+    },
+  });
+  const isTeacherAccount = rolesQuery.data?.includes("teacher") ?? false;
 
   const walletQuery = useQuery({
     queryKey: ["wallet", user.id],
@@ -152,6 +163,7 @@ function WalletPage() {
         Les remboursements (annulation, absence du professeur, report tardif) sont crédités ici et
         réutilisables sur n&apos;importe quelle réservation, ou retirables vers Mobile Money.
       </p>
+      <SectionTabs items={accountTabs(isTeacherAccount)} />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="space-y-4">

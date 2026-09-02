@@ -43,6 +43,22 @@ export function useSessionRoles() {
     },
   });
 
+  // Un enfant n'a pas de rôle applicatif : il est reconnu par son profil enfant lié.
+  const childQuery = useQuery({
+    queryKey: ["nav-child", userId],
+    enabled: Boolean(userId),
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("children")
+        .select("id")
+        .eq("auth_user_id", userId!)
+        .maybeSingle();
+      if (error) return null;
+      return data?.id ?? null;
+    },
+  });
+
   const roles = rolesQuery.data ?? [];
   const primaryRole: AppRole | null = roles.includes("admin")
     ? "admin"
@@ -54,12 +70,15 @@ export function useSessionRoles() {
           ? "student"
           : null;
 
+  const isChild = roles.length === 0 && Boolean(childQuery.data);
+
   return {
     ready,
     signedIn: Boolean(userId),
     userId,
     roles,
     primaryRole,
-    rolesLoading: rolesQuery.isLoading,
+    isChild,
+    rolesLoading: rolesQuery.isLoading || childQuery.isLoading,
   };
 }

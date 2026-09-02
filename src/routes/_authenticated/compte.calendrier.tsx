@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
 import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
 import { STATUS_LABELS, formatTimeRange } from "./compte.reservations";
+import { SectionTabs, learnerCoursesTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/compte/calendrier")({
   head: () => ({
@@ -96,6 +97,7 @@ function CalendarPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Les séances de votre famille, semaine par semaine, avec leur statut.
           </p>
+          <SectionTabs items={learnerCoursesTabs} />
         </div>
         <Link
           to="/compte/reservations"

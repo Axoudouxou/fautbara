@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SectionTabs, accountTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/pro/profil")({
   head: () => ({
@@ -518,6 +519,7 @@ function TeacherProfilePage() {
             Votre CV public : présentation, diplômes, expériences, photos et avis. Votre téléphone,
             votre adresse exacte et vos documents justificatifs restent privés.
           </p>
+          <SectionTabs items={accountTabs(true)} />
         </div>
         <Link
           to="/professeurs/$id"
