@@ -3,21 +3,26 @@
 // comme filet de sécurité si le webhook a été manqué ou retardé.
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 import { applyJekoPaymentStatus, getJekoPaymentRequest } from "../_shared/jeko.ts";
+import { CORS_HEADERS, jsonResponse } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  // Préflight navigateur : doit répondre 2xx avec les en-têtes CORS.
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Méthode non autorisée" }), { status: 405 });
+    return jsonResponse({ error: "Méthode non autorisée" }, 405);
   }
 
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Authentification requise" }), { status: 401 });
+      return jsonResponse({ error: "Authentification requise" }, 401);
     }
 
     const { bookingId } = await req.json();
     if (typeof bookingId !== "string" || !bookingId) {
-      return new Response(JSON.stringify({ error: "bookingId requis" }), { status: 400 });
+      return jsonResponse({ error: "bookingId requis" }, 400);
     }
 
     const userClient = createClient(
@@ -30,7 +35,7 @@ Deno.serve(async (req) => {
       error: userError,
     } = await userClient.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Session invalide" }), { status: 401 });
+      return jsonResponse({ error: "Session invalide" }, 401);
     }
 
     // RLS garantit que seuls le payeur ou le professeur de la réservation
@@ -42,14 +47,10 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (paymentError) throw paymentError;
     if (!payment) {
-      return new Response(JSON.stringify({ status: "none" }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return jsonResponse({ status: "none" });
     }
     if (payment.status !== "pending" || !payment.provider_reference) {
-      return new Response(JSON.stringify({ status: payment.status }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return jsonResponse({ status: payment.status });
     }
 
     const serviceClient = createClient(
@@ -60,22 +61,22 @@ Deno.serve(async (req) => {
     const jekoResult = await getJekoPaymentRequest(payment.provider_reference);
     const expectedCents = Math.round(payment.amount_fcfa * 100);
     const receivedCents = jekoResult.transaction?.amount?.amount;
-    if (jekoResult.status === "success" && receivedCents != null && receivedCents !== expectedCents) {
+    if (
+      jekoResult.status === "success" &&
+      receivedCents != null &&
+      receivedCents !== expectedCents
+    ) {
       console.error(
         `jeko-check-payment-status: montant incohérent pour ${payment.provider_reference}`,
       );
-      return new Response(JSON.stringify({ status: "pending" }), {
-        headers: { "Content-Type": "application/json" },
-      });
+      return jsonResponse({ status: "pending" });
     }
 
     const finalStatus = await applyJekoPaymentStatus(serviceClient, payment.id, jekoResult);
-    return new Response(JSON.stringify({ status: finalStatus }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse({ status: finalStatus });
   } catch (err) {
     console.error("jeko-check-payment-status error:", err);
     const message = err instanceof Error ? err.message : "Erreur inattendue";
-    return new Response(JSON.stringify({ error: message }), { status: 500 });
+    return jsonResponse({ error: message }, 500);
   }
 });
