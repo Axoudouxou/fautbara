@@ -442,6 +442,8 @@ export type Database = {
       }
       conversations: {
         Row: {
+          archived_by_learner: boolean
+          archived_by_teacher: boolean
           child_id: string | null
           created_at: string
           id: string
@@ -451,6 +453,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_by_learner?: boolean
+          archived_by_teacher?: boolean
           child_id?: string | null
           created_at?: string
           id?: string
@@ -460,6 +464,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_by_learner?: boolean
+          archived_by_teacher?: boolean
           child_id?: string | null
           created_at?: string
           id?: string
@@ -1697,6 +1703,8 @@ export type Database = {
           p_teacher_id: string
         }
         Returns: {
+          archived_by_learner: boolean
+          archived_by_teacher: boolean
           child_id: string | null
           created_at: string
           id: string
@@ -2055,6 +2063,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_conversation_archived: {
+        Args: { p_archived: boolean; p_conversation_id: string }
+        Returns: {
+          archived_by_learner: boolean
+          archived_by_teacher: boolean
+          child_id: string | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          learner_id: string
+          teacher_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "conversations"
           isOneToOne: true
           isSetofReturn: false
         }
