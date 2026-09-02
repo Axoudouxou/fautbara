@@ -6,11 +6,11 @@ import { Loader2, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const LINKS = [
-  { to: "/admin" as const, label: "Vue d'ensemble" },
-  { to: "/admin/professeurs" as const, label: "Professeurs" },
-  { to: "/admin/offres" as const, label: "Modération des offres" },
-  { to: "/admin/litiges" as const, label: "Litiges" },
-  { to: "/admin/retraits" as const, label: "Retraits" },
+  { to: "/admin" as const, label: "Dashboard" },
+  { to: "/admin/professeurs" as const, label: "Utilisateurs" },
+  { to: "/admin/litiges" as const, label: "Modération" },
+  { to: "/admin/offres" as const, label: "Catalogue" },
+  { to: "/admin/retraits" as const, label: "Finances" },
 ];
 
 export function useIsAdmin(userId: string) {
