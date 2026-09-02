@@ -705,7 +705,7 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
   const dateTime = (iso: string) =>
     new Date(iso).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 
-  if (event.kind === "trial_confirmed" || event.kind === "booking_confirmed") {
+  if (event.kind !== "reschedule_done") {
     return (
       <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
         <p className="text-xs font-semibold text-foreground">
