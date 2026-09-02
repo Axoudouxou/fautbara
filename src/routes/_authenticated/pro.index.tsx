@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   UserCog,
+  Wallet,
 } from "lucide-react";
 
 
@@ -87,6 +88,19 @@ function TeacherDashboard() {
     },
   });
 
+  const walletQuery = useQuery({
+    queryKey: ["wallet", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("balance_fcfa")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.balance_fcfa ?? 0;
+    },
+  });
 
   if (rolesQuery.isLoading) {
     return (
@@ -187,6 +201,28 @@ function TeacherDashboard() {
           </p>
         </div>
       </div>
+
+      <section className="mt-6 flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <Wallet className="size-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-sm text-muted-foreground">Solde de mon portefeuille</p>
+            <p className="mt-0.5 font-display text-2xl font-bold text-foreground">
+              {walletQuery.isLoading
+                ? "…"
+                : `${(walletQuery.data ?? 0).toLocaleString("fr-FR")} FCFA`}
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/compte/portefeuille"
+          className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          Voir mon portefeuille
+        </Link>
+      </section>
 
       <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
         <h2 className="font-display text-lg font-bold text-foreground">Prochaines étapes</h2>

@@ -51,20 +51,22 @@ function AdminWithdrawals() {
     queryKey: ["admin-withdrawals", filter],
     enabled: isAdmin,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_list_wallet_withdrawals", {
-        p_status: filter === "all" ? undefined : filter,
-      });
+      const { data, error } = await supabase.rpc(
+        "admin_list_wallet_withdrawals",
+        filter === "all" ? {} : { p_status: filter },
+      );
       if (error) throw error;
       return data ?? [];
     },
   });
 
   const process = useMutation({
-    mutationFn: async (input: { id: string; status: string; note?: string }) => {
+    mutationFn: async (input: { id: string; status: string; note?: string | undefined }) => {
+      const note = input.note?.trim();
       const { error } = await supabase.rpc("admin_process_wallet_withdrawal", {
         p_request_id: input.id,
         p_status: input.status,
-        p_admin_note: input.note?.trim() || undefined,
+        ...(note ? { p_admin_note: note } : {}),
       });
       if (error) throw error;
     },
