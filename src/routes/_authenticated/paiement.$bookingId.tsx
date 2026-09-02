@@ -6,15 +6,30 @@ import {
   Home,
   Laptop,
   Loader2,
-  Lock,
   ShieldCheck,
   Smartphone,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { formatDay, formatTimeRange } from "./compte.reservations";
+
+async function invokeEdgeFunction<T>(name: string, body: unknown): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T>(name, { body });
+  if (error) {
+    let message = error.message;
+    try {
+      const context = (error as { context?: Response }).context;
+      const parsed = await context?.json();
+      if (parsed?.error) message = parsed.error;
+    } catch {
+      // pas de corps JSON exploitable : on garde le message générique
+    }
+    throw new Error(message);
+  }
+  return data as T;
+}
 
 export const Route = createFileRoute("/_authenticated/paiement/$bookingId")({
   head: () => ({
@@ -45,10 +60,11 @@ const ESCROW_STATUS: Record<string, string> = {
 };
 
 const METHODS = [
-  { value: "orange_money", label: "Orange Money", icon: Smartphone },
-  { value: "mtn_momo", label: "MTN MoMo", icon: Smartphone },
-  { value: "moov_money", label: "Moov Money", icon: Smartphone },
+  { value: "orange", label: "Orange Money", icon: Smartphone },
+  { value: "mtn", label: "MTN MoMo", icon: Smartphone },
+  { value: "moov", label: "Moov Money", icon: Smartphone },
   { value: "wave", label: "Wave", icon: Wallet },
+  { value: "djamo", label: "Djamo", icon: Wallet },
 ];
 
 function formatFcfa(value: number) {
@@ -97,40 +113,46 @@ function PaymentPage() {
     queryClient.invalidateQueries({ queryKey: ["my-bookings", user.id] });
   };
 
-  const initMutation = useMutation({
+  const startPayment = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("create_booking_payment", { p_booking_id: bookingId });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Paiement préparé");
-      refresh();
-    },
-    onError: (err) =>
-      toast.error("Impossible de préparer le paiement", {
-        description: err instanceof Error ? err.message : undefined,
-      }),
-  });
-
-  const payMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.rpc("mark_payment_paid", {
-        p_booking_id: bookingId,
-        p_method: method,
+      const data = await invokeEdgeFunction<{ redirectUrl?: string }>("jeko-create-payment", {
+        bookingId,
+        paymentMethod: method,
       });
-      if (error) throw error;
+      if (!data.redirectUrl) throw new Error("Redirection de paiement introuvable");
+      return data.redirectUrl;
     },
-    onSuccess: () => {
-      toast.success("Séance marquée comme payée", {
-        description: "Simulation : aucun argent réel n'a été débité.",
-      });
-      refresh();
+    onSuccess: (redirectUrl) => {
+      // Quitte l'application : le checkout Jèko est hébergé.
+      window.location.assign(redirectUrl);
     },
     onError: (err) =>
       toast.error("Paiement impossible", {
         description: err instanceof Error ? err.message : undefined,
       }),
   });
+
+  // Au retour de Jèko (successUrl / errorUrl), on ne fait jamais confiance à
+  // l'URL elle-même : on revérifie le statut réel auprès du serveur, qui
+  // relit l'état authoritatif auprès de Jèko avant de mettre à jour la DB.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("status");
+    if (!status) return;
+    window.history.replaceState(null, "", window.location.pathname);
+
+    invokeEdgeFunction<{ status?: string }>("jeko-check-payment-status", { bookingId })
+      .then((data) => {
+        if (data.status === "paid") toast.success("Paiement confirmé");
+        else if (data.status === "cancelled") toast.error("Le paiement a échoué ou a été annulé");
+        refresh();
+      })
+      .catch(() => {
+        // Le webhook a peut-être déjà traité le paiement, ou Jèko est momentanément indisponible.
+        refresh();
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingId]);
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
@@ -274,37 +296,18 @@ function PaymentPage() {
                     })}
                   </div>
 
-                  <p className="mt-4 inline-flex items-start gap-2 rounded-2xl bg-muted/60 px-4 py-3 text-xs text-muted-foreground">
-                    <Lock className="mt-0.5 size-4 shrink-0" aria-hidden />
-                    Aucun opérateur de paiement n&apos;est encore connecté : cette étape simule le
-                    règlement pour valider le parcours. Aucun montant réel n&apos;est débité.
-                  </p>
-
                   <div className="mt-5 flex flex-wrap gap-3">
-                    {!payment && (
+                    {(!payment || payment.status === "pending") && (
                       <button
                         type="button"
-                        onClick={() => initMutation.mutate()}
-                        disabled={initMutation.isPending}
+                        onClick={() => startPayment.mutate()}
+                        disabled={startPayment.isPending}
                         className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
                       >
-                        {initMutation.isPending && (
+                        {startPayment.isPending && (
                           <Loader2 className="size-4 animate-spin" aria-hidden />
                         )}
-                        Préparer le paiement
-                      </button>
-                    )}
-                    {payment?.status === "pending" && (
-                      <button
-                        type="button"
-                        onClick={() => payMutation.mutate()}
-                        disabled={payMutation.isPending}
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-                      >
-                        {payMutation.isPending && (
-                          <Loader2 className="size-4 animate-spin" aria-hidden />
-                        )}
-                        Payer {formatFcfa(payment.amount_fcfa)}
+                        Payer {formatFcfa(payment?.amount_fcfa ?? booking.price_fcfa)}
                       </button>
                     )}
                     {payment &&
