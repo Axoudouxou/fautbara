@@ -88,6 +88,19 @@ function TeacherDashboard() {
     },
   });
 
+  const walletQuery = useQuery({
+    queryKey: ["wallet", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("balance_fcfa")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.balance_fcfa ?? 0;
+    },
+  });
 
   if (rolesQuery.isLoading) {
     return (
