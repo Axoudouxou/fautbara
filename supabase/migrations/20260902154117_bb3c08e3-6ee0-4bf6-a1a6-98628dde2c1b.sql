@@ -1,0 +1,1 @@
+grant execute on function public.get_teacher_busy_slots(uuid, timestamptz, timestamptz) to anon;
