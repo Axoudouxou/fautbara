@@ -70,12 +70,15 @@ export function useSessionRoles() {
           ? "student"
           : null;
 
+  const isChild = roles.length === 0 && Boolean(childQuery.data);
+
   return {
     ready,
     signedIn: Boolean(userId),
     userId,
     roles,
     primaryRole,
-    rolesLoading: rolesQuery.isLoading,
+    isChild,
+    rolesLoading: rolesQuery.isLoading || childQuery.isLoading,
   };
 }
