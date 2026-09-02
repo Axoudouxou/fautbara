@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDay, formatTimeRange } from "./compte.reservations";
 
-async function invokeEdgeFunction<T>(name: string, body: unknown): Promise<T> {
+async function invokeEdgeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke<T>(name, { body });
   if (error) {
     let message = error.message;
