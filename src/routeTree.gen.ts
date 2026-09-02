@@ -16,6 +16,7 @@ import { Route as CommentFonctionneLePaiementRouteImport } from './routes/commen
 import { Route as DevenirProfesseurRouteImport } from './routes/devenir-professeur'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAccueilRouteImport } from './routes/_authenticated/accueil'
+import { Route as AuthenticatedDevoirsRouteImport } from './routes/_authenticated/devoirs'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
@@ -78,6 +79,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const AuthenticatedAccueilRoute = AuthenticatedAccueilRouteImport.update({
   id: '/accueil',
   path: '/accueil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDevoirsRoute = AuthenticatedDevoirsRouteImport.update({
+  id: '/devoirs',
+  path: '/devoirs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
+  '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
+  '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/devenir-professeur': typeof DevenirProfesseurRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/accueil': typeof AuthenticatedAccueilRoute
+  '/_authenticated/devoirs': typeof AuthenticatedDevoirsRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/devenir-professeur'
     | '/reset-password'
     | '/accueil'
+    | '/devoirs'
     | '/messages'
     | '/onboarding'
     | '/matieres/$slug'
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/devenir-professeur'
     | '/reset-password'
     | '/accueil'
+    | '/devoirs'
     | '/messages'
     | '/onboarding'
     | '/matieres/$slug'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/devenir-professeur'
     | '/reset-password'
     | '/_authenticated/accueil'
+    | '/_authenticated/devoirs'
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
     | '/matieres/$slug'
@@ -522,6 +534,13 @@ declare module '@tanstack/react-router' {
       path: '/accueil'
       fullPath: '/accueil'
       preLoaderRoute: typeof AuthenticatedAccueilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/devoirs': {
+      id: '/_authenticated/devoirs'
+      path: '/devoirs'
+      fullPath: '/devoirs'
+      preLoaderRoute: typeof AuthenticatedDevoirsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/messages': {
@@ -725,6 +744,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccueilRoute: typeof AuthenticatedAccueilRoute
+  AuthenticatedDevoirsRoute: typeof AuthenticatedDevoirsRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedAdminLitigesRoute: typeof AuthenticatedAdminLitigesRoute
@@ -752,6 +772,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccueilRoute: AuthenticatedAccueilRoute,
+  AuthenticatedDevoirsRoute: AuthenticatedDevoirsRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedAdminLitigesRoute: AuthenticatedAdminLitigesRoute,

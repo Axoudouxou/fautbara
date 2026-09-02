@@ -8,6 +8,7 @@ import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
 import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 import { LeaveReviewDialog } from "@/components/leave-review-dialog";
 import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
+import { SectionTabs, learnerCoursesTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
   head: () => ({

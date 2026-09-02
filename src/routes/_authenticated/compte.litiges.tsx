@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Gavel, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SectionTabs, learnerCoursesTabs } from "@/components/section-tabs";
 
 export const Route = createFileRoute("/_authenticated/compte/litiges")({
   head: () => ({
