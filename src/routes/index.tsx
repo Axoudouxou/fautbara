@@ -129,42 +129,8 @@ function Index() {
           </ul>
         </div>
 
-        {/* Carte illustrative */}
-        <div className="relative">
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-raised)]">
-            <div className="flex items-center gap-4">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary-soft font-display text-xl font-bold text-primary-soft-foreground">
-                KA
-              </div>
-              <div>
-                <p className="font-display font-bold text-foreground">Kouassi A.</p>
-                <p className="text-sm text-muted-foreground">Mathématiques — Cocody, Abidjan</p>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {["Terminale", "1ère", "2nde"].map((lvl) => (
-                <span
-                  key={lvl}
-                  className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground"
-                >
-                  {lvl}
-                </span>
-              ))}
-            </div>
-            <div className="mt-5 flex items-center justify-between rounded-2xl bg-muted px-4 py-3">
-              <span className="text-sm font-semibold text-muted-foreground">Séance de 1h30</span>
-              <span className="font-display text-lg font-extrabold text-foreground">
-                10 000 FCFA
-              </span>
-            </div>
-            <button
-              type="button"
-              className="mt-4 w-full rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Voir les disponibilités
-            </button>
-          </div>
-        </div>
+        {/* Espace visuel réservé pour illustration future */}
+        <div className="relative hidden lg:block" aria-hidden="true" />
       </section>
 
       {/* Catégories */}
