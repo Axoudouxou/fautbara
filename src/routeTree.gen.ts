@@ -26,10 +26,12 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminLitigesRouteImport } from './routes/_authenticated/admin.litiges'
 import { Route as AuthenticatedAdminOffresRouteImport } from './routes/_authenticated/admin.offres'
 import { Route as AuthenticatedAdminProfesseursRouteImport } from './routes/_authenticated/admin.professeurs'
+import { Route as AuthenticatedAdminRetraitsRouteImport } from './routes/_authenticated/admin.retraits'
 import { Route as AuthenticatedCompteIndexRouteImport } from './routes/_authenticated/compte.index'
 import { Route as AuthenticatedCompteCalendrierRouteImport } from './routes/_authenticated/compte.calendrier'
 import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authenticated/compte.enfants'
 import { Route as AuthenticatedCompteLitigesRouteImport } from './routes/_authenticated/compte.litiges'
+import { Route as AuthenticatedComptePortefeuilleRouteImport } from './routes/_authenticated/compte.portefeuille'
 import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_authenticated/compte.reservations'
 import { Route as AuthenticatedPaiementBookingIdRouteImport } from './routes/_authenticated/paiement.$bookingId'
 import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticated/pro.index'
@@ -130,6 +132,12 @@ const AuthenticatedAdminProfesseursRoute =
     path: '/admin/professeurs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminRetraitsRoute =
+  AuthenticatedAdminRetraitsRouteImport.update({
+    id: '/admin/retraits',
+    path: '/admin/retraits',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCompteIndexRoute =
   AuthenticatedCompteIndexRouteImport.update({
     id: '/compte/',
@@ -152,6 +160,12 @@ const AuthenticatedCompteLitigesRoute =
   AuthenticatedCompteLitigesRouteImport.update({
     id: '/compte/litiges',
     path: '/compte/litiges',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedComptePortefeuilleRoute =
+  AuthenticatedComptePortefeuilleRouteImport.update({
+    id: '/compte/portefeuille',
+    path: '/compte/portefeuille',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCompteReservationsRoute =
@@ -233,9 +247,11 @@ export interface FileRoutesByFullPath {
   '/admin/litiges': typeof AuthenticatedAdminLitigesRoute
   '/admin/offres': typeof AuthenticatedAdminOffresRoute
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
+  '/admin/retraits': typeof AuthenticatedAdminRetraitsRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
+  '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
@@ -266,9 +282,11 @@ export interface FileRoutesByTo {
   '/admin/litiges': typeof AuthenticatedAdminLitigesRoute
   '/admin/offres': typeof AuthenticatedAdminOffresRoute
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
+  '/admin/retraits': typeof AuthenticatedAdminRetraitsRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
+  '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
@@ -301,9 +319,11 @@ export interface FileRoutesById {
   '/_authenticated/admin/litiges': typeof AuthenticatedAdminLitigesRoute
   '/_authenticated/admin/offres': typeof AuthenticatedAdminOffresRoute
   '/_authenticated/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
+  '/_authenticated/admin/retraits': typeof AuthenticatedAdminRetraitsRoute
   '/_authenticated/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
   '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
   '/_authenticated/compte/litiges': typeof AuthenticatedCompteLitigesRoute
+  '/_authenticated/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/_authenticated/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
   '/_authenticated/pro/demandes': typeof AuthenticatedProDemandesRoute
@@ -336,9 +356,11 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/offres'
     | '/admin/professeurs'
+    | '/admin/retraits'
     | '/compte/calendrier'
     | '/compte/enfants'
     | '/compte/litiges'
+    | '/compte/portefeuille'
     | '/compte/reservations'
     | '/paiement/$bookingId'
     | '/pro/demandes'
@@ -369,9 +391,11 @@ export interface FileRouteTypes {
     | '/admin/litiges'
     | '/admin/offres'
     | '/admin/professeurs'
+    | '/admin/retraits'
     | '/compte/calendrier'
     | '/compte/enfants'
     | '/compte/litiges'
+    | '/compte/portefeuille'
     | '/compte/reservations'
     | '/paiement/$bookingId'
     | '/pro/demandes'
@@ -403,9 +427,11 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/litiges'
     | '/_authenticated/admin/offres'
     | '/_authenticated/admin/professeurs'
+    | '/_authenticated/admin/retraits'
     | '/_authenticated/compte/calendrier'
     | '/_authenticated/compte/enfants'
     | '/_authenticated/compte/litiges'
+    | '/_authenticated/compte/portefeuille'
     | '/_authenticated/compte/reservations'
     | '/_authenticated/paiement/$bookingId'
     | '/_authenticated/pro/demandes'
@@ -556,6 +582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProfesseursRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/retraits': {
+      id: '/_authenticated/admin/retraits'
+      path: '/admin/retraits'
+      fullPath: '/admin/retraits'
+      preLoaderRoute: typeof AuthenticatedAdminRetraitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/compte/': {
       id: '/_authenticated/compte/'
       path: '/compte'
@@ -582,6 +615,13 @@ declare module '@tanstack/react-router' {
       path: '/compte/litiges'
       fullPath: '/compte/litiges'
       preLoaderRoute: typeof AuthenticatedCompteLitigesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/compte/portefeuille': {
+      id: '/_authenticated/compte/portefeuille'
+      path: '/compte/portefeuille'
+      fullPath: '/compte/portefeuille'
+      preLoaderRoute: typeof AuthenticatedComptePortefeuilleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/compte/reservations': {
@@ -671,9 +711,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminLitigesRoute: typeof AuthenticatedAdminLitigesRoute
   AuthenticatedAdminOffresRoute: typeof AuthenticatedAdminOffresRoute
   AuthenticatedAdminProfesseursRoute: typeof AuthenticatedAdminProfesseursRoute
+  AuthenticatedAdminRetraitsRoute: typeof AuthenticatedAdminRetraitsRoute
   AuthenticatedCompteCalendrierRoute: typeof AuthenticatedCompteCalendrierRoute
   AuthenticatedCompteEnfantsRoute: typeof AuthenticatedCompteEnfantsRoute
   AuthenticatedCompteLitigesRoute: typeof AuthenticatedCompteLitigesRoute
+  AuthenticatedComptePortefeuilleRoute: typeof AuthenticatedComptePortefeuilleRoute
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
   AuthenticatedPaiementBookingIdRoute: typeof AuthenticatedPaiementBookingIdRoute
   AuthenticatedProDemandesRoute: typeof AuthenticatedProDemandesRoute
@@ -695,9 +737,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminLitigesRoute: AuthenticatedAdminLitigesRoute,
   AuthenticatedAdminOffresRoute: AuthenticatedAdminOffresRoute,
   AuthenticatedAdminProfesseursRoute: AuthenticatedAdminProfesseursRoute,
+  AuthenticatedAdminRetraitsRoute: AuthenticatedAdminRetraitsRoute,
   AuthenticatedCompteCalendrierRoute: AuthenticatedCompteCalendrierRoute,
   AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRoute,
   AuthenticatedCompteLitigesRoute: AuthenticatedCompteLitigesRoute,
+  AuthenticatedComptePortefeuilleRoute: AuthenticatedComptePortefeuilleRoute,
   AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
   AuthenticatedPaiementBookingIdRoute: AuthenticatedPaiementBookingIdRoute,
   AuthenticatedProDemandesRoute: AuthenticatedProDemandesRoute,
