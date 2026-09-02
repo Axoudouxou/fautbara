@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   CalendarClock,
@@ -11,12 +12,19 @@ import {
   Smartphone,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { startJekoPayment, syncJekoPayment } from "@/lib/payments.functions";
 import { formatDay, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/paiement/$bookingId")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    paiement:
+      search["paiement"] === "succes" || search["paiement"] === "echec"
+        ? (search["paiement"] as "succes" | "echec")
+        : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Paiement de la séance — BARA" },
@@ -30,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/paiement/$bookingId")({
   }),
   component: PaymentPage,
 });
+
 
 const PAYMENT_STATUS: Record<string, { label: string; className: string }> = {
   pending: { label: "En attente de paiement", className: "bg-warning-soft text-warning" },
