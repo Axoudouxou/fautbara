@@ -7,7 +7,10 @@ import {
   Briefcase,
   CalendarClock,
   Gavel,
+  KeyRound,
   Loader2,
+  Mail,
+  SlidersHorizontal,
   LogOut,
   Search,
   ShieldCheck,
@@ -211,6 +214,8 @@ function AccountPage() {
         </section>
 
         <div className="space-y-4">
+          <AccountSecuritySection currentEmail={user.email ?? ""} />
+
           <Link
             to="/compte/portefeuille"
             className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
@@ -299,6 +304,21 @@ function AccountPage() {
           )}
 
           <Link
+            to="/onboarding"
+            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+          >
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+              <SlidersHorizontal className="size-5" aria-hidden />
+            </span>
+            <span>
+              <span className="block font-display font-bold text-foreground">Mes préférences</span>
+              <span className="block text-sm text-muted-foreground">
+                Matières, niveaux, budget, communes et disponibilités.
+              </span>
+            </span>
+          </Link>
+
+          <Link
             to="/compte/litiges"
             className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
           >
@@ -332,5 +352,106 @@ function AccountPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Réglages de connexion : adresse e-mail et mot de passe. */
+function AccountSecuritySection({ currentEmail }: { currentEmail: string }) {
+  const [email, setEmail] = useState(currentEmail);
+  const [password, setPassword] = useState("");
+
+  const emailMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.auth.updateUser({ email: email.trim() });
+      if (error) throw error;
+    },
+    onSuccess: () =>
+      toast.success("E-mail en cours de modification", {
+        description: "Confirmez le changement depuis le lien envoyé à la nouvelle adresse.",
+      }),
+    onError: (err) =>
+      toast.error("Modification impossible", {
+        description: err instanceof Error ? err.message : undefined,
+      }),
+  });
+
+  const passwordMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setPassword("");
+      toast.success("Mot de passe mis à jour");
+    },
+    onError: (err) =>
+      toast.error("Modification impossible", {
+        description: err instanceof Error ? err.message : undefined,
+      }),
+  });
+
+  return (
+    <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+      <h2 className="font-display text-lg font-bold text-foreground">Connexion et sécurité</h2>
+
+      <form
+        className="mt-5 space-y-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          emailMutation.mutate();
+        }}
+      >
+        <label htmlFor="acc-email" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Mail className="size-4 text-primary" aria-hidden /> Adresse e-mail
+        </label>
+        <input
+          id="acc-email"
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring/40"
+        />
+        <button
+          type="submit"
+          disabled={emailMutation.isPending || email.trim() === currentEmail}
+          className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+        >
+          {emailMutation.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+          Changer d&apos;e-mail
+        </button>
+      </form>
+
+      <form
+        className="mt-6 space-y-2 border-t border-border pt-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          passwordMutation.mutate();
+        }}
+      >
+        <label htmlFor="acc-pwd" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <KeyRound className="size-4 text-primary" aria-hidden /> Nouveau mot de passe
+        </label>
+        <input
+          id="acc-pwd"
+          type="password"
+          required
+          minLength={8}
+          autoComplete="new-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="8 caractères minimum"
+          className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
+        />
+        <button
+          type="submit"
+          disabled={passwordMutation.isPending || password.length < 8}
+          className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+        >
+          {passwordMutation.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+          Mettre à jour le mot de passe
+        </button>
+      </form>
+    </section>
   );
 }
