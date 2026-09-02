@@ -238,6 +238,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -269,6 +270,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           format?: string
+          hold_expires_at?: string | null
           id?: string
           is_recurring?: boolean
           message?: string | null
@@ -300,6 +302,7 @@ export type Database = {
           created_at?: string
           duration_minutes?: number
           format?: string
+          hold_expires_at?: string | null
           id?: string
           is_recurring?: boolean
           message?: string | null
@@ -1602,6 +1605,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -1680,6 +1684,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -1707,6 +1712,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cancel_unpaid_booking_hold: {
+        Args: { p_booking_id: string }
+        Returns: undefined
+      }
       complete_booking: {
         Args: { p_booking_id: string }
         Returns: {
@@ -1720,6 +1729,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -1746,6 +1756,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      confirm_paid_booking: {
+        Args: { p_booking_id: string }
+        Returns: undefined
       }
       conversation_role: {
         Args: { p_conversation_id: string; p_user: string }
@@ -1813,6 +1827,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      expire_stale_payment_holds: { Args: never; Returns: undefined }
       force_majeure_reschedule: {
         Args: {
           p_booking_id: string
@@ -1830,6 +1845,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -1934,6 +1950,57 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      lock_slot_and_create_booking: {
+        Args: {
+          p_address: string
+          p_child_id: string
+          p_commune: string
+          p_format: string
+          p_is_recurring: boolean
+          p_message: string
+          p_offer_id: string
+          p_recurrence_end_date: string
+          p_scheduled_at: string
+        }
+        Returns: {
+          address: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          child_id: string | null
+          city: string
+          commune: string | null
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number
+          format: string
+          hold_expires_at: string | null
+          id: string
+          is_recurring: boolean
+          message: string | null
+          no_show_reported_at: string | null
+          no_show_reported_by: string | null
+          offer_id: string
+          price_fcfa: number
+          recurrence_end_date: string | null
+          requester_id: string
+          reschedule_count: number
+          reschedule_previous_at: string | null
+          reschedule_proposed_at: string | null
+          reschedule_proposed_by: string | null
+          reschedule_proposed_fee_rate: number | null
+          scheduled_at: string
+          status: string
+          status_reason: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
@@ -1993,6 +2060,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -2044,6 +2112,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -2084,6 +2153,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
@@ -2128,6 +2198,7 @@ export type Database = {
           created_at: string
           duration_minutes: number
           format: string
+          hold_expires_at: string | null
           id: string
           is_recurring: boolean
           message: string | null
