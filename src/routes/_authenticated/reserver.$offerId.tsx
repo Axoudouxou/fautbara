@@ -133,14 +133,14 @@ function BookingPage() {
       if (!offer) throw new Error("Offre indisponible");
       const { data, error } = await supabase.rpc("lock_slot_and_create_booking", {
         p_offer_id: offer.id,
-        p_child_id: childId || null,
+        p_child_id: (childId || null) as unknown as string,
         p_scheduled_at: new Date(`${date}T${time}:00`).toISOString(),
         p_format: format,
-        p_commune: format === "home" ? commune || null : null,
-        p_address: format === "home" ? address.trim() || null : null,
-        p_message: message.trim() || null,
+        p_commune: (format === "home" ? commune || null : null) as unknown as string,
+        p_address: (format === "home" ? address.trim() || null : null) as unknown as string,
+        p_message: (message.trim() || null) as unknown as string,
         p_is_recurring: isRecurring,
-        p_recurrence_end_date: isRecurring && recurrenceEnd ? recurrenceEnd : null,
+        p_recurrence_end_date: (isRecurring && recurrenceEnd ? recurrenceEnd : null) as unknown as string,
       });
       if (error) throw error;
       return data;
