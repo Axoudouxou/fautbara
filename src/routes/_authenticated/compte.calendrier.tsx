@@ -97,6 +97,7 @@ function CalendarPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Les séances de votre famille, semaine par semaine, avec leur statut.
           </p>
+          <SectionTabs items={learnerCoursesTabs} />
         </div>
         <Link
           to="/compte/reservations"

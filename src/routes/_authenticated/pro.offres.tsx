@@ -319,6 +319,7 @@ function TeacherOffersPage() {
           </button>
         )}
       </div>
+      <SectionTabs items={teacherOffersTabs} />
 
       {form && (
         <form

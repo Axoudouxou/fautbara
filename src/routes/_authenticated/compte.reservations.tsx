@@ -89,12 +89,7 @@ function BookingsPage() {
       <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
         Mes demandes de cours
       </h1>
-      <Link
-        to="/compte/calendrier"
-        className="mt-3 inline-flex rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
-      >
-        Vue calendrier
-      </Link>
+      <SectionTabs items={learnerCoursesTabs} />
       <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
         Suivez l&apos;état de vos demandes. Le professeur accepte, refuse ou propose un autre
         créneau.

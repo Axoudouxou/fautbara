@@ -259,6 +259,7 @@ function TeacherAvailabilityPage() {
         d&apos;absence exceptionnelle. Ces informations aident les familles à vous contacter au bon
         moment.
       </p>
+      <SectionTabs items={teacherOffersTabs} />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
