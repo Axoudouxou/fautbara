@@ -66,6 +66,8 @@ function formatFcfa(value: number) {
 
 function PaymentPage() {
   const { bookingId } = Route.useParams();
+  const search = Route.useSearch();
+
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
