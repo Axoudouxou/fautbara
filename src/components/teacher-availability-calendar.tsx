@@ -120,54 +120,80 @@ export function AvailabilitySlotGrid({
 
   const loading = availabilitiesQuery.isLoading || exceptionsQuery.isLoading || busyQuery.isLoading;
 
-  const daySlots = useMemo(() => {
+  type Slot = { time: string; disabled: boolean; booked?: boolean; reason?: string };
+
+  /**
+   * Créneaux d'une journée : les heures déjà réservées restent affichées
+   * (barrées, non cliquables) pour que le visiteur comprenne pourquoi elles
+   * manquent, et une journée sans aucun créneau libre est désactivée.
+   */
+  const slotsForDay = useMemo(() => {
     const availabilities = availabilitiesQuery.data ?? [];
     const exceptions = exceptionsQuery.data ?? [];
     const busy = busyQuery.data ?? [];
-
-    const dateStr = toDateStr(selectedDay);
-    const weekdayIndex = (selectedDay.getDay() + 6) % 7;
-
-    const fullDayBlocked = exceptions.some((e) => e.exception_date === dateStr && !e.start_time);
-    if (fullDayBlocked) return [];
-
-    const partialBlocks = exceptions
-      .filter((e) => e.exception_date === dateStr && e.start_time && e.end_time)
-      .map((e) => ({ start: hhmmToMinutes(e.start_time!), end: hhmmToMinutes(e.end_time!) }));
-
     const now = Date.now();
     const minStart = now + MIN_LEAD_HOURS * 3600_000;
 
-    const slots: { time: string; disabled: boolean; reason?: string }[] = [];
-    for (const window of availabilities.filter((a) => a.weekday === weekdayIndex)) {
-      const start = hhmmToMinutes(window.start_time);
-      const end = hhmmToMinutes(window.end_time);
-      for (let t = start; t + durationMinutes <= end; t += durationMinutes) {
-        if (partialBlocks.some((b) => overlaps(t, durationMinutes, b.start, b.end - b.start))) continue;
+    return (day: Date): Slot[] => {
+      const dateStr = toDateStr(day);
+      const weekdayIndex = (day.getDay() + 6) % 7;
 
-        const slotDate = new Date(`${dateStr}T${minutesToHHMM(t)}:00`);
-        const isBusy = busy.some((b) =>
-          overlaps(
-            slotDate.getTime() / 60_000,
-            durationMinutes,
-            new Date(b.scheduled_at).getTime() / 60_000,
-            b.duration_minutes,
-          ),
-        );
-        if (isBusy) continue;
-        if (slotDate.getTime() <= now) continue;
+      const fullDayBlocked = exceptions.some((e) => e.exception_date === dateStr && !e.start_time);
+      if (fullDayBlocked) return [];
 
-        if (slotDate.getTime() < minStart) {
-          slots.push({ time: minutesToHHMM(t), disabled: true, reason: "Trop proche — contactez le professeur" });
-        } else {
-          slots.push({ time: minutesToHHMM(t), disabled: false });
+      const partialBlocks = exceptions
+        .filter((e) => e.exception_date === dateStr && e.start_time && e.end_time)
+        .map((e) => ({ start: hhmmToMinutes(e.start_time!), end: hhmmToMinutes(e.end_time!) }));
+
+      const slots: Slot[] = [];
+      for (const window of availabilities.filter((a) => a.weekday === weekdayIndex)) {
+        const start = hhmmToMinutes(window.start_time);
+        const end = hhmmToMinutes(window.end_time);
+        for (let t = start; t + durationMinutes <= end; t += durationMinutes) {
+          if (partialBlocks.some((b) => overlaps(t, durationMinutes, b.start, b.end - b.start))) continue;
+
+          const slotDate = new Date(`${dateStr}T${minutesToHHMM(t)}:00`);
+          if (slotDate.getTime() <= now) continue;
+
+          const isBusy = busy.some((b) =>
+            overlaps(
+              slotDate.getTime() / 60_000,
+              durationMinutes,
+              new Date(b.scheduled_at).getTime() / 60_000,
+              b.duration_minutes,
+            ),
+          );
+
+          if (isBusy) {
+            slots.push({ time: minutesToHHMM(t), disabled: true, booked: true, reason: "Déjà réservé" });
+          } else if (slotDate.getTime() < minStart) {
+            slots.push({ time: minutesToHHMM(t), disabled: true, reason: "Trop proche — contactez le professeur" });
+          } else {
+            slots.push({ time: minutesToHHMM(t), disabled: false });
+          }
         }
       }
-    }
-    return slots;
-  }, [selectedDay, durationMinutes, availabilitiesQuery.data, exceptionsQuery.data, busyQuery.data]);
+      return slots.sort((a, b) => a.time.localeCompare(b.time));
+    };
+  }, [durationMinutes, availabilitiesQuery.data, exceptionsQuery.data, busyQuery.data]);
+
+  const daySlots = useMemo(() => slotsForDay(selectedDay), [slotsForDay, selectedDay]);
+
+  /** Jours sans aucun créneau libre : désactivés dans la barre de la semaine. */
+  const dayStates = useMemo(
+    () =>
+      days.map((day) => {
+        const slots = slotsForDay(day);
+        return {
+          free: slots.filter((s) => !s.disabled).length,
+          fullyBooked: slots.length > 0 && slots.every((s) => s.booked),
+        };
+      }),
+    [days, slotsForDay],
+  );
 
   const selectedDateStr = toDateStr(selectedDay);
+
 
   return (
     <div className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5">
