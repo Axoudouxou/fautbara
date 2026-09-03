@@ -160,8 +160,10 @@ export async function createJekoContact(params: {
   return body as JekoContact;
 }
 
-/** Solde du magasin BARA, en centimes — à vérifier avant de créer un transfert. */
-export async function getJekoStoreBalance(): Promise<number> {
+/** Solde du magasin BARA, en centimes. Retourne null quand la réponse Jèko
+ * n'expose pas de montant reconnaissable : le contrôle préalable est alors
+ * ignoré (Jèko refusera de lui-même un transfert non couvert). */
+export async function getJekoStoreBalance(): Promise<number | null> {
   const storeId = Deno.env.get("JEKO_STORE_ID");
   if (!storeId) throw new Error("Configuration Jèko manquante (JEKO_STORE_ID)");
 
@@ -170,22 +172,50 @@ export async function getJekoStoreBalance(): Promise<number> {
   });
   const body = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error(body?.message ?? `Impossible de lire le solde du magasin (HTTP ${res.status})`);
+    throw new Error(
+      (body as { message?: string } | null)?.message ??
+        `Impossible de lire le solde du magasin (HTTP ${res.status})`,
+    );
   }
-  // La doc ne fixe pas un nom de champ unique pour le solde : on couvre les
-  // formes plausibles plutôt que de supposer une seule forme exacte.
-  const record = body as Record<string, unknown>;
-  const candidates = [
-    record.balanceCents,
-    record.balance,
-    record.availableBalance,
-    record.amountCents,
+
+  // La doc ne fixe pas un nom de champ unique (ni un niveau d'imbrication
+  // unique) pour le solde : on cherche récursivement une clé plausible.
+  const KEYS = [
+    "balancecents",
+    "availablebalancecents",
+    "amountcents",
+    "balance",
+    "availablebalance",
+    "available",
+    "amount",
+    "total",
   ];
-  for (const c of candidates) {
-    if (typeof c === "number") return c;
-  }
-  throw new Error("Réponse de solde Jèko illisible (aucun champ de montant reconnu)");
+  const toNumber = (v: unknown): number | null => {
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+    if (typeof v === "string" && v.trim() !== "" && Number.isFinite(Number(v))) return Number(v);
+    return null;
+  };
+  const walk = (node: unknown, depth: number): number | null => {
+    if (depth > 4 || node === null || typeof node !== "object") return null;
+    const entries = Object.entries(node as Record<string, unknown>);
+    for (const key of KEYS) {
+      for (const [k, v] of entries) {
+        if (k.toLowerCase().replace(/[^a-z]/g, "") !== key) continue;
+        const n = toNumber(v);
+        if (n !== null) return key.endsWith("cents") ? n : Math.round(n * 100);
+        const nested = walk(v, depth + 1);
+        if (nested !== null) return nested;
+      }
+    }
+    for (const [, v] of entries) {
+      const nested = walk(v, depth + 1);
+      if (nested !== null) return nested;
+    }
+    return null;
+  };
+  return walk(body, 0);
 }
+
 
 export type JekoTransfer = {
   id: string;
