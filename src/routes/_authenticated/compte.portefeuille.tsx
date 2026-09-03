@@ -183,8 +183,18 @@ function WalletPage() {
   });
 
   const retryPayoutMutation = useMutation({
-    mutationFn: async (withdrawalId: string) => {
-      await invokeEdgeFunction("jeko-create-payout", { withdrawalId });
+    mutationFn: async (withdrawal: { id: string; status: string }) => {
+      // Un retrait en échec doit d'abord être remis en file d'attente
+      // (montant re-réservé) : jeko-create-payout ignore silencieusement
+      // tout ce qui n'est pas "pending", pour ne jamais relancer un
+      // transfert déjà en cours.
+      if (withdrawal.status === "error") {
+        const { error } = await supabase.rpc("retry_withdrawal_payout", {
+          p_withdrawal_id: withdrawal.id,
+        });
+        if (error) throw error;
+      }
+      await invokeEdgeFunction("jeko-create-payout", { withdrawalId: withdrawal.id });
     },
     onSuccess: () => {
       toast.success("Envoi relancé");
@@ -342,10 +352,10 @@ function WalletPage() {
                       {w.status === "error" && w.error_message && (
                         <p className="mt-2 text-xs text-destructive">{w.error_message}</p>
                       )}
-                      {w.status === "pending" && (
+                      {(w.status === "pending" || w.status === "error") && (
                         <button
                           type="button"
-                          onClick={() => retryPayoutMutation.mutate(w.id)}
+                          onClick={() => retryPayoutMutation.mutate({ id: w.id, status: w.status })}
                           disabled={retryPayoutMutation.isPending}
                           className="mt-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
                         >
