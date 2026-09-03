@@ -2071,6 +2071,33 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      retry_withdrawal_payout: {
+        Args: { p_withdrawal_id: string }
+        Returns: {
+          admin_note: string | null
+          amount_fcfa: number
+          error_message: string | null
+          id: string
+          jeko_contact_id: string | null
+          jeko_fees_fcfa: number
+          jeko_reference: string | null
+          jeko_transfer_id: string | null
+          method: string
+          phone: string
+          processed_at: string | null
+          processed_by: string | null
+          processing_started_at: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       force_majeure_reschedule: {
         Args: {
           p_booking_id: string

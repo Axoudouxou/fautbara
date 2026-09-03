@@ -105,8 +105,19 @@ function AdminWithdrawals() {
   });
 
   const retryPayout = useMutation({
-    mutationFn: async (withdrawalId: string) => {
-      await invokeEdgeFunction("jeko-create-payout", { withdrawalId });
+    mutationFn: async (withdrawal: { id: string; status: string }) => {
+      // jeko-create-payout ne traite que les demandes "pending" (elle
+      // ignore silencieusement le reste, pour ne jamais relancer un
+      // transfert déjà en cours) : un retrait en "error" doit d'abord être
+      // remis en file d'attente (montant re-réservé) avant de rappeler la
+      // fonction, sinon rien ne se passe alors que l'appel réussit.
+      if (withdrawal.status === "error") {
+        const { error } = await supabase.rpc("retry_withdrawal_payout", {
+          p_withdrawal_id: withdrawal.id,
+        });
+        if (error) throw error;
+      }
+      await invokeEdgeFunction("jeko-create-payout", { withdrawalId: withdrawal.id });
     },
     onSuccess: () => {
       toast.success("Envoi relancé auprès de Jèko");
@@ -200,7 +211,7 @@ function AdminWithdrawals() {
                     <button
                       type="button"
                       disabled={retryPayout.isPending}
-                      onClick={() => retryPayout.mutate(w.id)}
+                      onClick={() => retryPayout.mutate({ id: w.id, status: w.status })}
                       className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                     >
                       Réessayer l&apos;envoi Jèko
