@@ -113,6 +113,158 @@ export async function computeJekoSignature(rawBody: string, secret: string): Pro
     .join("");
 }
 
+// ---------------------------------------------------------------------
+// Payout (retraits vers Mobile Money) : contacts, solde du magasin,
+// transferts. Le paiement entrant ci-dessus n'est pas modifié.
+// ---------------------------------------------------------------------
+
+// L'API Contacts de Jèko attend "orange_money", alors que l'API Payment
+// Requests (ci-dessus) attend "orange" — les deux valeurs viennent de deux
+// endpoints Jèko distincts avec des vocabulaires différents pour le même
+// opérateur ; on garde "orange" comme valeur interne BARA (déjà utilisée
+// partout ailleurs, y compris à l'écran) et on ne mappe qu'ici.
+const JEKO_CONTACT_PAYMENT_METHOD: Record<JekoPaymentMethod, string> = {
+  wave: "wave",
+  orange: "orange_money",
+  mtn: "mtn",
+  moov: "moov",
+  djamo: "djamo",
+};
+
+export type JekoContact = {
+  id: string;
+  name: string;
+  paymentMethod: string;
+  identifier: { number: string };
+};
+
+/** Crée le bénéficiaire Jèko requis avant tout transfert vers un Mobile Money. */
+export async function createJekoContact(params: {
+  name: string;
+  method: JekoPaymentMethod;
+  phoneE164: string;
+}): Promise<JekoContact> {
+  const res = await fetch(`${JEKO_API_BASE_URL}/partner_api/contacts`, {
+    method: "POST",
+    headers: jekoHeaders(),
+    body: JSON.stringify({
+      name: params.name,
+      paymentMethod: JEKO_CONTACT_PAYMENT_METHOD[params.method],
+      identifier: { number: params.phoneE164 },
+    }),
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(body?.message ?? `Jèko a refusé la création du contact (HTTP ${res.status})`);
+  }
+  return body as JekoContact;
+}
+
+/** Solde du magasin BARA, en centimes — à vérifier avant de créer un transfert. */
+export async function getJekoStoreBalance(): Promise<number> {
+  const storeId = Deno.env.get("JEKO_STORE_ID");
+  if (!storeId) throw new Error("Configuration Jèko manquante (JEKO_STORE_ID)");
+
+  const res = await fetch(`${JEKO_API_BASE_URL}/partner_api/stores/${storeId}/balance`, {
+    headers: jekoHeaders(),
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(body?.message ?? `Impossible de lire le solde du magasin (HTTP ${res.status})`);
+  }
+  // La doc ne fixe pas un nom de champ unique pour le solde : on couvre les
+  // formes plausibles plutôt que de supposer une seule forme exacte.
+  const record = body as Record<string, unknown>;
+  const candidates = [
+    record.balanceCents,
+    record.balance,
+    record.availableBalance,
+    record.amountCents,
+  ];
+  for (const c of candidates) {
+    if (typeof c === "number") return c;
+  }
+  throw new Error("Réponse de solde Jèko illisible (aucun champ de montant reconnu)");
+}
+
+export type JekoTransfer = {
+  id: string;
+  storeId: string;
+  contactId: string;
+  reference: string;
+  amountCents: number;
+  currency: string;
+  status: "pending" | "success" | "error" | string;
+  fees?: number | null;
+  errorReason?: string | null;
+};
+
+/**
+ * Crée le transfert. La référence doit être unique par intention de
+ * transfert (on utilise l'id du retrait BARA) : un 409 de Jèko est une
+ * protection d'idempotence, pas une erreur — on retourne alors le transfert
+ * existant si le corps de la réponse le contient, sinon un objet minimal
+ * portant seulement la référence (le webhook fera foi via cette référence).
+ */
+export async function createJekoTransfer(params: {
+  contactId: string;
+  amountFcfa: number;
+  reference: string;
+  description?: string;
+}): Promise<JekoTransfer> {
+  const storeId = Deno.env.get("JEKO_STORE_ID");
+  if (!storeId) throw new Error("Configuration Jèko manquante (JEKO_STORE_ID)");
+
+  const res = await fetch(`${JEKO_API_BASE_URL}/partner_api/transfers`, {
+    method: "POST",
+    headers: jekoHeaders(),
+    body: JSON.stringify({
+      storeId,
+      contactId: params.contactId,
+      amountCents: Math.round(params.amountFcfa * 100),
+      currency: "XOF",
+      description: params.description?.slice(0, 255),
+      reference: params.reference,
+    }),
+  });
+  const body = await res.json().catch(() => null);
+
+  if (res.status === 409) {
+    const existing = (body?.transfer ?? body?.data ?? body) as Record<string, unknown> | null;
+    if (existing && typeof existing.id === "string") {
+      return existing as unknown as JekoTransfer;
+    }
+    // Corps de conflit sans transfert exploitable : on sait au moins que la
+    // référence est déjà connue de Jèko, le webhook la résoudra.
+    return {
+      id: "",
+      storeId,
+      contactId: params.contactId,
+      reference: params.reference,
+      amountCents: Math.round(params.amountFcfa * 100),
+      currency: "XOF",
+      status: "pending",
+    };
+  }
+
+  if (!res.ok) {
+    throw new Error(body?.message ?? `Jèko a refusé la création du transfert (HTTP ${res.status})`);
+  }
+  return body as JekoTransfer;
+}
+
+/** Relit l'état authoritatif d'un transfert (jamais se fier au seul corps du webhook). */
+export async function getJekoTransfer(transferId: string): Promise<JekoTransfer> {
+  const res = await fetch(`${JEKO_API_BASE_URL}/partner_api/transfers/${transferId}`, {
+    headers: jekoHeaders(),
+  });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(body?.message ?? `Impossible de lire le statut du transfert (HTTP ${res.status})`);
+  }
+  return body as JekoTransfer;
+}
+
 /**
  * Cherche l'identifiant de payment_request dans le corps du webhook, sans
  * supposer une forme unique : la doc Jèko ne précise pas si l'objet est à la
@@ -131,6 +283,30 @@ export function extractPaymentRequestId(body: unknown): string | null {
       ),
     (body as Record<string, unknown>).transaction &&
       (body as Record<string, Record<string, unknown>>).transaction.paymentRequestId,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.length > 0) return candidate;
+  }
+  return null;
+}
+
+/**
+ * Cherche la référence BARA d'un transfert dans le corps du webhook. La doc
+ * Jèko pointe explicitement `transactionDetails.reference`, mais on couvre
+ * aussi les variantes plausibles vues côté paiement (racine, `data`,
+ * `transfer`) plutôt que de supposer une forme unique.
+ */
+export function extractTransferReference(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const b = body as Record<string, unknown>;
+  const nested = (obj: unknown): Record<string, unknown> | null =>
+    obj && typeof obj === "object" ? (obj as Record<string, unknown>) : null;
+  const candidates = [
+    nested(b.transactionDetails)?.reference,
+    b.reference,
+    nested(b.transfer)?.reference,
+    nested(b.data)?.reference,
+    nested(nested(b.data)?.transactionDetails)?.reference,
   ];
   for (const candidate of candidates) {
     if (typeof candidate === "string" && candidate.length > 0) return candidate;

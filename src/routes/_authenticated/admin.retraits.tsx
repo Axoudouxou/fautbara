@@ -7,6 +7,22 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell, useIsAdmin } from "@/components/admin-shell";
 
+async function invokeEdgeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T>(name, { body });
+  if (error) {
+    let message = error.message;
+    try {
+      const context = (error as { context?: Response }).context;
+      const parsed = await context?.json();
+      if (parsed?.error) message = parsed.error;
+    } catch {
+      // pas de corps JSON exploitable : on garde le message générique
+    }
+    throw new Error(message);
+  }
+  return data as T;
+}
+
 export const Route = createFileRoute("/_authenticated/admin/retraits")({
   head: () => ({
     meta: [
@@ -23,9 +39,20 @@ export const Route = createFileRoute("/_authenticated/admin/retraits")({
 
 const FILTERS = [
   { value: "pending", label: "En attente" },
-  { value: "approved", label: "Approuvés" },
+  { value: "processing", label: "Envoi en cours" },
+  { value: "error", label: "Échecs" },
+  { value: "paid", label: "Envoyés" },
   { value: "all", label: "Tous" },
 ];
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: "En attente",
+  processing: "Envoi en cours (Jèko)",
+  approved: "Approuvé",
+  paid: "Envoyé",
+  rejected: "Refusé",
+  error: "Échec",
+};
 
 const METHOD_LABEL: Record<string, string> = {
   orange: "Orange Money",
@@ -77,13 +104,24 @@ function AdminWithdrawals() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const retryPayout = useMutation({
+    mutationFn: async (withdrawalId: string) => {
+      await invokeEdgeFunction("jeko-create-payout", { withdrawalId });
+    },
+    onSuccess: () => {
+      toast.success("Envoi relancé auprès de Jèko");
+      queryClient.invalidateQueries({ queryKey: ["admin-withdrawals"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const withdrawals = withdrawalsQuery.data ?? [];
 
   return (
     <AdminShell
       userId={user.id}
       title="Retraits"
-      description="Validez les demandes de retrait vers Mobile Money. Le montant est déjà réservé sur le portefeuille du demandeur dès l'envoi de sa demande ; un refus le lui recrédite automatiquement."
+      description="Les retraits sont envoyés automatiquement vers Jèko dès la demande. Cette page sert à surveiller les échecs et relancer un envoi bloqué — le montant est recrédité automatiquement en cas d'échec confirmé."
     >
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
@@ -132,50 +170,51 @@ function AdminWithdrawals() {
                       {w.admin_note}
                     </p>
                   )}
+                  {w.status === "error" && w.error_message && (
+                    <p className="mt-2 max-w-xl rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">
+                      {w.error_message}
+                    </p>
+                  )}
                 </div>
                 <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
-                  {w.status}
+                  {STATUS_LABEL[w.status] ?? w.status}
                 </span>
               </div>
 
-              {(w.status === "pending" || w.status === "approved") && (
+              {w.status === "processing" && (
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Transfert envoyé à Jèko, en attente de confirmation (webhook).
+                </p>
+              )}
+
+              {(w.status === "pending" || w.status === "error") && (
                 <div className="mt-4 space-y-3">
                   <textarea
                     value={notes[w.id] ?? ""}
                     onChange={(e) => setNotes((s) => ({ ...s, [w.id]: e.target.value }))}
                     rows={2}
-                    placeholder="Note (optionnelle) — motif de refus, référence de virement…"
+                    placeholder="Note (optionnelle) — motif de refus…"
                     className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
                   />
                   <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={retryPayout.isPending}
+                      onClick={() => retryPayout.mutate(w.id)}
+                      className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                    >
+                      Réessayer l&apos;envoi Jèko
+                    </button>
                     {w.status === "pending" && (
                       <button
                         type="button"
                         disabled={process.isPending}
-                        onClick={() => process.mutate({ id: w.id, status: "approved", note: notes[w.id] })}
-                        className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
+                        onClick={() => process.mutate({ id: w.id, status: "rejected", note: notes[w.id] })}
+                        className="rounded-xl border border-destructive/30 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
                       >
-                        Approuver
+                        Refuser (recrédite le portefeuille)
                       </button>
                     )}
-                    {w.status === "approved" && (
-                      <button
-                        type="button"
-                        disabled={process.isPending}
-                        onClick={() => process.mutate({ id: w.id, status: "paid", note: notes[w.id] })}
-                        className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                      >
-                        Marquer comme envoyé
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      disabled={process.isPending}
-                      onClick={() => process.mutate({ id: w.id, status: "rejected", note: notes[w.id] })}
-                      className="rounded-xl border border-destructive/30 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-50"
-                    >
-                      Refuser (recrédite le portefeuille)
-                    </button>
                   </div>
                 </div>
               )}

@@ -1421,11 +1421,17 @@ export type Database = {
         Row: {
           admin_note: string | null
           amount_fcfa: number
+          error_message: string | null
           id: string
+          jeko_contact_id: string | null
+          jeko_fees_fcfa: number
+          jeko_reference: string | null
+          jeko_transfer_id: string | null
           method: string
           phone: string
           processed_at: string | null
           processed_by: string | null
+          processing_started_at: string | null
           requested_at: string
           status: string
           user_id: string
@@ -1433,11 +1439,17 @@ export type Database = {
         Insert: {
           admin_note?: string | null
           amount_fcfa: number
+          error_message?: string | null
           id?: string
+          jeko_contact_id?: string | null
+          jeko_fees_fcfa?: number
+          jeko_reference?: string | null
+          jeko_transfer_id?: string | null
           method: string
           phone: string
           processed_at?: string | null
           processed_by?: string | null
+          processing_started_at?: string | null
           requested_at?: string
           status?: string
           user_id: string
@@ -1445,13 +1457,46 @@ export type Database = {
         Update: {
           admin_note?: string | null
           amount_fcfa?: number
+          error_message?: string | null
           id?: string
+          jeko_contact_id?: string | null
+          jeko_fees_fcfa?: number
+          jeko_reference?: string | null
+          jeko_transfer_id?: string | null
           method?: string
           phone?: string
           processed_at?: string | null
           processed_by?: string | null
+          processing_started_at?: string | null
           requested_at?: string
           status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_payout_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          jeko_contact_id: string
+          method: string
+          phone: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jeko_contact_id: string
+          method: string
+          phone: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jeko_contact_id?: string
+          method?: string
+          phone?: string
           user_id?: string
         }
         Relationships: []
@@ -1518,6 +1563,7 @@ export type Database = {
           admin_note: string
           amount_fcfa: number
           display_name: string
+          error_message: string
           id: string
           method: string
           phone: string
@@ -2325,11 +2371,103 @@ export type Database = {
         Returns: {
           admin_note: string | null
           amount_fcfa: number
+          error_message: string | null
           id: string
+          jeko_contact_id: string | null
+          jeko_fees_fcfa: number
+          jeko_reference: string | null
+          jeko_transfer_id: string | null
           method: string
           phone: string
           processed_at: string | null
           processed_by: string | null
+          processing_started_at: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_withdrawal_processing: {
+        Args: {
+          p_jeko_contact_id: string
+          p_jeko_reference: string
+          p_jeko_transfer_id: string
+          p_withdrawal_id: string
+        }
+        Returns: {
+          admin_note: string | null
+          amount_fcfa: number
+          error_message: string | null
+          id: string
+          jeko_contact_id: string | null
+          jeko_fees_fcfa: number
+          jeko_reference: string | null
+          jeko_transfer_id: string | null
+          method: string
+          phone: string
+          processed_at: string | null
+          processed_by: string | null
+          processing_started_at: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      complete_withdrawal_payout: {
+        Args: { p_fees_fcfa?: number; p_jeko_transfer_id: string; p_withdrawal_id: string }
+        Returns: {
+          admin_note: string | null
+          amount_fcfa: number
+          error_message: string | null
+          id: string
+          jeko_contact_id: string | null
+          jeko_fees_fcfa: number
+          jeko_reference: string | null
+          jeko_transfer_id: string | null
+          method: string
+          phone: string
+          processed_at: string | null
+          processed_by: string | null
+          processing_started_at: string | null
+          requested_at: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet_withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      fail_withdrawal_payout: {
+        Args: { p_error_message: string; p_withdrawal_id: string }
+        Returns: {
+          admin_note: string | null
+          amount_fcfa: number
+          error_message: string | null
+          id: string
+          jeko_contact_id: string | null
+          jeko_fees_fcfa: number
+          jeko_reference: string | null
+          jeko_transfer_id: string | null
+          method: string
+          phone: string
+          processed_at: string | null
+          processed_by: string | null
+          processing_started_at: string | null
           requested_at: string
           status: string
           user_id: string

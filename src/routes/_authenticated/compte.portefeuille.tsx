@@ -14,6 +14,22 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { SectionTabs, accountTabs } from "@/components/section-tabs";
 
+async function invokeEdgeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T>(name, { body });
+  if (error) {
+    let message = error.message;
+    try {
+      const context = (error as { context?: Response }).context;
+      const parsed = await context?.json();
+      if (parsed?.error) message = parsed.error;
+    } catch {
+      // pas de corps JSON exploitable : on garde le message générique
+    }
+    throw new Error(message);
+  }
+  return data as T;
+}
+
 export const Route = createFileRoute("/_authenticated/compte/portefeuille")({
   head: () => ({
     meta: [
@@ -39,9 +55,11 @@ const METHODS = [
 
 const WITHDRAWAL_STATUS: Record<string, { label: string; className: string }> = {
   pending: { label: "En attente", className: "bg-warning-soft text-warning" },
+  processing: { label: "Envoi en cours", className: "bg-primary-soft text-primary-soft-foreground" },
   approved: { label: "Approuvé", className: "bg-primary-soft text-primary-soft-foreground" },
   paid: { label: "Envoyé", className: "bg-success-soft text-success" },
   rejected: { label: "Refusé", className: "bg-destructive/10 text-destructive" },
+  error: { label: "Échec", className: "bg-destructive/10 text-destructive" },
 };
 
 function formatFcfa(value: number) {
@@ -97,12 +115,18 @@ function WalletPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wallet_withdrawal_requests")
-        .select("id, amount_fcfa, method, status, admin_note, requested_at, processed_at")
+        .select("id, amount_fcfa, method, status, admin_note, error_message, requested_at, processed_at")
         .order("requested_at", { ascending: false })
         .limit(20);
       if (error) throw error;
       return data ?? [];
     },
+    // Un retrait "processing" attend le webhook Jèko (asynchrone) : on
+    // surveille sans que l'utilisateur ait à recharger la page.
+    refetchInterval: (query) =>
+      (query.state.data ?? []).some((w) => w.status === "processing" || w.status === "pending")
+        ? 4000
+        : false,
   });
 
   const balance = walletQuery.data ?? 0;
@@ -125,24 +149,49 @@ function WalletPage() {
       if (!phone.trim()) {
         throw new Error("Numéro de réception requis");
       }
-      const { error } = await supabase.rpc("request_wallet_withdrawal", {
+      const { data: withdrawal, error } = await supabase.rpc("request_wallet_withdrawal", {
         p_amount_fcfa: value,
         p_method: method,
         p_phone: phone.trim(),
       });
       if (error) throw error;
+
+      // Déclenche l'envoi réel vers Jèko. Le solde est déjà réservé (RPC
+      // ci-dessus) : en cas d'échec ici (réseau, Jèko indisponible...), la
+      // fonction Edge elle-même recrédite le portefeuille — l'utilisateur
+      // n'a pas besoin de relancer, la ligne passera à "error".
+      await invokeEdgeFunction("jeko-create-payout", { withdrawalId: withdrawal.id });
     },
     onSuccess: () => {
       toast.success("Demande de retrait envoyée", {
-        description: "Elle sera traitée après validation par l'équipe BARA.",
+        description: "Le transfert Mobile Money est en cours.",
       });
       setShowForm(false);
       setAmount("");
       setPhone("");
       refresh();
     },
-    onError: (err) =>
+    onError: (err) => {
       toast.error("Demande impossible", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+      // Le solde peut déjà avoir été réservé (RPC réussie, envoi à Jèko en
+      // échec) : on rafraîchit pour que la demande "En attente" apparaisse,
+      // avec un bouton pour relancer l'envoi sans créer un second retrait.
+      refresh();
+    },
+  });
+
+  const retryPayoutMutation = useMutation({
+    mutationFn: async (withdrawalId: string) => {
+      await invokeEdgeFunction("jeko-create-payout", { withdrawalId });
+    },
+    onSuccess: () => {
+      toast.success("Envoi relancé");
+      refresh();
+    },
+    onError: (err) =>
+      toast.error("Nouvel essai impossible", {
         description: err instanceof Error ? err.message : undefined,
       }),
   });
@@ -277,20 +326,32 @@ function WalletPage() {
                     className: "bg-muted text-muted-foreground",
                   };
                   return (
-                    <li
-                      key={w.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl bg-secondary/50 px-4 py-3 text-sm"
-                    >
-                      <div>
-                        <p className="font-semibold text-foreground">{formatFcfa(w.amount_fcfa)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(w.requested_at).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
-                          {w.admin_note ? ` · ${w.admin_note}` : ""}
-                        </p>
+                    <li key={w.id} className="rounded-2xl bg-secondary/50 px-4 py-3 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-foreground">{formatFcfa(w.amount_fcfa)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(w.requested_at).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
+                            {w.admin_note ? ` · ${w.admin_note}` : ""}
+                          </p>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${s.className}`}>
+                          {s.label}
+                        </span>
                       </div>
-                      <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${s.className}`}>
-                        {s.label}
-                      </span>
+                      {w.status === "error" && w.error_message && (
+                        <p className="mt-2 text-xs text-destructive">{w.error_message}</p>
+                      )}
+                      {w.status === "pending" && (
+                        <button
+                          type="button"
+                          onClick={() => retryPayoutMutation.mutate(w.id)}
+                          disabled={retryPayoutMutation.isPending}
+                          className="mt-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
+                        >
+                          Relancer l&apos;envoi
+                        </button>
+                      )}
                     </li>
                   );
                 })}
