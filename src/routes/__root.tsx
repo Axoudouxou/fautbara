@@ -7,7 +7,10 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { GraduationCap, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
+import logoBaraAsset from "../assets/logo-bara.jpg.asset.json";
+
+const LOGO_URL = logoBaraAsset.url;
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
@@ -99,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -161,9 +164,11 @@ function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-2" aria-label="BARA — accueil">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <GraduationCap className="size-5" aria-hidden />
-          </span>
+          <img
+            src={LOGO_URL}
+            alt="BARA — Seul le bara paie"
+            className="size-10 rounded-xl object-cover"
+          />
           <span className="font-display text-lg font-bold tracking-tight text-foreground">
             BARA
           </span>
@@ -216,9 +221,11 @@ function SiteFooter() {
     <footer className="border-t border-border/60 bg-secondary/40">
       <div className="container-page flex flex-col items-start justify-between gap-4 py-10 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCap className="size-4" aria-hidden />
-          </span>
+          <img
+            src={LOGO_URL}
+            alt="BARA"
+            className="size-9 rounded-lg object-cover"
+          />
           <span className="font-display font-bold text-foreground">BARA</span>
         </div>
         <p className="text-sm text-muted-foreground">
