@@ -13,6 +13,7 @@ import {
   UserPlus,
   Wallet,
 } from "lucide-react";
+import logoBaraAsset from "../assets/logo-bara.jpg.asset.json";
 
 const SITE_NAME = "BARA";
 
