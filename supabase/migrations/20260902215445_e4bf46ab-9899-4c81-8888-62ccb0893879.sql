@@ -1,4 +1,4 @@
-create table public.wallets (
+create table if not exists public.wallets (
   user_id uuid primary key references auth.users(id) on delete cascade,
   balance_fcfa integer not null default 0 check (balance_fcfa >= 0),
   updated_at timestamptz not null default now()
@@ -8,10 +8,11 @@ grant select on public.wallets to authenticated;
 grant all on public.wallets to service_role;
 alter table public.wallets enable row level security;
 
+drop policy if exists "Users read own wallet" on public.wallets;
 create policy "Users read own wallet" on public.wallets
   for select to authenticated using (user_id = auth.uid());
 
-create table public.wallet_withdrawal_requests (
+create table if not exists public.wallet_withdrawal_requests (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   amount_fcfa integer not null check (amount_fcfa > 0),
@@ -28,15 +29,17 @@ grant select on public.wallet_withdrawal_requests to authenticated;
 grant all on public.wallet_withdrawal_requests to service_role;
 alter table public.wallet_withdrawal_requests enable row level security;
 
+drop policy if exists "Users read own withdrawal requests" on public.wallet_withdrawal_requests;
 create policy "Users read own withdrawal requests" on public.wallet_withdrawal_requests
   for select to authenticated using (user_id = auth.uid());
+drop policy if exists "Admins read all withdrawal requests" on public.wallet_withdrawal_requests;
 create policy "Admins read all withdrawal requests" on public.wallet_withdrawal_requests
   for select to authenticated using (public.has_role(auth.uid(), 'admin'));
 
-create index wallet_withdrawal_requests_user_idx on public.wallet_withdrawal_requests (user_id, requested_at desc);
-create index wallet_withdrawal_requests_status_idx on public.wallet_withdrawal_requests (status, requested_at);
+create index if not exists wallet_withdrawal_requests_user_idx on public.wallet_withdrawal_requests (user_id, requested_at desc);
+create index if not exists wallet_withdrawal_requests_status_idx on public.wallet_withdrawal_requests (status, requested_at);
 
-create table public.wallet_transactions (
+create table if not exists public.wallet_transactions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   type text not null check (type in ('credit', 'debit')),
@@ -54,10 +57,11 @@ grant select on public.wallet_transactions to authenticated;
 grant all on public.wallet_transactions to service_role;
 alter table public.wallet_transactions enable row level security;
 
+drop policy if exists "Users read own wallet transactions" on public.wallet_transactions;
 create policy "Users read own wallet transactions" on public.wallet_transactions
   for select to authenticated using (user_id = auth.uid());
 
-create index wallet_transactions_user_idx on public.wallet_transactions (user_id, created_at desc);
+create index if not exists wallet_transactions_user_idx on public.wallet_transactions (user_id, created_at desc);
 
 create or replace function public.credit_wallet(
   p_user_id uuid,
@@ -252,25 +256,33 @@ $$;
 revoke all on function public.admin_process_wallet_withdrawal(uuid, text, text) from public, anon;
 grant execute on function public.admin_process_wallet_withdrawal(uuid, text, text) to authenticated;
 
-insert into public.wallets (user_id, balance_fcfa)
-select parent_id, sum(amount_fcfa)
-  from public.booking_reschedule_credits
- where status = 'available'
- group by parent_id
-on conflict (user_id) do update
-  set balance_fcfa = wallets.balance_fcfa + excluded.balance_fcfa, updated_at = now();
+-- Migration ponctuelle : ne rejoue jamais si booking_reschedule_credits a
+-- déjà été migrée et supprimée par un précédent passage de cette même SQL
+-- (capturée deux fois dans l'historique des migrations).
+do $$
+begin
+  if to_regclass('public.booking_reschedule_credits') is not null then
+    insert into public.wallets (user_id, balance_fcfa)
+    select parent_id, sum(amount_fcfa)
+      from public.booking_reschedule_credits
+     where status = 'available'
+     group by parent_id
+    on conflict (user_id) do update
+      set balance_fcfa = wallets.balance_fcfa + excluded.balance_fcfa, updated_at = now();
 
-insert into public.wallet_transactions (user_id, type, amount_fcfa, balance_after, kind, reason, booking_id)
-select
-  c.parent_id, 'credit', c.amount_fcfa,
-  (select w.balance_fcfa from public.wallets w where w.user_id = c.parent_id),
-  'reschedule_credit_migration',
-  'Crédit migré depuis l''ancien système de crédit spécifique à un professeur',
-  c.source_booking_id
-from public.booking_reschedule_credits c
-where c.status = 'available';
+    insert into public.wallet_transactions (user_id, type, amount_fcfa, balance_after, kind, reason, booking_id)
+    select
+      c.parent_id, 'credit', c.amount_fcfa,
+      (select w.balance_fcfa from public.wallets w where w.user_id = c.parent_id),
+      'reschedule_credit_migration',
+      'Crédit migré depuis l''ancien système de crédit spécifique à un professeur',
+      c.source_booking_id
+    from public.booking_reschedule_credits c
+    where c.status = 'available';
 
-drop table public.booking_reschedule_credits;
+    drop table public.booking_reschedule_credits;
+  end if;
+end $$;
 
 alter table public.payments
   add column if not exists wallet_used_fcfa integer not null default 0;
