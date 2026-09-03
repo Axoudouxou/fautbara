@@ -164,7 +164,15 @@ Deno.serve(async (req) => {
     return jsonResponse({ status: updated?.status ?? "processing" });
   } catch (err) {
     console.error("jeko-create-payout error:", err);
-    const message = err instanceof Error ? err.message : "Erreur inattendue";
+    const raw = err instanceof Error ? err.message : "Erreur inattendue";
+
+    // Jèko refuse parfois le transfert lui-même (fonds du magasin non encore
+    // disponibles, montant hors limites, bénéficiaire injoignable...). Ce
+    // n'est pas un bug serveur : on le remonte comme un refus explicite.
+    const refused = /failed to finish|insufficient|balance|limit|refus/i.test(raw);
+    const message = refused
+      ? `Jèko a refusé l'envoi : ${raw}. Les fonds ont été remis sur le portefeuille, réessayez plus tard.`
+      : raw;
 
     // Échec avant/pendant l'appel Jèko : on ne laisse jamais une demande
     // bloquée en "pending" sans explication ni fonds recrédités.
@@ -183,6 +191,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    return jsonResponse({ error: message }, 500);
+    return jsonResponse({ error: message }, refused ? 422 : 500);
   }
+
 });
