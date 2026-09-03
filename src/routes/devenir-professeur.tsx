@@ -138,9 +138,11 @@ function DevenirProfesseur() {
         </div>
 
         <div className="flex justify-center">
-          <div className="flex size-56 items-center justify-center rounded-full bg-primary-soft sm:size-72">
-            <Sparkles className="size-20 text-primary-soft-foreground sm:size-24" aria-hidden />
-          </div>
+          <img
+            src={logoBaraAsset.url}
+            alt="Logo BARA — Seul le bara paie"
+            className="size-56 rounded-3xl object-cover shadow-sm sm:size-72"
+          />
         </div>
       </section>
 
