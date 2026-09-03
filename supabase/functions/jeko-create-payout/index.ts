@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
     // terminé).
     const amountCents = Math.round(withdrawal.amount_fcfa * 100);
     const storeBalanceCents = await getJekoStoreBalance();
-    if (storeBalanceCents < amountCents) {
+    if (storeBalanceCents !== null && storeBalanceCents < amountCents) {
       const { error: rpcError } = await serviceClient.rpc("fail_withdrawal_payout", {
         p_withdrawal_id: withdrawalId,
         p_error_message: "Solde du magasin BARA insuffisant pour ce transfert",
@@ -139,6 +139,7 @@ Deno.serve(async (req) => {
       if (rpcError) throw rpcError;
       return jsonResponse({ error: "Solde du magasin BARA insuffisant, réessayez plus tard" }, 503);
     }
+
 
     // 3. Transfert — référence stable et unique par retrait : un rappel de
     // cette fonction pour le même withdrawalId (retry réseau) envoie
