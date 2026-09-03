@@ -8,7 +8,6 @@ import {
   Languages,
   Palette,
   SlidersHorizontal,
-  Sparkles,
   Star,
   TrendingUp,
   UserPlus,
