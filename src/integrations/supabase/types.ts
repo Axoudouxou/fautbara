@@ -2377,6 +2377,7 @@ export type Database = {
         Args: { p_child_id: string; p_learner_id: string; p_teacher_id: string }
         Returns: boolean
       }
+      process_monthly_payouts: { Args: never; Returns: number }
       purchase_pack: {
         Args: {
           p_address?: string
@@ -2424,6 +2425,7 @@ export type Database = {
         Args: { p_offer_id: string; p_pack_slug: string }
         Returns: Json
       }
+      refresh_teacher_grade: { Args: { p_teacher_id: string }; Returns: string }
       report_parent_no_show: {
         Args: { p_booking_id: string }
         Returns: {
@@ -2573,6 +2575,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      reserve_earnings_for_withdrawal: {
+        Args: { p_free: boolean; p_target_fcfa: number; p_teacher_id: string }
+        Returns: Json
+      }
       respond_booking_request: {
         Args: { p_accept: boolean; p_booking_id: string; p_reason?: string }
         Returns: undefined
@@ -2673,6 +2679,7 @@ export type Database = {
           city: string
           commune: string
           display_name: string
+          grade: string
           headline: string
           identity_verified: boolean
           lessons_count: number
@@ -2680,6 +2687,7 @@ export type Database = {
           offers_home: boolean
           offers_online: boolean
           qualifications_verified: boolean
+          rate_cap_fcfa: number
           rating_avg: number
           rating_count: number
           sample_offer_id: string
@@ -2768,6 +2776,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      teacher_earnings_summary: { Args: never; Returns: Json }
       teacher_rate_cap: { Args: { p_teacher_id: string }; Returns: number }
       teacher_recent_assignments: { Args: { p_limit?: number }; Returns: Json }
       teacher_student_profile: {
