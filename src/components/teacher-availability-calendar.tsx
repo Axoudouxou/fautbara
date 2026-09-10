@@ -59,6 +59,20 @@ function overlaps(aStartMin: number, aDur: number, bStartMin: number, bDur: numb
 }
 
 /**
+ * Les créneaux affichés sont toujours des heures d'Abidjan (UTC+0), jamais
+ * l'heure locale du navigateur : sinon un visiteur en Europe choisissait
+ * « mardi 10:00 » et la base recevait lundi/08:00, hors disponibilité.
+ */
+export function abidjanSlotDate(dateStr: string, time: string) {
+  return new Date(`${dateStr}T${time}:00Z`);
+}
+
+/** Formatage d'un créneau en heure d'Abidjan, quel que soit le fuseau du visiteur. */
+export function formatAbidjan(dateStr: string, time: string, options: Intl.DateTimeFormatOptions) {
+  return abidjanSlotDate(dateStr, time).toLocaleString("fr-FR", { ...options, timeZone: "UTC" });
+}
+
+/**
  * Grille de créneaux réels d'un professeur (disponibilités hebdomadaires +
  * exceptions + réservations déjà prises), réutilisée telle quelle sur la
  * fiche professeur et dans le tunnel de réservation — un seul système de
