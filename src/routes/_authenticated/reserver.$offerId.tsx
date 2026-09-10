@@ -8,7 +8,11 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { useSessionRoles } from "@/hooks/use-session-roles";
-import { AvailabilitySlotGrid } from "@/components/teacher-availability-calendar";
+import {
+  AvailabilitySlotGrid,
+  abidjanSlotDate,
+  formatAbidjan,
+} from "@/components/teacher-availability-calendar";
 
 export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
   validateSearch: (search) =>
