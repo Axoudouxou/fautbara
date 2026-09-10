@@ -174,7 +174,7 @@ export function AvailabilitySlotGrid({
         for (let t = start; t + durationMinutes <= end; t += durationMinutes) {
           if (partialBlocks.some((b) => overlaps(t, durationMinutes, b.start, b.end - b.start))) continue;
 
-          const slotDate = new Date(`${dateStr}T${minutesToHHMM(t)}:00`);
+          const slotDate = abidjanSlotDate(dateStr, minutesToHHMM(t));
           if (slotDate.getTime() <= now) continue;
 
           const isBusy = busy.some((b) =>
