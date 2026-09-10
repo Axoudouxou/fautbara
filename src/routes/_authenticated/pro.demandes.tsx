@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarClock, Check, FileText, Home, Laptop, Loader2, Repeat, X } from "lucide-react";
+import { CalendarClock, Check, FileText, Home, Laptop, Loader2, Sparkles, X } from "lucide-react";
 
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
 import { SessionReportForm } from "@/components/session-report-form";
 import type { SessionReport } from "@/lib/session-reports";
+import { SESSION_STATUS_LABELS } from "@/lib/packs";
 
 export const Route = createFileRoute("/_authenticated/pro/demandes")({
   head: () => ({
@@ -26,15 +27,7 @@ export const Route = createFileRoute("/_authenticated/pro/demandes")({
   component: TeacherRequestsPage,
 });
 
-const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  pending: { label: "En attente", className: "bg-warning-soft text-warning" },
-  accepted: { label: "Acceptée", className: "bg-success-soft text-success" },
-  declined: { label: "Refusée", className: "bg-destructive/10 text-destructive" },
-  cancelled: { label: "Annulée", className: "bg-muted text-muted-foreground" },
-  completed: { label: "Terminée", className: "bg-primary-soft text-primary-soft-foreground" },
-  no_show_teacher: { label: "Professeur absent", className: "bg-destructive/10 text-destructive" },
-  no_show_parent: { label: "Famille absente", className: "bg-destructive/10 text-destructive" },
-};
+const STATUS_LABELS = SESSION_STATUS_LABELS;
 
 function formatSlot(iso: string) {
   return new Date(iso).toLocaleString("fr-FR", {
@@ -49,7 +42,9 @@ function formatSlot(iso: string) {
 function TeacherRequestsPage() {
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
-  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<
+    { id: string; scheduledAt: string; rescheduleUsed: boolean } | null
+  >(null);
   const [reportBookingId, setReportBookingId] = useState<string | null>(null);
 
   const rolesQuery = useQuery({
@@ -69,7 +64,7 @@ function TeacherRequestsPage() {
       const { data, error } = await supabase
         .from("bookings")
         .select(
-          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, address, message, status, status_reason, is_recurring, recurrence_end_date, requester_id, child_id, reschedule_count, reschedule_proposed_at, reschedule_proposed_by, reschedule_proposed_fee_rate, children(first_name, school_level), teacher_offers(title, subjects(name))",
+          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, address, message, status, status_reason, requester_id, child_id, reschedule_used, is_free_session, session_index, children(first_name, school_level), teacher_offers(title, subjects(name))",
         )
         .eq("teacher_id", user.id)
         .order("scheduled_at", { ascending: true });
@@ -99,7 +94,7 @@ function TeacherRequestsPage() {
       reason,
     }: {
       id: string;
-      status: "accepted" | "declined" | "completed";
+      status: "completed";
       reason?: string | null;
     }) => {
       if (status === "completed") {
@@ -154,7 +149,9 @@ function TeacherRequestsPage() {
   }
 
   const requests = requestsQuery.data ?? [];
-  const pending = requests.filter((r) => r.status === "pending");
+  const upcoming = requests.filter(
+    (r) => r.status === "accepted" && new Date(r.scheduled_at).getTime() > Date.now(),
+  );
 
   return (
     <div className="container-page py-10 sm:py-14">
@@ -162,9 +159,9 @@ function TeacherRequestsPage() {
         Demandes de cours
       </h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        {pending.length > 0
-          ? `${pending.length} demande${pending.length > 1 ? "s" : ""} en attente de votre réponse.`
-          : "Aucune demande en attente pour le moment."}
+        {upcoming.length > 0
+          ? `${upcoming.length} séance${upcoming.length > 1 ? "s" : ""} à venir programmée${upcoming.length > 1 ? "s" : ""} par vos familles.`
+          : "Aucune séance à venir pour le moment."}
       </p>
 
       {requestsQuery.isLoading && (
@@ -236,9 +233,9 @@ function TeacherRequestsPage() {
                     </>
                   )}
                 </span>
-                {r.is_recurring && (
+                {r.is_free_session && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Repeat className="size-4" aria-hidden /> Hebdomadaire
+                    <Sparkles className="size-4" aria-hidden /> Séance offerte
                   </span>
                 )}
                 <span className="font-semibold text-foreground">
@@ -263,42 +260,13 @@ function TeacherRequestsPage() {
                   id: r.id,
                   status: r.status,
                   scheduled_at: r.scheduled_at,
-                  reschedule_count: r.reschedule_count,
-                  reschedule_proposed_at: r.reschedule_proposed_at,
-                  reschedule_proposed_by: r.reschedule_proposed_by,
-                  reschedule_proposed_fee_rate: r.reschedule_proposed_fee_rate,
+                  reschedule_used: r.reschedule_used,
                 }}
                 role="teacher"
-                userId={user.id}
                 invalidateKeys={[["teacher-bookings", user.id]]}
               />
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {r.status === "pending" && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => statusMutation.mutate({ id: r.id, status: "accepted" })}
-                      disabled={statusMutation.isPending}
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-                    >
-                      <Check className="size-3.5" aria-hidden /> Accepter
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const reason = window.prompt(
-                          "Motif du refus (visible par la famille, optionnel) :",
-                        );
-                        statusMutation.mutate({ id: r.id, status: "declined", reason });
-                      }}
-                      disabled={statusMutation.isPending}
-                      className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:opacity-60"
-                    >
-                      <X className="size-3.5" aria-hidden /> Refuser
-                    </button>
-                  </>
-                )}
                 {r.status === "accepted" && (
                   <button
                     type="button"
@@ -319,16 +287,23 @@ function TeacherRequestsPage() {
                     {reportByBooking.has(r.id) ? "Modifier le compte-rendu" : "Compte-rendu de séance"}
                   </button>
                 )}
-                {(r.status === "pending" || r.status === "accepted") && (
+                {r.status === "accepted" && (
                   <button
                     type="button"
-                    onClick={() => setCancelId(r.id)}
+                    onClick={() =>
+                      setCancelTarget({
+                        id: r.id,
+                        scheduledAt: r.scheduled_at,
+                        rescheduleUsed: r.reschedule_used,
+                      })
+                    }
                     className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10"
                   >
                     <X className="size-3.5" aria-hidden /> Annuler la séance
                   </button>
                 )}
                 {(r.status === "completed" ||
+                  r.status === "lost" ||
                   r.status === "cancelled" ||
                   r.status === "no_show_teacher" ||
                   r.status === "no_show_parent") && (
@@ -344,10 +319,13 @@ function TeacherRequestsPage() {
         })}
       </ul>
 
-      {cancelId && (
+      {cancelTarget && (
         <CancelBookingDialog
-          bookingId={cancelId}
-          onClose={() => setCancelId(null)}
+          bookingId={cancelTarget.id}
+          scheduledAt={cancelTarget.scheduledAt}
+          rescheduleUsed={cancelTarget.rescheduleUsed}
+          role="teacher"
+          onClose={() => setCancelTarget(null)}
           invalidateKeys={[["teacher-bookings", user.id]]}
         />
       )}
