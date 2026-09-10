@@ -379,9 +379,10 @@ function WalletPage() {
                   Envoyer la demande
                 </button>
                 <p className="text-xs text-muted-foreground">
-                  Le montant est réservé dès l&apos;envoi de la demande. Une équipe BARA valide
-                  puis effectue le virement Mobile Money.
+                  Le versement groupé mensuel est sans frais. Un retrait demandé en dehors de ce
+                  versement entraîne des frais, déduits du montant envoyé.
                 </p>
+
               </form>
             )}
           </section>
