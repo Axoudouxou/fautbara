@@ -163,7 +163,7 @@ function CalendarPage() {
                     label: b.status,
                     className: "bg-muted text-muted-foreground",
                   };
-                  const canCancel = b.status === "pending" || b.status === "accepted";
+                  const canCancel = b.status === "accepted";
                   return (
                     <li key={b.id} className="rounded-xl border border-border/70 bg-background p-3">
                       <p className="font-display text-sm font-bold text-foreground">
@@ -185,7 +185,7 @@ function CalendarPage() {
                             <Home className="size-3.5" aria-hidden /> {b.commune ?? "Domicile"}
                           </>
                         )}
-                        {b.is_recurring && <Repeat className="size-3.5" aria-hidden />}
+                        {b.is_free_session && <Sparkles className="size-3.5" aria-hidden />}
                       </p>
                       <span
                         className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold ${status.className}`}
@@ -198,39 +198,33 @@ function CalendarPage() {
                           id: b.id,
                           status: b.status,
                           scheduled_at: b.scheduled_at,
-                          reschedule_count: b.reschedule_count,
-                          reschedule_proposed_at: b.reschedule_proposed_at,
-                          reschedule_proposed_by: b.reschedule_proposed_by,
-                          reschedule_proposed_fee_rate: b.reschedule_proposed_fee_rate,
+                          reschedule_used: b.reschedule_used,
                         }}
                         role="learner"
-                        userId={user.id}
                         invalidateKeys={[
                           ["calendar-bookings", user.id, weekStart.toISOString()],
                           ["my-bookings", user.id],
+                          ["my-packs", user.id],
                         ]}
                       />
 
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {(b.status === "accepted" || b.status === "completed") && (
-                          <Link
-                            to="/paiement/$bookingId"
-                            params={{ bookingId: b.id }}
-                            className="rounded-full bg-primary px-3 py-1 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90"
-                          >
-                            Paiement
-                          </Link>
-                        )}
-                        {canCancel && (
+                      {canCancel && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
                           <button
                             type="button"
-                            onClick={() => setCancelId(b.id)}
+                            onClick={() =>
+                              setCancelTarget({
+                                id: b.id,
+                                scheduledAt: b.scheduled_at,
+                                rescheduleUsed: b.reschedule_used,
+                              })
+                            }
                             className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-destructive hover:bg-destructive/10"
                           >
                             Annuler
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </li>
                   );
                 })}
@@ -240,16 +234,21 @@ function CalendarPage() {
         })}
       </div>
 
-      {cancelId && (
+      {cancelTarget && (
         <CancelBookingDialog
-          bookingId={cancelId}
-          onClose={() => setCancelId(null)}
+          bookingId={cancelTarget.id}
+          scheduledAt={cancelTarget.scheduledAt}
+          rescheduleUsed={cancelTarget.rescheduleUsed}
+          role="learner"
+          onClose={() => setCancelTarget(null)}
           invalidateKeys={[
             ["calendar-bookings", user.id, weekStart.toISOString()],
             ["my-bookings", user.id],
+            ["my-packs", user.id],
           ]}
         />
       )}
+
     </div>
   );
 }
