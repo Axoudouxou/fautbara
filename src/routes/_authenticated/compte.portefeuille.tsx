@@ -403,8 +403,10 @@ function WalletPage() {
                           <p className="font-semibold text-foreground">{formatFcfa(w.amount_fcfa)}</p>
                           <p className="text-xs text-muted-foreground">
                             {new Date(w.requested_at).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
+                            {w.fee_fcfa > 0 ? ` · frais ${formatFcfa(w.fee_fcfa)}` : " · sans frais"}
                             {w.admin_note ? ` · ${w.admin_note}` : ""}
                           </p>
+
                         </div>
                         <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${s.className}`}>
                           {s.label}
