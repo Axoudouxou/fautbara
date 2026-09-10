@@ -120,6 +120,19 @@ function TeacherOffersPage() {
     },
   });
 
+  const rateCapQuery = useQuery({
+    queryKey: ["teacher-rate-cap", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("teacher_rate_cap", { p_teacher_id: user.id });
+      if (error) throw error;
+      return (data as number | null) ?? null;
+    },
+  });
+  const rateCap = rateCapQuery.data ?? null;
+
+
+
   useEffect(() => {
     if (onboardingPrefillDone || !search.onboarding) return;
     if (rolesQuery.isLoading || !isTeacher) return;
