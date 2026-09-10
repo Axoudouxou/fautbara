@@ -125,33 +125,8 @@ function AdminDisputes() {
       title="Litiges"
       description="Instruisez les litiges déclarés par les parents, élèves et professeurs. Un remboursement décidé est crédité immédiatement sur le portefeuille BARA du demandeur."
     >
-      {(forceMajeureQuery.data?.length ?? 0) > 0 && (
-        <div className="mb-6 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <p className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
-            <ShieldAlert className="size-4 text-destructive" aria-hidden />
-            Reports pour cas de force majeure (20 derniers)
-          </p>
-          <ul className="mt-3 space-y-2">
-            {forceMajeureQuery.data!.map((fm) => (
-              <li key={fm.id} className="rounded-2xl bg-muted/50 px-4 py-2.5 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">
-                  {new Date(fm.created_at).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
-                </span>{" "}
-                — séance déplacée du{" "}
-                {new Date(fm.previous_scheduled_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}{" "}
-                au{" "}
-                {new Date(fm.new_scheduled_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
-                {fm.force_majeure_reason && (
-                  <>
-                    {" "}
-                    · Motif : <span className="italic">{fm.force_majeure_reason}</span>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+
+
 
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
