@@ -159,6 +159,7 @@ function WalletPage() {
     queryClient.invalidateQueries({ queryKey: ["wallet", user.id] });
     queryClient.invalidateQueries({ queryKey: ["wallet-transactions", user.id] });
     queryClient.invalidateQueries({ queryKey: ["wallet-withdrawals", user.id] });
+    queryClient.invalidateQueries({ queryKey: ["teacher-earnings", user.id] });
   };
 
   const withdrawMutation = useMutation({
@@ -167,9 +168,10 @@ function WalletPage() {
       if (!Number.isInteger(value) || value <= 0) {
         throw new Error("Montant invalide");
       }
-      if (value > balance) {
-        throw new Error("Le montant dépasse votre solde disponible");
+      if (value > withdrawable) {
+        throw new Error("Le montant dépasse vos rémunérations validées");
       }
+
       if (!phone.trim()) {
         throw new Error("Numéro de réception requis");
       }
