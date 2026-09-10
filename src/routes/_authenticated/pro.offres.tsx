@@ -120,6 +120,19 @@ function TeacherOffersPage() {
     },
   });
 
+  const rateCapQuery = useQuery({
+    queryKey: ["teacher-rate-cap", user.id],
+    enabled: isTeacher,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("teacher_rate_cap", { p_teacher_id: user.id });
+      if (error) throw error;
+      return (data as number | null) ?? null;
+    },
+  });
+  const rateCap = rateCapQuery.data ?? null;
+
+
+
   useEffect(() => {
     if (onboardingPrefillDone || !search.onboarding) return;
     if (rolesQuery.isLoading || !isTeacher) return;
@@ -292,10 +305,17 @@ function TeacherOffersPage() {
       toast.error("Renseignez le titre et le tarif");
       return;
     }
+    if (rateCap !== null && Number(f.price) > rateCap) {
+      toast.error("Tarif au-dessus de votre plafond", {
+        description: `Votre grade actuel autorise au maximum ${rateCap.toLocaleString("fr-FR")} FCFA par séance.`,
+      });
+      return;
+    }
     if (!f.offers_home && !f.offers_online) {
       toast.error("Choisissez au moins un format de cours");
       return;
     }
+
     saveMutation.mutate({ ...f, status });
   }
 
@@ -406,12 +426,22 @@ function TeacherOffersPage() {
                 type="number"
                 required
                 min={1000}
-                max={500000}
+                max={rateCap ?? 500000}
                 step={500}
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
                 className={inputClass}
               />
+              {rateCap !== null && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Votre grade actuel autorise un tarif maximum de{" "}
+                  <span className="font-semibold text-foreground">
+                    {rateCap.toLocaleString("fr-FR")} FCFA
+                  </span>{" "}
+                  par séance. Ce plafond augmente avec votre grade.
+                </p>
+              )}
+
             </div>
             <div>
               <label htmlFor="of-duration" className="text-sm font-semibold text-foreground">
