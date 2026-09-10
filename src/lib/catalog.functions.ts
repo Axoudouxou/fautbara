@@ -49,6 +49,9 @@ export type TeacherCard = {
   years_experience: number | null;
   identity_verified: boolean;
   qualifications_verified: boolean;
+  grade: string | null;
+  rate_cap_fcfa: number | null;
+
   offers_home: boolean;
   offers_online: boolean;
   min_price_fcfa: number;
