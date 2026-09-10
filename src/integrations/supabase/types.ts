@@ -2197,6 +2197,42 @@ export type Database = {
         }
       }
       expire_stale_pack_holds: { Args: never; Returns: undefined }
+      fail_pack_payment: {
+        Args: { p_pack_id: string; p_reason?: string }
+        Returns: {
+          address: string | null
+          buyer_id: string
+          child_id: string | null
+          city: string
+          commune: string | null
+          created_at: string
+          duration_minutes: number
+          expires_at: string | null
+          format: string
+          free_sessions: number
+          hold_expires_at: string | null
+          id: string
+          offer_id: string
+          pack_slug: string
+          paid_sessions: number
+          platform_fee_fcfa: number
+          purchased_at: string | null
+          sessions_total: number
+          sessions_used: number
+          status: string
+          teacher_amount_fcfa: number
+          teacher_id: string
+          teacher_rate_fcfa: number
+          total_fcfa: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "packs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       fail_withdrawal_payout: {
         Args: { p_error_message: string; p_withdrawal_id: string }
         Returns: {
