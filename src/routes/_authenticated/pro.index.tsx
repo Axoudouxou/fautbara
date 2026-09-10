@@ -195,17 +195,25 @@ function TeacherDashboard() {
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-sm text-muted-foreground">Offres créées</p>
-          <p className="mt-1 font-display text-2xl font-bold text-foreground">{offers.length}</p>
-        </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-sm text-muted-foreground">Offres publiées</p>
-          <p className="mt-1 font-display text-2xl font-bold text-foreground">{published.length}</p>
+          <p className="mt-1 font-display text-2xl font-bold text-foreground">
+            {published.length}
+            <span className="ml-1 text-sm font-semibold text-muted-foreground">/ {offers.length}</span>
+          </p>
         </div>
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <p className="text-sm text-muted-foreground">Tarif le plus bas</p>
+          <p className="text-sm text-muted-foreground">Mon grade</p>
           <p className="mt-1 font-display text-2xl font-bold text-foreground">
-            {offers.length > 0
-              ? `${Math.min(...offers.map((o) => o.price_fcfa)).toLocaleString("fr-FR")} F`
+            {earningsQuery.isLoading ? "…" : gradeLabel(earningsQuery.data?.grade)}
+          </p>
+        </div>
+        <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+          <p className="text-sm text-muted-foreground">Plafond par séance</p>
+          <p className="mt-1 font-display text-2xl font-bold text-foreground">
+            {earningsQuery.data
+              ? `${earningsQuery.data.rate_cap_fcfa.toLocaleString("fr-FR")} F`
               : "—"}
           </p>
         </div>
@@ -217,11 +225,14 @@ function TeacherDashboard() {
             <Wallet className="size-5" aria-hidden />
           </span>
           <div>
-            <p className="text-sm text-muted-foreground">Solde de mon portefeuille</p>
+            <p className="text-sm text-muted-foreground">Rémunérations validées</p>
             <p className="mt-0.5 font-display text-2xl font-bold text-foreground">
-              {walletQuery.isLoading
+              {earningsQuery.isLoading
                 ? "…"
-                : `${(walletQuery.data ?? 0).toLocaleString("fr-FR")} FCFA`}
+                : `${(earningsQuery.data?.validated_fcfa ?? 0).toLocaleString("fr-FR")} FCFA`}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {`${(earningsQuery.data?.pending_fcfa ?? 0).toLocaleString("fr-FR")} FCFA en attente (séances à venir ou compte-rendu manquant)`}
             </p>
           </div>
         </div>
@@ -229,12 +240,13 @@ function TeacherDashboard() {
           to="/compte/portefeuille"
           className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
         >
-          Voir mon portefeuille
+          Voir mes revenus
         </Link>
       </section>
 
       <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
         <h2 className="font-display text-lg font-bold text-foreground">Prochaines étapes</h2>
+
         <ul className="mt-4 space-y-3">
           {steps.map((s) => (
             <li key={s.label} className="flex items-center justify-between gap-3">
