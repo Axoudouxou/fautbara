@@ -361,44 +361,8 @@ export function ConversationPanel({
         </div>
       )}
 
-      {systemContext?.pending && (
-        <div className="mx-4 mt-3 rounded-2xl border border-primary/30 bg-primary-soft/40 p-4 sm:mx-6">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="size-4 text-primary" aria-hidden />
-            <p className="text-sm font-semibold text-foreground">Proposition de report</p>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Ancien créneau :{" "}
-            <span className="font-semibold text-foreground">
-              {new Date(systemContext.pending.scheduled_at).toLocaleString("fr-FR", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
-            </span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Nouveau créneau proposé :{" "}
-            <span className="font-semibold text-foreground">
-              {new Date(systemContext.pending.reschedule_proposed_at!).toLocaleString("fr-FR", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
-            </span>
-          </p>
-          <BookingLifecycleControls
-            booking={systemContext.pending}
-            role={role === "teacher" ? "teacher" : "learner"}
-            userId={userId}
-            invalidateKeys={[systemContextKey]}
-          />
-          <Link
-            to={role === "teacher" ? "/pro/demandes" : "/compte/reservations"}
-            className="mt-2 inline-block text-xs font-semibold text-primary hover:underline"
-          >
-            Voir les détails
-          </Link>
-        </div>
-      )}
+
+
 
       {tab === "chat" && canChat && (
         <>
