@@ -97,6 +97,23 @@ function WalletPage() {
     },
   });
 
+  const earningsQuery = useQuery({
+    queryKey: ["teacher-earnings", user.id],
+    enabled: isTeacherAccount,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("teacher_earnings_summary");
+      if (error) throw error;
+      return data as {
+        pending_fcfa: number;
+        validated_fcfa: number;
+        reserved_fcfa: number;
+        paid_fcfa: number;
+        grade: string;
+        rate_cap_fcfa: number;
+      };
+    },
+  });
+
   const transactionsQuery = useQuery({
     queryKey: ["wallet-transactions", user.id],
     queryFn: async () => {
@@ -112,10 +129,11 @@ function WalletPage() {
 
   const withdrawalsQuery = useQuery({
     queryKey: ["wallet-withdrawals", user.id],
+    enabled: isTeacherAccount,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wallet_withdrawal_requests")
-        .select("id, amount_fcfa, method, status, admin_note, error_message, requested_at, processed_at")
+        .select("id, amount_fcfa, fee_fcfa, method, status, admin_note, error_message, requested_at, processed_at")
         .order("requested_at", { ascending: false })
         .limit(20);
       if (error) throw error;
@@ -130,6 +148,12 @@ function WalletPage() {
   });
 
   const balance = walletQuery.data ?? 0;
+  const earnings = earningsQuery.data ?? null;
+  // Les revenus d'un intervenant ne passent pas par le portefeuille famille :
+  // seules les rémunérations validées (séance réalisée + compte-rendu) sont
+  // retirables, et le serveur en refait le calcul à chaque demande.
+  const withdrawable = isTeacherAccount ? (earnings?.validated_fcfa ?? 0) : 0;
+
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["wallet", user.id] });
