@@ -229,7 +229,7 @@ function BookingPage() {
       toast.error("Choisissez un créneau parmi les disponibilités du professeur");
       return;
     }
-    if (new Date(`${date}T${time}:00`) <= new Date()) {
+    if (abidjanSlotDate(date, time) <= new Date()) {
       toast.error("Choisissez un créneau à venir");
       return;
     }
