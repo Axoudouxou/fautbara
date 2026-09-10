@@ -242,11 +242,12 @@ function WalletPage() {
       </Link>
 
       <h1 className="mt-4 font-display text-2xl font-bold text-foreground sm:text-3xl">
-        Mon portefeuille
+        {isTeacherAccount ? "Mes revenus" : "Mon portefeuille"}
       </h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Les remboursements (annulation, absence du professeur, report tardif) sont crédités ici et
-        réutilisables sur n&apos;importe quelle réservation, ou retirables vers Mobile Money.
+        {isTeacherAccount
+          ? "Vous percevez la totalité de votre tarif pour chaque séance rémunérée. Une séance devient retirable dès qu'elle est réalisée et que son compte-rendu est rempli."
+          : "Les remboursements (annulation, séance non honorée) sont crédités ici et réutilisables sur n'importe quel achat de formule ou de séance."}
       </p>
       <SectionTabs items={accountTabs(isTeacherAccount)} />
 
@@ -254,30 +255,62 @@ function WalletPage() {
         <div className="space-y-4">
           <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <Wallet className="size-4 text-primary" aria-hidden /> Solde disponible
+              <Wallet className="size-4 text-primary" aria-hidden />
+              {isTeacherAccount ? "Rémunérations validées" : "Solde disponible"}
             </p>
-            {walletQuery.isLoading ? (
+            {(isTeacherAccount ? earningsQuery.isLoading : walletQuery.isLoading) ? (
               <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
               </div>
             ) : (
               <p className="mt-2 font-display text-3xl font-bold text-foreground">
-                {formatFcfa(balance)}
+                {formatFcfa(isTeacherAccount ? withdrawable : balance)}
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={() => setShowForm((s) => !s)}
-              disabled={balance <= 0}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <ArrowDownLeft className="size-4" aria-hidden />
-              Demander un retrait
-            </button>
-            {balance <= 0 && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Aucun solde disponible pour l&apos;instant.
+            {isTeacherAccount && earnings && (
+              <dl className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-2xl bg-secondary/50 px-3 py-2">
+                  <dt className="text-muted-foreground">En attente (séance à venir)</dt>
+                  <dd className="font-semibold text-foreground">{formatFcfa(earnings.pending_fcfa)}</dd>
+                </div>
+                <div className="rounded-2xl bg-secondary/50 px-3 py-2">
+                  <dt className="text-muted-foreground">Retrait en cours</dt>
+                  <dd className="font-semibold text-foreground">{formatFcfa(earnings.reserved_fcfa)}</dd>
+                </div>
+                <div className="rounded-2xl bg-secondary/50 px-3 py-2">
+                  <dt className="text-muted-foreground">Déjà versé</dt>
+                  <dd className="font-semibold text-foreground">{formatFcfa(earnings.paid_fcfa)}</dd>
+                </div>
+                <div className="rounded-2xl bg-secondary/50 px-3 py-2">
+                  <dt className="text-muted-foreground">Plafond par séance</dt>
+                  <dd className="font-semibold text-foreground">{formatFcfa(earnings.rate_cap_fcfa)}</dd>
+                </div>
+              </dl>
+            )}
+
+            {isTeacherAccount ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowForm((s) => !s)}
+                  disabled={withdrawable <= 0}
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <ArrowDownLeft className="size-4" aria-hidden />
+                  Demander un retrait
+                </button>
+                {withdrawable <= 0 && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Aucune rémunération validée pour l&apos;instant. Remplissez le compte-rendu de vos
+                    séances réalisées pour les valider.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="mt-4 text-xs text-muted-foreground">
+                Ce solde est utilisé automatiquement lors de votre prochain achat de formule ou de
+                séance.
               </p>
             )}
 
@@ -299,10 +332,11 @@ function WalletPage() {
                     inputMode="numeric"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
-                    placeholder={`Max. ${balance.toLocaleString("fr-FR")} FCFA`}
+                    placeholder={`Max. ${withdrawable.toLocaleString("fr-FR")} FCFA`}
                     className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
                   />
                 </div>
+
                 <div>
                   <p className="text-sm font-semibold text-foreground">Moyen de réception</p>
                   <div className="mt-2 grid grid-cols-2 gap-2">
