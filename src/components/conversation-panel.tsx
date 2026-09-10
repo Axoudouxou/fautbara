@@ -720,11 +720,15 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
   const dateTime = (iso: string) =>
     new Date(iso).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 
-  if (event.kind === "trial_confirmed" || event.kind === "booking_confirmed") {
+  if (event.kind === "booking_confirmed") {
     return (
       <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
         <p className="text-xs font-semibold text-foreground">
-          {event.kind === "trial_confirmed" ? "Cours d'essai confirmé" : "Réservation confirmée"}
+          {event.isFreeSession
+            ? "Séance offerte programmée"
+            : event.sessionIndex
+              ? `Séance ${event.sessionIndex} programmée`
+              : "Séance programmée"}
         </p>
         <p className="mt-0.5 text-[11px] text-muted-foreground">{dateTime(event.scheduledAt)}</p>
       </div>
@@ -740,27 +744,9 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
     );
   }
 
-  if (event.kind !== "reschedule_done") return null;
-
-  return (
-    <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
-      <p className="text-xs font-semibold text-foreground">
-        {event.forceMajeure ? "Report pour cas de force majeure" : "Report confirmé"}
-      </p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">
-        {dateTime(event.previousAt)} → {dateTime(event.newAt)}
-      </p>
-      {event.reason && (
-        <p className="mt-1 text-[11px] text-muted-foreground">Motif : {event.reason}</p>
-      )}
-      {event.feeRate > 0 && (
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          Retenue appliquée : {Math.round(event.feeRate * 100)} %
-        </p>
-      )}
-    </div>
-  );
+  return null;
 }
+
 
 /** Détail d'un compte-rendu : réutilisé dans la carte système du fil et dans le journal de bord. */
 function SessionReportEntry({
