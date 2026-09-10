@@ -53,7 +53,7 @@ function CalendarPage() {
       const { data, error } = await supabase
         .from("bookings")
         .select(
-          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, status, is_recurring, teacher_id, reschedule_count, reschedule_proposed_at, reschedule_proposed_by, reschedule_proposed_fee_rate, children(first_name), teacher_offers(title, subjects(name))",
+          "id, scheduled_at, duration_minutes, price_fcfa, format, commune, status, teacher_id, reschedule_used, is_free_session, session_index, children(first_name), teacher_offers(title, subjects(name))",
         )
         .eq("requester_id", user.id)
         .gte("scheduled_at", weekStart.toISOString())
@@ -63,6 +63,7 @@ function CalendarPage() {
       return data;
     },
   });
+
 
   const bookings = bookingsQuery.data ?? [];
 
