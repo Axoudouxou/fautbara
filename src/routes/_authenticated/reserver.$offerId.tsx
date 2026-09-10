@@ -125,10 +125,10 @@ function BookingPage() {
 
   const sessionRange = useMemo(() => {
     if (!date || !time || !offer) return { start: "", end: "" };
-    const start = new Date(`${date}T${time}:00`);
+    const start = abidjanSlotDate(date, time);
     const end = new Date(start.getTime() + offer.duration_minutes * 60_000);
     const fmt = (d: Date) =>
-      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
     return { start: fmt(start), end: fmt(end) };
   }, [date, time, offer]);
 
@@ -138,7 +138,7 @@ function BookingPage() {
       const { data, error } = await supabase.rpc("lock_slot_and_create_booking", {
         p_offer_id: offer.id,
         p_child_id: (childId || null) as unknown as string,
-        p_scheduled_at: new Date(`${date}T${time}:00`).toISOString(),
+        p_scheduled_at: abidjanSlotDate(date, time).toISOString(),
         p_format: format,
         p_commune: (format === "home" ? commune || null : null) as unknown as string,
         p_address: (format === "home" ? address.trim() || null : null) as unknown as string,
