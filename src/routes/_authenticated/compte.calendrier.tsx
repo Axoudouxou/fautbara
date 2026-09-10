@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Home, Laptop, Loader2, Repeat } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, Laptop, Loader2, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -43,7 +43,9 @@ function addDays(date: Date, days: number) {
 function CalendarPage() {
   const { user } = Route.useRouteContext();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
-  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<
+    { id: string; scheduledAt: string; rescheduleUsed: boolean } | null
+  >(null);
 
   const weekEnd = addDays(weekStart, 7);
 
