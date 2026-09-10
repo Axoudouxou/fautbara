@@ -1,58 +1,95 @@
-# FAUT BARA — Analyse du dépôt & plan de construction
+# Nouveau modèle économique BARA — packs, frais parent, grades
 
-## A. État actuel (aucun code métier n'existe encore)
-- Stack : TanStack Start v1 + React 19 + Vite 8, SSR, déploiement type worker edge.
-- Routes : uniquement `src/routes/__root.tsx` (layout + 404 + error boundary) et `src/routes/index.tsx` qui affiche encore **l'image placeholder du template**. Aucune autre page.
-- Design : `src/styles.css` = thème shadcn par défaut (gris/bleu neutre, oklch), **aucune identité visuelle**. Pas de police custom.
-- Composants : `src/components/ui/*` (shadcn complet) + `src/hooks/use-mobile.tsx`. Aucun composant métier.
-- Données : **aucun backend**. Pas de `src/integrations/supabase`, pas de dossier `supabase/`, aucune table, aucune auth, aucun rôle.
-- Libs déjà disponibles : TanStack Query, react-hook-form + zod, date-fns, react-day-picker, recharts, sonner, lucide.
-- Config : `src/start.ts` avec CSRF + middleware d'erreur (à préserver ; on y ajoutera le middleware bearer auth), `src/server.ts` wrapper SSR (ne pas toucher).
-- Problèmes/écarts à noter : `<Toaster />` sonner non monté, métadonnées SEO encore « Lovable App », pas de i18n FR, placeholder d'accueil à remplacer.
+Remplacement complet de l'ancien modèle (commission 12/15 % retenue sur le professeur, 3 reports, cours d'essai indépendant) par les packs, les frais BARA facturés au parent et les grades.
 
-## B. Architecture recommandée
-- Front SSR TanStack Start, FR par défaut, mobile-first. Routes publiques en SSR (SEO), espaces connectés sous `src/routes/_authenticated/`.
-- Backend Lovable Cloud (Postgres + Auth + Storage). Aucune Edge Function : toute la logique passe par `createServerFn` ; les endpoints externes futurs (webhooks paiement) iront sous `src/routes/api/public/*`.
-- Rôles dans une table `user_roles` séparée + fonction `has_role()` SECURITY DEFINER. RLS activée partout.
-- Argent : montants **entiers FCFA**, prix toujours recalculés côté serveur depuis l'offre. Tables financières inaccessibles au client (service_role uniquement).
-- Fuseau de référence `Africa/Abidjan` centralisé dans un helper serveur (annulations, créneaux).
-- Couche paiement = **abstraction seulement** : statuts, références, écrans, ledger conceptuel. Aucun provider, aucun faux escrow, aucune transaction simulée présentée comme réelle.
-- Design system : tokens sémantiques dans `src/styles.css` + variantes shadcn (aucune couleur en dur dans les composants). Direction : identité ivoirienne moderne et rassurante, distincte de Superprof (à valider en Phase 0).
+## Ce qui est supprimé
 
-## C. Écart existant → cible
-| Domaine | Existant | À construire |
+- Commission retenue sur le professeur et tout calcul 88 % / 85 %.
+- Système des 3 reports et les compensations associées (retenues 10 % / 25 %, force majeure payante, litige automatique au 4e report).
+- Cours d'essai indépendant du pack.
+- Les données de test existantes (réservations, paiements, portefeuilles, retraits, litiges) sont effacées comme demandé.
+
+## Ce qui est conservé
+
+Agenda et disponibilités du professeur, comptes-rendus de séance, paiement JEKO (réutilisé pour l'achat d'un pack ou d'une séance seule), écran de paiement avec compte à rebours de 15 minutes, wallet parent TIKERAMA distinct du compte de rémunération du professeur.
+
+## 1. Les cinq packs
+
+| Pack | Séances | Séances payées au prof | Validité | Frais BARA |
+|---|---|---|---|---|
+| Découverte | 5 | 4 (1 offerte par BARA) | 45 jours | 10 % |
+| Suivi | 4 | 4 | 45 jours | 9 % |
+| Renfort | 8 | 8 | 60 jours | 8 % |
+| Intensif | 12 | 12 | 90 jours | 7 % |
+| Examen | 20 | 20 | 10 semaines | 6 % |
+| Séance seule | 1 | 1 | — | 12 % |
+
+Les frais sont calculés sur la rémunération du professeur puis ajoutés au prix parent, et toujours **affichés en francs** (jamais en pourcentage). Le pack Découverte est limité à une fois par famille ; la séance offerte n'est pas rémunérée.
+
+Exemple affiché : tarif professeur 8 000 F × 8 séances = 64 000 F, frais BARA 5 120 F, total parent 69 120 F.
+
+## 2. Programmation progressive
+
+Le parent achète le pack, puis programme chaque séance depuis l'agenda réel du professeur, sans paiement supplémentaire. Chaque programmation décrémente le solde. Passé la date d'expiration, plus aucune séance ne peut être programmée, mais les séances déjà programmées avant l'expiration restent valables même si elles tombent après.
+
+## 3. Report et annulation
+
+- Chaque séance peut être reportée **une seule fois**.
+- Plus de 24 h avant : report possible, la séance reste au crédit du pack.
+- Moins de 24 h avant : séance consommée, perdue.
+- Après un premier report, toute nouvelle annulation ou report fait perdre la séance.
+- Séance seule perdue : aucun remboursement.
+
+## 4. Grades du professeur
+
+Cumulatifs, acquis à vie, jamais rétrogradés automatiquement.
+
+| Grade | Plafond / séance | Conditions |
 |---|---|---|
-| Backend/DB | rien | Cloud + ~24 tables + RLS + grants |
-| Auth/rôles | rien | email/mot de passe, reset, `_authenticated`, `user_roles` |
-| Pages | 1 placeholder | ~40 routes (public/parent/pro/admin) |
-| Design | thème par défaut | identité + design system complet |
-| Catalogue | rien | catégories/matières/niveaux, dont langues ivoiriennes |
-| Réservation | rien | offres, dispos, unique + récurrent, annulations |
-| Finance | rien | abstraction paiement/escrow/litiges (sans provider) |
-Rien à supprimer ni à réécrire : le template est vierge, on construit dessus.
+| Vérifié | 10 000 F | identité et informations validées |
+| Confirmé | 15 000 F | 10 séances, note ≥ 4,5, comptes-rendus ≥ 90 %, annulations ≤ 10 % |
+| Référent | 25 000 F | 30 séances, note ≥ 4,7, comptes-rendus ≥ 95 %, annulations ≤ 7 % |
+| Coordinateur | 40 000 F | 60 séances, note ≥ 4,8, comptes-rendus ≥ 98 %, annulations ≤ 5 % |
 
-## D. Plan par phases
-**Phase 0 — Fondations.** Objectif : socle technique et visuel. Design system + tokens + layout mobile-first (bottom nav mobile, header desktop), Toaster, SEO/métadonnées FR, activation Lovable Cloud, auth email/mot de passe + reset + vérification, `user_roles` + `has_role()`, `profiles`, `children`, `teacher_profiles`, RLS + grants, page d'accueil réelle à `/`. Dépendances : aucune. Risques : modèle de rôles, RLS. Tests : inscription/connexion/reset, accès par rôle, isolation inter-utilisateurs. Résultat : comptes fonctionnels, identité en place.
+Le tarif saisi par le professeur est plafonné côté serveur par son grade. Le classement dans la recherche combine le grade et les performances récentes : un grade élevé remonte, des performances récentes dégradées font redescendre sans perte de grade ni de plafond. La modération grave reste manuelle côté admin.
 
-**Phase 1 — Marketplace & catalogue.** `categories`, `subjects`, `levels` (avec langues ivoiriennes comme catégorie propre), `teacher_offers` (unique `teacher_id+subject_id`), `offer_levels`, pages `/`, `/professeurs`, `/professeurs/:id`, `/matieres`, `/matieres/:slug`, recherche + filtres (matière, niveau, format, ville/commune, prix, note). Dép. P0. Risques : perf recherche, fuite de PII sur profils publics. Tests : filtres, lecture anon limitée aux colonnes sûres. Résultat : catalogue navigable.
+## 5. Compte de rémunération du professeur
 
-**Phase 2 — Espace professeur.** `/pro/*` : profil, offres (matière + niveaux + tarif/séance + durée + formats), `availabilities` + `availability_exceptions`, planning, demandes (accepter/refuser). Dép. P1. Risques : conflits de créneaux, cohérence durée/tarif. Tests : unicité offre, chevauchement de dispos. Résultat : offre réelle publiable.
+Trois états par séance :
 
-**Phase 3 — Espace parent / étudiant.** `/compte`, enfants (profil obligatoire, compte facultatif en lecture seule), recherche depuis le compte, adresses privées, `/reserver/:offerId` (choix bénéficiaire, offre, créneau, récap serveur). Dép. P2. Risques : confusion profil/compte enfant, exposition d'adresse. Tests : parent voit seulement ses enfants, enfant en lecture seule stricte. Résultat : tunnel de réservation prêt.
+- **En attente** — séance payée (pack ou séance seule) mais pas encore réalisée.
+- **Validé** — séance réalisée **et** compte-rendu rempli. Le passage sans compte-rendu est refusé côté serveur.
+- **Payé** — rémunération versée.
 
-**Phase 4 — Réservations.** `booking_series`, `bookings`, `sessions`, réservation unique et récurrente (série → N séances), anti-double-booking en base, statuts de séance (planifiée / effectuée / annulée / no-show client / no-show prof / litige), politique d'annulation 24h/12h calculée serveur en Africa/Abidjan, `/reservations`, `/reservations/:id`. Dép. P3. Risques : concurrence, dates/récurrence. Tests : génération de série, matrice d'annulation, double réservation impossible. Résultat : réservations complètes sans argent réel.
+Seul le montant « Validé » est retirable. Traitement groupé automatique le 5 de chaque mois, sans frais. Retrait supplémentaire à la demande : 2 % du montant, minimum 500 F, calculé côté serveur.
 
-**Phase 5 — Administration.** `/admin/*`, `verifications` (identité vs qualifications, documents en bucket privé, motif de rejet), modération offres/avis, `reviews` liés à une séance effectuée, `disputes`, suspension de compte, `audit_logs`, statistiques. Dép. P4. Risques : accès aux documents, privilèges. Tests : accès admin uniquement, URLs signées. Résultat : plateforme supervisable.
+## Détails techniques
 
-**Phase 6 — Préparation paiements (sans provider).** `payments`, `escrow_ledger` (append-only), `refunds`, `commissions`, `payout_methods`, `payouts`, `/paiements`, `/pro/revenus`, `/pro/payouts`, `/admin/escrow`, `/admin/payouts`, écrans de paiement avec états en attente/succès/échec clairement marqués « intégration à venir », points d'extension provider + emplacement des webhooks. Dép. P5. Risques : ne jamais laisser croire qu'un escrow réel existe. Tests : invariants du ledger, aucun accès client aux tables financières. Résultat : architecture prête pour l'intégration financière réelle.
+**Base de données (migrations)**
 
-## E. Première phase à implémenter
-**Phase 0**, dans cet ordre : identité visuelle + design system → layout responsive + accueil réel → activation Lovable Cloud → auth + rôles + profils (parent / enfant / professeur) + RLS → vérification et tests.
+- `pack_types` : référentiel des 5 formules (séances, séances offertes, jours de validité, taux de frais) + ligne séance seule.
+- `packs` : pack acheté (parent, enfant, professeur, offre, tarif prof figé, frais en francs, total, sessions totales/offertes/consommées/restantes, `expires_at`, statut).
+- `bookings` : rattachement `pack_id`, remplacement de `reschedule_count` par `reschedule_used boolean`, statut `lost` pour séance consommée‑perdue ; suppression de `reschedule_ledger`, `reschedule_proposed_fee_rate` et des colonnes de compensation.
+- `teacher_earnings` : une ligne par séance rémunérée (`pending` / `validated` / `paid`), créée à l'achat, passée à `validated` par trigger uniquement si un `session_reports` existe.
+- `teacher_grades` : grade acquis + date, recalcul par fonction `refresh_teacher_grade(uuid)` déclenchée après séance validée ou avis.
+- `payments` : `commission_rate`/`commission_fcfa` remplacés par `platform_fee_fcfa` et `teacher_amount_fcfa` (100 % du tarif).
+- Fonctions serveur : `quote_pack(offer_id, pack_slug)`, `purchase_pack`, `schedule_pack_session`, `reschedule_session`, `cancel_session`, `validate_session_earning`, `request_extra_withdrawal`, `process_monthly_payouts` (cron le 5), `search_teachers` enrichie du grade et d'un score récent.
+- Suppression : `create_booking_payment` ancienne version, `propose_reschedule`, `respond_reschedule`, `cancel_reschedule_proposal`, `force_majeure_reschedule`, `_open_reschedule_limit_dispute`, `quote_booking_refund`, `release_escrow_to_teacher` (remplacée par la validation par compte-rendu).
+- Purge des données de test dans la même migration.
 
-## Décisions / validations attendues avant de coder
-1. Direction visuelle (palette et typographie) — je peux proposer 2-3 options.
-2. Nom affiché et ton : « Faut Bara » tel quel, avec baseline ?
-3. Compte enfant connectable dès la Phase 0 ou plus tard (profil seul d'abord) ?
-4. Durée de séance libre par offre (ex. 60/90/120 min) — confirmé ?
-5. Zones au lancement : Abidjan (communes) puis autres villes ?
-6. Taux de commission et délai de libération après séance (peuvent rester paramétrables, valeurs par défaut à fixer).
+**Interfaces**
+
+- Page professeur publique : choix du pack, prix en francs avec rémunération et frais distingués, bouton d'achat.
+- `/reserver/$offerId` : achat de pack ou séance seule → paiement JEKO existant.
+- Nouveau « Mes packs » côté parent : solde, expiration, programmation depuis l'agenda du professeur.
+- Espace professeur : tarif plafonné par grade, badge de grade, compte de rémunération en attente / validé / payé, rappel « compte-rendu requis ».
+- `/comment-fonctionne-le-paiement` réécrite sans commission.
+- Suppression de `booking-lifecycle-controls` (ancien report) remplacé par un contrôle « reporter une fois ».
+
+**Découpage**
+
+1. Migration socle (tables, purge, fonctions de devis et d'achat).
+2. Paiement JEKO branché sur les packs et la séance seule.
+3. Programmation, report, annulation.
+4. Grades, plafonds, classement recherche.
+5. Compte de rémunération et retraits.
