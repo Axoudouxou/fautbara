@@ -29,8 +29,16 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
+/**
+ * Date locale au format "YYYY-MM-DD". Volontairement pas `toISOString()` :
+ * pour un navigateur en avance sur UTC (ex. Europe/Paris), minuit local
+ * tombe la veille en UTC et le créneau du mardi devenait « lundi ».
+ */
 function toDateStr(date: Date) {
-  return date.toISOString().slice(0, 10);
+  const y = date.getFullYear();
+  const m = (date.getMonth() + 1).toString().padStart(2, "0");
+  const d = date.getDate().toString().padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function hhmmToMinutes(hhmm: string) {
