@@ -88,33 +88,18 @@ function TeacherRequestsPage() {
   const reportByBooking = new Map((reportsQuery.data ?? []).map((r) => [r.booking_id, r]));
 
   const statusMutation = useMutation({
-    mutationFn: async ({
-      id,
-      status,
-      reason,
-    }: {
-      id: string;
-      status: "completed";
-      reason?: string | null;
-    }) => {
-      if (status === "completed") {
-        const { error } = await supabase.rpc("complete_booking", { p_booking_id: id });
-        if (error) throw error;
-        return;
-      }
-      const { error } = await supabase.rpc("respond_booking_request", {
-        p_booking_id: id,
-        p_accept: status === "accepted",
-        ...(reason ? { p_reason: reason } : {}),
-      });
+    mutationFn: async ({ id }: { id: string; status: "completed" }) => {
+      const { error } = await supabase.rpc("complete_booking", { p_booking_id: id });
       if (error) throw error;
     },
     onSuccess: (_data, variables) => {
-      toast.success("Demande mise à jour");
+      toast.success("Séance clôturée");
       queryClient.invalidateQueries({ queryKey: ["teacher-bookings", user.id] });
-      // Une fois la séance clôturée, on invite le professeur à remplir son compte-rendu.
-      if (variables.status === "completed") setReportBookingId(variables.id);
+      queryClient.invalidateQueries({ queryKey: ["teacher-earnings"] });
+      // Le compte-rendu conditionne la validation de la rémunération.
+      setReportBookingId(variables.id);
     },
+
     onError: (err) =>
       toast.error("Mise à jour impossible", {
         description: err instanceof Error ? err.message : undefined,
