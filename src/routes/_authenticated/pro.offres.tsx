@@ -305,10 +305,17 @@ function TeacherOffersPage() {
       toast.error("Renseignez le titre et le tarif");
       return;
     }
+    if (rateCap !== null && Number(f.price) > rateCap) {
+      toast.error("Tarif au-dessus de votre plafond", {
+        description: `Votre grade actuel autorise au maximum ${rateCap.toLocaleString("fr-FR")} FCFA par séance.`,
+      });
+      return;
+    }
     if (!f.offers_home && !f.offers_online) {
       toast.error("Choisissez au moins un format de cours");
       return;
     }
+
     saveMutation.mutate({ ...f, status });
   }
 
