@@ -3,33 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Attendance, HomeworkDone, ProgressLevel } from "@/lib/session-reports";
 
-export type PendingRescheduleBooking = {
-  id: string;
-  status: string;
-  scheduled_at: string;
-  reschedule_count: number;
-  reschedule_proposed_at: string | null;
-  reschedule_proposed_by: string | null;
-  reschedule_proposed_fee_rate: number | null;
-  reschedule_previous_at: string | null;
-};
-
 export type ConversationTimelineEvent =
   | {
-      kind: "trial_confirmed" | "booking_confirmed";
+      kind: "booking_confirmed";
       id: string;
       sortAt: string;
       scheduledAt: string;
-    }
-  | {
-      kind: "reschedule_done";
-      id: string;
-      sortAt: string;
-      previousAt: string;
-      newAt: string;
-      forceMajeure: boolean;
-      reason: string | null;
-      feeRate: number;
+      isFreeSession: boolean;
+      sessionIndex: number | null;
     }
   | {
       kind: "session_report";
@@ -44,7 +25,6 @@ export type ConversationTimelineEvent =
     };
 
 export type ConversationSystemContext = {
-  pending: PendingRescheduleBooking | null;
   reminder: { scheduledAt: string } | null;
   timeline: ConversationTimelineEvent[];
 };
@@ -52,12 +32,11 @@ export type ConversationSystemContext = {
 const REMINDER_WINDOW_HOURS = 48;
 
 /**
- * Corrèle une conversation (apprenant, professeur, enfant) aux réservations
- * réelles de ce binôme pour en tirer les cartes système du fil : report en
- * attente, rappel de séance proche, et l'historique (confirmation, essai,
- * reports effectués). Aucune nouvelle table : bookings/reschedule_ledger
- * existent déjà et sont lisibles par les deux parties via leurs policies
- * RLS habituelles.
+ * Corrèle une conversation (apprenant, intervenant, enfant) aux séances
+ * réelles de ce binôme pour en tirer les cartes système du fil : rappel de
+ * séance proche, séances programmées et comptes-rendus. Aucune nouvelle
+ * table : bookings et session_reports sont déjà lisibles par les deux
+ * parties via leurs policies RLS habituelles.
  */
 export function useConversationSystemContext(
   teacherId: string,
@@ -71,9 +50,7 @@ export function useConversationSystemContext(
     queryFn: async (): Promise<ConversationSystemContext> => {
       let q = supabase
         .from("bookings")
-        .select(
-          "id, status, scheduled_at, created_at, reschedule_count, reschedule_proposed_at, reschedule_proposed_by, reschedule_proposed_fee_rate, reschedule_previous_at",
-        )
+        .select("id, status, scheduled_at, created_at, is_free_session, session_index")
         .eq("teacher_id", teacherId)
         .eq("requester_id", learnerId)
         .in("status", ["accepted", "completed"]);
@@ -83,33 +60,21 @@ export function useConversationSystemContext(
 
       const rows = bookings ?? [];
       const ids = rows.map((b) => b.id);
-      const [ledgerRes, reportsRes] = await Promise.all([
+      const reportsRes =
         ids.length > 0
-          ? supabase
-              .from("reschedule_ledger")
-              .select("id, booking_id, created_at, previous_scheduled_at, new_scheduled_at, is_force_majeure, force_majeure_reason, fee_rate")
-              .in("booking_id", ids)
-              .order("created_at", { ascending: true })
-          : Promise.resolve({ data: [], error: null }),
-        ids.length > 0
-          ? supabase
+          ? await supabase
               .from("session_reports")
               .select(
                 "id, created_at, attendance, content_note, progress_level, homework_done, engagement_rating, next_steps",
               )
               .in("booking_id", ids)
               .order("created_at", { ascending: true })
-          : Promise.resolve({ data: [], error: null }),
-      ]);
-      if (ledgerRes.error) throw ledgerRes.error;
+          : { data: [], error: null };
       if (reportsRes.error) throw reportsRes.error;
-
-      const pending = rows.find((b) => b.reschedule_proposed_at) ?? null;
 
       const now = Date.now();
       const reminder =
         rows
-          .filter((b) => !b.reschedule_proposed_at)
           .map((b) => b.scheduled_at)
           .filter((at) => {
             const diffH = (new Date(at).getTime() - now) / 3_600_000;
@@ -117,23 +82,14 @@ export function useConversationSystemContext(
           })
           .sort()[0] ?? null;
 
-      const firstBookingId = rows[0]?.id ?? null;
       const timeline: ConversationTimelineEvent[] = [
         ...rows.map((b): ConversationTimelineEvent => ({
-          kind: b.id === firstBookingId ? "trial_confirmed" : "booking_confirmed",
+          kind: "booking_confirmed",
           id: `booking-${b.id}`,
           sortAt: b.created_at,
           scheduledAt: b.scheduled_at,
-        })),
-        ...(ledgerRes.data ?? []).map((l) => ({
-          kind: "reschedule_done" as const,
-          id: `reschedule-${l.id}`,
-          sortAt: l.created_at,
-          previousAt: l.previous_scheduled_at,
-          newAt: l.new_scheduled_at,
-          forceMajeure: l.is_force_majeure,
-          reason: l.force_majeure_reason,
-          feeRate: Number(l.fee_rate),
+          isFreeSession: b.is_free_session,
+          sessionIndex: b.session_index,
         })),
         ...(reportsRes.data ?? []).map((r) => ({
           kind: "session_report" as const,
@@ -148,22 +104,7 @@ export function useConversationSystemContext(
         })),
       ].sort((a, b) => a.sortAt.localeCompare(b.sortAt));
 
-      return {
-        pending: pending
-          ? {
-              id: pending.id,
-              status: pending.status,
-              scheduled_at: pending.scheduled_at,
-              reschedule_count: pending.reschedule_count,
-              reschedule_proposed_at: pending.reschedule_proposed_at,
-              reschedule_proposed_by: pending.reschedule_proposed_by,
-              reschedule_proposed_fee_rate: pending.reschedule_proposed_fee_rate,
-              reschedule_previous_at: pending.reschedule_previous_at,
-            }
-          : null,
-        reminder: reminder ? { scheduledAt: reminder } : null,
-        timeline,
-      };
+      return { reminder: reminder ? { scheduledAt: reminder } : null, timeline };
     },
   });
 }
