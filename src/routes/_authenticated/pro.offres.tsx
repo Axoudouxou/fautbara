@@ -419,12 +419,22 @@ function TeacherOffersPage() {
                 type="number"
                 required
                 min={1000}
-                max={500000}
+                max={rateCap ?? 500000}
                 step={500}
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
                 className={inputClass}
               />
+              {rateCap !== null && (
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Votre grade actuel autorise un tarif maximum de{" "}
+                  <span className="font-semibold text-foreground">
+                    {rateCap.toLocaleString("fr-FR")} FCFA
+                  </span>{" "}
+                  par séance. Ce plafond augmente avec votre grade.
+                </p>
+              )}
+
             </div>
             <div>
               <label htmlFor="of-duration" className="text-sm font-semibold text-foreground">
