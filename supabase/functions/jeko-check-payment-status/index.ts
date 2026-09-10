@@ -39,13 +39,14 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Session invalide" }, 401);
     }
 
-    // RLS garantit que seuls le payeur ou le professeur de la réservation
+    // RLS garantit que seuls le payeur ou l'intervenant de la formule
     // peuvent lire cette ligne.
     const { data: payment, error: paymentError } = await userClient
       .from("payments")
       .select("id, status, amount_fcfa, provider_reference")
-      .eq("booking_id", bookingId)
+      .eq("pack_id", packId)
       .maybeSingle();
+
     if (paymentError) throw paymentError;
     if (!payment) {
       return jsonResponse({ status: "none" });
