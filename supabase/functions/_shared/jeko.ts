@@ -346,59 +346,45 @@ export function extractTransferReference(body: unknown): string | null {
 
 /**
  * Applique l'état authoritatif Jèko (relu via getJekoPaymentRequest, jamais
- * le seul corps du webhook) à la ligne payments correspondante. Idempotent :
+ * le seul corps du webhook) à la ligne payments de la formule. Idempotent :
  * ne touche que les paiements encore "pending", donc un webhook rejoué ou
- * une vérification manuelle répétée ne double-crédite jamais rien. Exécuté
- * uniquement avec la clé de service (RLS contournée volontairement, ce
- * chemin ne passe jamais par un JWT utilisateur).
+ * une vérification manuelle répétée n'active jamais deux fois la formule.
+ * Exécuté uniquement avec la clé de service (RLS contournée volontairement,
+ * ce chemin ne passe jamais par un JWT utilisateur).
  */
 export async function applyJekoPaymentStatus(
   serviceClient: SupabaseClient,
   paymentId: string,
-  bookingId: string,
+  packId: string,
   jekoResult: JekoPaymentRequest,
 ): Promise<"paid" | "cancelled" | "pending"> {
   if (jekoResult.status === "success") {
-    const { data, error } = await serviceClient
+    const { error: txError } = await serviceClient
       .from("payments")
-      .update({
-        status: "paid",
-        escrow_status: "held",
-        paid_at: new Date().toISOString(),
-        provider_transaction_id: jekoResult.transaction?.id ?? null,
-      })
+      .update({ provider_transaction_id: jekoResult.transaction?.id ?? null })
       .eq("id", paymentId)
-      .eq("status", "pending")
-      .select("id");
+      .eq("status", "pending");
+    if (txError) throw txError;
+
+    // Marque le paiement réglé puis active la formule (crée les
+    // rémunérations en attente). No-op si déjà réglée.
+    const { error } = await serviceClient.rpc("mark_pack_payment_paid", {
+      p_pack_id: packId,
+      p_method: jekoResult.paymentMethod ?? null,
+    });
     if (error) throw error;
-    if (data && data.length > 0) {
-      // Bascule la réservation (verrou de 15 min → confirmée) et notifie le
-      // professeur ; no-op si elle n'était pas en pending_payment (ancien
-      // flux "accepted" déjà en place, ou déjà confirmée par ailleurs).
-      const { error: confirmError } = await serviceClient.rpc("confirm_paid_booking", {
-        p_booking_id: bookingId,
-      });
-      if (confirmError) throw confirmError;
-    }
     return "paid";
   }
 
   if (jekoResult.status === "error") {
-    const { data, error } = await serviceClient
-      .from("payments")
-      .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
-      .eq("id", paymentId)
-      .eq("status", "pending")
-      .select("id");
+    const { error } = await serviceClient.rpc("fail_pack_payment", {
+      p_pack_id: packId,
+      p_reason: jekoResult.errorReason ?? null,
+    });
     if (error) throw error;
-    if (data && data.length > 0) {
-      const { error: cancelError } = await serviceClient.rpc("cancel_unpaid_booking_hold", {
-        p_booking_id: bookingId,
-      });
-      if (cancelError) throw cancelError;
-    }
     return "cancelled";
   }
 
   return "pending";
 }
+
