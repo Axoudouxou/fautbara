@@ -23,10 +23,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Authentification requise" }, 401);
     }
 
-    const { bookingId, paymentMethod } = await req.json();
-    if (typeof bookingId !== "string" || !bookingId) {
-      return jsonResponse({ error: "bookingId requis" }, 400);
+    const { packId, paymentMethod } = await req.json();
+    if (typeof packId !== "string" || !packId) {
+      return jsonResponse({ error: "packId requis" }, 400);
     }
+
     if (!ALLOWED_METHODS.includes(paymentMethod)) {
       return jsonResponse({ error: "Moyen de paiement invalide" }, 400);
     }
