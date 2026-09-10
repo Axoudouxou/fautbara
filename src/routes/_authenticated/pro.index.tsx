@@ -195,9 +195,7 @@ function TeacherDashboard() {
 
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <p className="text-sm text-muted-foreground">Offres créées</p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+
         <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-sm text-muted-foreground">Offres publiées</p>
           <p className="mt-1 font-display text-2xl font-bold text-foreground">
