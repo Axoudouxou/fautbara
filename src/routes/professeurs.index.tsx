@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 
 import { getCatalog, searchFiltersSchema, searchTeachers, type TeacherCard } from "@/lib/catalog.functions";
+import { gradeLabel } from "@/lib/packs";
+
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { Slider } from "@/components/ui/slider";
 
@@ -354,6 +356,12 @@ function TeacherRow({
                 Vérifié
               </span>
             ) : null}
+            {teacher.grade && teacher.grade !== "verified" ? (
+              <span className="inline-flex shrink-0 items-center rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-bold text-primary-soft-foreground">
+                {gradeLabel(teacher.grade)}
+              </span>
+            ) : null}
+
           </div>
 
           <p className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-muted-foreground">

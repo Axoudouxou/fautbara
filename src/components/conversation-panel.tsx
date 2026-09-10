@@ -22,7 +22,6 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
 import {
   useConversationSystemContext,
   type ConversationTimelineEvent,
@@ -361,44 +360,8 @@ export function ConversationPanel({
         </div>
       )}
 
-      {systemContext?.pending && (
-        <div className="mx-4 mt-3 rounded-2xl border border-primary/30 bg-primary-soft/40 p-4 sm:mx-6">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="size-4 text-primary" aria-hidden />
-            <p className="text-sm font-semibold text-foreground">Proposition de report</p>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Ancien créneau :{" "}
-            <span className="font-semibold text-foreground">
-              {new Date(systemContext.pending.scheduled_at).toLocaleString("fr-FR", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
-            </span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Nouveau créneau proposé :{" "}
-            <span className="font-semibold text-foreground">
-              {new Date(systemContext.pending.reschedule_proposed_at!).toLocaleString("fr-FR", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
-            </span>
-          </p>
-          <BookingLifecycleControls
-            booking={systemContext.pending}
-            role={role === "teacher" ? "teacher" : "learner"}
-            userId={userId}
-            invalidateKeys={[systemContextKey]}
-          />
-          <Link
-            to={role === "teacher" ? "/pro/demandes" : "/compte/reservations"}
-            className="mt-2 inline-block text-xs font-semibold text-primary hover:underline"
-          >
-            Voir les détails
-          </Link>
-        </div>
-      )}
+
+
 
       {tab === "chat" && canChat && (
         <>
@@ -756,11 +719,15 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
   const dateTime = (iso: string) =>
     new Date(iso).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 
-  if (event.kind === "trial_confirmed" || event.kind === "booking_confirmed") {
+  if (event.kind === "booking_confirmed") {
     return (
       <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
         <p className="text-xs font-semibold text-foreground">
-          {event.kind === "trial_confirmed" ? "Cours d'essai confirmé" : "Réservation confirmée"}
+          {event.isFreeSession
+            ? "Séance offerte programmée"
+            : event.sessionIndex
+              ? `Séance ${event.sessionIndex} programmée`
+              : "Séance programmée"}
         </p>
         <p className="mt-0.5 text-[11px] text-muted-foreground">{dateTime(event.scheduledAt)}</p>
       </div>
@@ -776,27 +743,9 @@ function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
     );
   }
 
-  if (event.kind !== "reschedule_done") return null;
-
-  return (
-    <div className="mx-auto max-w-[90%] rounded-2xl border border-border bg-secondary/40 px-4 py-2.5 text-center">
-      <p className="text-xs font-semibold text-foreground">
-        {event.forceMajeure ? "Report pour cas de force majeure" : "Report confirmé"}
-      </p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">
-        {dateTime(event.previousAt)} → {dateTime(event.newAt)}
-      </p>
-      {event.reason && (
-        <p className="mt-1 text-[11px] text-muted-foreground">Motif : {event.reason}</p>
-      )}
-      {event.feeRate > 0 && (
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          Retenue appliquée : {Math.round(event.feeRate * 100)} %
-        </p>
-      )}
-    </div>
-  );
+  return null;
 }
+
 
 /** Détail d'un compte-rendu : réutilisé dans la carte système du fil et dans le journal de bord. */
 function SessionReportEntry({

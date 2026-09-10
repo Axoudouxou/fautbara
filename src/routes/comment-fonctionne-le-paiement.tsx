@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, ShieldCheck, Wallet } from "lucide-react";
+import { CalendarCheck, Coins, ShieldCheck, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/comment-fonctionne-le-paiement")({
   head: () => ({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/comment-fonctionne-le-paiement")({
       {
         name: "description",
         content:
-          "Comment le paiement, la sécurité des fonds et la commission de BARA fonctionnent pour les professeurs et les familles.",
+          "Formules de séances, frais BARA payés par la famille et rémunération intégrale de l'intervenant : le fonctionnement du paiement sur BARA.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -26,24 +26,46 @@ function PaymentExplainedPage() {
       <div className="mt-8 space-y-8">
         <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-            <ShieldCheck className="size-5" aria-hidden />
+            <Coins className="size-5" aria-hidden />
           </span>
-          <h2 className="mt-4 font-display font-bold text-foreground">Paiement sécurisé</h2>
+          <h2 className="mt-4 font-display font-bold text-foreground">
+            La famille achète une formule de séances
+          </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Lorsqu'une famille réserve un cours, le paiement est effectué sur BARA et conservé en
-            garantie jusqu'à la séance. Ni le professeur ni la famille n'ont à se soucier d'un
-            paiement en retard ou d'un rendez-vous manqué.
+            La famille choisit une formule (Découverte, Suivi, Renfort, Intensif, Examen) ou une
+            séance seule. Le prix affiché sépare toujours clairement, en francs, la rémunération de
+            l&apos;intervenant et les frais BARA. Les frais sont payés une seule fois, à
+            l&apos;achat : il n&apos;y a aucun abonnement, et ils diminuent quand la formule est
+            plus grande.
           </p>
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-            <Clock className="size-5" aria-hidden />
+            <CalendarCheck className="size-5" aria-hidden />
           </span>
-          <h2 className="mt-4 font-display font-bold text-foreground">Versement au professeur</h2>
+          <h2 className="mt-4 font-display font-bold text-foreground">
+            Les séances se programment ensuite, une par une
+          </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Une fois la séance terminée, les fonds sont automatiquement libérés au professeur
-            quelques jours après, le temps de permettre le signalement d'un éventuel litige.
+            Une fois la formule payée, la famille programme ses séances dans l&apos;agenda réel de
+            l&apos;intervenant, à son rythme et sans paiement supplémentaire, pendant toute la durée
+            de validité de la formule. Chaque séance peut être reportée une fois si le changement est
+            annoncé plus de 24 h à l&apos;avance.
+          </p>
+        </section>
+
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <ShieldCheck className="size-5" aria-hidden />
+          </span>
+          <h2 className="mt-4 font-display font-bold text-foreground">
+            L&apos;intervenant perçoit 100 % de son tarif
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Aucune commission n&apos;est retenue sur le tarif de l&apos;intervenant : les frais BARA
+            sont facturés à la famille, séparément. La rémunération d&apos;une séance est validée dès
+            que la séance est réalisée et que son compte-rendu est rempli.
           </p>
         </section>
 
@@ -51,11 +73,12 @@ function PaymentExplainedPage() {
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
             <Wallet className="size-5" aria-hidden />
           </span>
-          <h2 className="mt-4 font-display font-bold text-foreground">Commission de la plateforme</h2>
+          <h2 className="mt-4 font-display font-bold text-foreground">Versement des revenus</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            BARA prélève une commission de 15 % sur le montant de chaque séance payée. Elle couvre
-            la sécurisation des paiements, la vérification des profils et la gestion des litiges.
-            Le professeur reçoit le reste du montant, versé directement sur son compte.
+            Les rémunérations validées s&apos;accumulent dans l&apos;espace revenus de
+            l&apos;intervenant. Un versement groupé est proposé chaque mois sans frais ; tout retrait
+            supplémentaire demandé en dehors de ce versement reste possible, avec des frais à la
+            charge de l&apos;intervenant.
           </p>
         </section>
       </div>
@@ -64,7 +87,7 @@ function PaymentExplainedPage() {
         to="/devenir-professeur"
         className="mt-8 inline-flex text-sm font-semibold text-primary hover:underline"
       >
-        ← Retour à « Devenir professeur »
+        ← Retour à « Devenir intervenant »
       </Link>
     </div>
   );

@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
   if (paymentRequestId) {
     const { data: payment, error: lookupError } = await serviceClient
       .from("payments")
-      .select("id, status, amount_fcfa, booking_id")
+      .select("id, status, amount_fcfa, pack_id")
       .eq("provider_reference", paymentRequestId)
       .maybeSingle();
 
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
           return new Response("Montant incohérent", { status: 409 });
         }
 
-        await applyJekoPaymentStatus(serviceClient, payment.id, payment.booking_id, jekoResult);
+        await applyJekoPaymentStatus(serviceClient, payment.id, payment.pack_id, jekoResult);
         return new Response("ok", { status: 200 });
       } catch (err) {
         console.error("jeko-webhook: erreur de traitement paiement", err);

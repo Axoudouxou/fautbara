@@ -23,10 +23,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Authentification requise" }, 401);
     }
 
-    const { bookingId, paymentMethod } = await req.json();
-    if (typeof bookingId !== "string" || !bookingId) {
-      return jsonResponse({ error: "bookingId requis" }, 400);
+    const { packId, paymentMethod } = await req.json();
+    if (typeof packId !== "string" || !packId) {
+      return jsonResponse({ error: "packId requis" }, 400);
     }
+
     if (!ALLOWED_METHODS.includes(paymentMethod)) {
       return jsonResponse({ error: "Moyen de paiement invalide" }, 400);
     }
@@ -55,8 +56,9 @@ Deno.serve(async (req) => {
       status: string;
     }
     const { data: rawPayment, error: paymentError } = await userClient
-      .rpc("create_booking_payment", { p_booking_id: bookingId })
+      .rpc("create_pack_payment", { p_pack_id: packId })
       .single();
+
     if (paymentError) {
       return jsonResponse({ error: paymentError.message }, 400);
     }
@@ -88,8 +90,9 @@ Deno.serve(async (req) => {
       // jamais la même référence auprès de Jèko.
       reference: `${payment.id}-${Date.now()}`,
       paymentMethod,
-      successUrl: `${appUrl}/paiement/${bookingId}?paiement=succes`,
-      errorUrl: `${appUrl}/paiement/${bookingId}?paiement=echec`,
+      successUrl: `${appUrl}/paiement/${packId}?paiement=succes`,
+      errorUrl: `${appUrl}/paiement/${packId}?paiement=echec`,
+
     });
 
 
@@ -97,8 +100,9 @@ Deno.serve(async (req) => {
       throw new Error("Jèko n'a renvoyé aucune URL de paiement");
     }
 
-    const { error: saveError } = await userClient.rpc("jeko_save_payment_request", {
-      p_booking_id: bookingId,
+    const { error: saveError } = await userClient.rpc("jeko_save_pack_payment_request", {
+      p_pack_id: packId,
+
       p_provider_reference: jekoPayment.id,
       p_method: paymentMethod,
     });

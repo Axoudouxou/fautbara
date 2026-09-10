@@ -20,10 +20,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Authentification requise" }, 401);
     }
 
-    const { bookingId } = await req.json();
-    if (typeof bookingId !== "string" || !bookingId) {
-      return jsonResponse({ error: "bookingId requis" }, 400);
+    const { packId } = await req.json();
+    if (typeof packId !== "string" || !packId) {
+      return jsonResponse({ error: "packId requis" }, 400);
     }
+
 
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -38,13 +39,14 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Session invalide" }, 401);
     }
 
-    // RLS garantit que seuls le payeur ou le professeur de la réservation
+    // RLS garantit que seuls le payeur ou l'intervenant de la formule
     // peuvent lire cette ligne.
     const { data: payment, error: paymentError } = await userClient
       .from("payments")
       .select("id, status, amount_fcfa, provider_reference")
-      .eq("booking_id", bookingId)
+      .eq("pack_id", packId)
       .maybeSingle();
+
     if (paymentError) throw paymentError;
     if (!payment) {
       return jsonResponse({ status: "none" });
@@ -72,7 +74,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ status: "pending" });
     }
 
-    const finalStatus = await applyJekoPaymentStatus(serviceClient, payment.id, bookingId, jekoResult);
+    const finalStatus = await applyJekoPaymentStatus(serviceClient, payment.id, packId, jekoResult);
     return jsonResponse({ status: finalStatus });
   } catch (err) {
     console.error("jeko-check-payment-status error:", err);
