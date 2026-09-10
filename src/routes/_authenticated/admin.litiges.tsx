@@ -48,22 +48,8 @@ function AdminDisputes() {
     Record<string, { resolution: string; refund: string; reschedule: string }>
   >({});
 
-  const forceMajeureQuery = useQuery({
-    queryKey: ["admin-force-majeure-reschedules"],
-    enabled: isAdmin,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("reschedule_ledger")
-        .select(
-          "id, booking_id, requested_by, force_majeure_reason, previous_scheduled_at, new_scheduled_at, created_at",
-        )
-        .eq("is_force_majeure", true)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+
+
 
   const disputesQuery = useQuery({
     queryKey: ["admin-disputes", filter],
