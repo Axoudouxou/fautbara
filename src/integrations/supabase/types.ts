@@ -189,20 +189,19 @@ export type Database = {
           format: string
           hold_expires_at: string | null
           id: string
+          is_free_session: boolean
           is_recurring: boolean
           message: string | null
           no_show_reported_at: string | null
           no_show_reported_by: string | null
           offer_id: string
+          pack_id: string | null
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
+          reschedule_used: boolean
           scheduled_at: string
+          session_index: number | null
           status: string
           status_reason: string | null
           teacher_id: string
@@ -221,20 +220,19 @@ export type Database = {
           format?: string
           hold_expires_at?: string | null
           id?: string
+          is_free_session?: boolean
           is_recurring?: boolean
           message?: string | null
           no_show_reported_at?: string | null
           no_show_reported_by?: string | null
           offer_id: string
+          pack_id?: string | null
           price_fcfa: number
           recurrence_end_date?: string | null
           requester_id: string
-          reschedule_count?: number
-          reschedule_previous_at?: string | null
-          reschedule_proposed_at?: string | null
-          reschedule_proposed_by?: string | null
-          reschedule_proposed_fee_rate?: number | null
+          reschedule_used?: boolean
           scheduled_at: string
+          session_index?: number | null
           status?: string
           status_reason?: string | null
           teacher_id: string
@@ -253,20 +251,19 @@ export type Database = {
           format?: string
           hold_expires_at?: string | null
           id?: string
+          is_free_session?: boolean
           is_recurring?: boolean
           message?: string | null
           no_show_reported_at?: string | null
           no_show_reported_by?: string | null
           offer_id?: string
+          pack_id?: string | null
           price_fcfa?: number
           recurrence_end_date?: string | null
           requester_id?: string
-          reschedule_count?: number
-          reschedule_previous_at?: string | null
-          reschedule_proposed_at?: string | null
-          reschedule_proposed_by?: string | null
-          reschedule_proposed_fee_rate?: number | null
+          reschedule_used?: boolean
           scheduled_at?: string
+          session_index?: number | null
           status?: string
           status_reason?: string | null
           teacher_id?: string
@@ -285,6 +282,13 @@ export type Database = {
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "teacher_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
             referencedColumns: ["id"]
           },
         ]
@@ -692,20 +696,168 @@ export type Database = {
           },
         ]
       }
+      pack_types: {
+        Row: {
+          created_at: string
+          fee_rate: number
+          free_sessions: number
+          is_active: boolean
+          is_pack: boolean
+          name: string
+          once_per_family: boolean
+          sessions_total: number
+          slug: string
+          sort_order: number
+          tagline: string | null
+          validity_days: number
+        }
+        Insert: {
+          created_at?: string
+          fee_rate: number
+          free_sessions?: number
+          is_active?: boolean
+          is_pack?: boolean
+          name: string
+          once_per_family?: boolean
+          sessions_total: number
+          slug: string
+          sort_order?: number
+          tagline?: string | null
+          validity_days: number
+        }
+        Update: {
+          created_at?: string
+          fee_rate?: number
+          free_sessions?: number
+          is_active?: boolean
+          is_pack?: boolean
+          name?: string
+          once_per_family?: boolean
+          sessions_total?: number
+          slug?: string
+          sort_order?: number
+          tagline?: string | null
+          validity_days?: number
+        }
+        Relationships: []
+      }
+      packs: {
+        Row: {
+          address: string | null
+          buyer_id: string
+          child_id: string | null
+          city: string
+          commune: string | null
+          created_at: string
+          duration_minutes: number
+          expires_at: string | null
+          format: string
+          free_sessions: number
+          hold_expires_at: string | null
+          id: string
+          offer_id: string
+          pack_slug: string
+          paid_sessions: number
+          platform_fee_fcfa: number
+          purchased_at: string | null
+          sessions_total: number
+          sessions_used: number
+          status: string
+          teacher_amount_fcfa: number
+          teacher_id: string
+          teacher_rate_fcfa: number
+          total_fcfa: number
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          buyer_id: string
+          child_id?: string | null
+          city?: string
+          commune?: string | null
+          created_at?: string
+          duration_minutes: number
+          expires_at?: string | null
+          format?: string
+          free_sessions?: number
+          hold_expires_at?: string | null
+          id?: string
+          offer_id: string
+          pack_slug: string
+          paid_sessions: number
+          platform_fee_fcfa: number
+          purchased_at?: string | null
+          sessions_total: number
+          sessions_used?: number
+          status?: string
+          teacher_amount_fcfa: number
+          teacher_id: string
+          teacher_rate_fcfa: number
+          total_fcfa: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          buyer_id?: string
+          child_id?: string | null
+          city?: string
+          commune?: string | null
+          created_at?: string
+          duration_minutes?: number
+          expires_at?: string | null
+          format?: string
+          free_sessions?: number
+          hold_expires_at?: string | null
+          id?: string
+          offer_id?: string
+          pack_slug?: string
+          paid_sessions?: number
+          platform_fee_fcfa?: number
+          purchased_at?: string | null
+          sessions_total?: number
+          sessions_used?: number
+          status?: string
+          teacher_amount_fcfa?: number
+          teacher_id?: string
+          teacher_rate_fcfa?: number
+          total_fcfa?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "packs_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "teacher_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "packs_pack_slug_fkey"
+            columns: ["pack_slug"]
+            isOneToOne: false
+            referencedRelation: "pack_types"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount_fcfa: number
-          booking_id: string
           cancelled_at: string | null
-          commission_fcfa: number
-          commission_rate: number
           created_at: string
-          escrow_release_at: string | null
-          escrow_status: string
           id: string
           method: string
+          pack_id: string | null
           paid_at: string | null
           payer_id: string
+          platform_fee_fcfa: number
           provider: string
           provider_notified_at: string | null
           provider_redirect_url: string | null
@@ -716,26 +868,22 @@ export type Database = {
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
-          released_at: string | null
           status: string
+          teacher_amount_fcfa: number
           teacher_id: string
-          teacher_payout_fcfa: number
           updated_at: string
           wallet_used_fcfa: number
         }
         Insert: {
           amount_fcfa: number
-          booking_id: string
           cancelled_at?: string | null
-          commission_fcfa: number
-          commission_rate: number
           created_at?: string
-          escrow_release_at?: string | null
-          escrow_status?: string
           id?: string
           method?: string
+          pack_id?: string | null
           paid_at?: string | null
           payer_id: string
+          platform_fee_fcfa?: number
           provider?: string
           provider_notified_at?: string | null
           provider_redirect_url?: string | null
@@ -746,26 +894,22 @@ export type Database = {
           refund_fcfa?: number
           refund_rate?: number | null
           refunded_at?: string | null
-          released_at?: string | null
           status?: string
+          teacher_amount_fcfa?: number
           teacher_id: string
-          teacher_payout_fcfa: number
           updated_at?: string
           wallet_used_fcfa?: number
         }
         Update: {
           amount_fcfa?: number
-          booking_id?: string
           cancelled_at?: string | null
-          commission_fcfa?: number
-          commission_rate?: number
           created_at?: string
-          escrow_release_at?: string | null
-          escrow_status?: string
           id?: string
           method?: string
+          pack_id?: string | null
           paid_at?: string | null
           payer_id?: string
+          platform_fee_fcfa?: number
           provider?: string
           provider_notified_at?: string | null
           provider_redirect_url?: string | null
@@ -776,19 +920,18 @@ export type Database = {
           refund_fcfa?: number
           refund_rate?: number | null
           refunded_at?: string | null
-          released_at?: string | null
           status?: string
+          teacher_amount_fcfa?: number
           teacher_id?: string
-          teacher_payout_fcfa?: number
           updated_at?: string
           wallet_used_fcfa?: number
         }
         Relationships: [
           {
-            foreignKeyName: "payments_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: true
-            referencedRelation: "bookings"
+            foreignKeyName: "payments_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
             referencedColumns: ["id"]
           },
         ]
@@ -855,62 +998,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      reschedule_ledger: {
-        Row: {
-          booking_id: string
-          created_at: string
-          fee_amount_fcfa: number
-          fee_payee_id: string | null
-          fee_payer_id: string | null
-          fee_rate: number
-          force_majeure_reason: string | null
-          id: string
-          is_force_majeure: boolean
-          new_scheduled_at: string
-          previous_scheduled_at: string
-          requested_by: string
-          reschedule_number: number
-        }
-        Insert: {
-          booking_id: string
-          created_at?: string
-          fee_amount_fcfa?: number
-          fee_payee_id?: string | null
-          fee_payer_id?: string | null
-          fee_rate?: number
-          force_majeure_reason?: string | null
-          id?: string
-          is_force_majeure?: boolean
-          new_scheduled_at: string
-          previous_scheduled_at: string
-          requested_by: string
-          reschedule_number: number
-        }
-        Update: {
-          booking_id?: string
-          created_at?: string
-          fee_amount_fcfa?: number
-          fee_payee_id?: string | null
-          fee_payer_id?: string | null
-          fee_rate?: number
-          force_majeure_reason?: string | null
-          id?: string
-          is_force_majeure?: boolean
-          new_scheduled_at?: string
-          previous_scheduled_at?: string
-          requested_by?: string
-          reschedule_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reschedule_ledger_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       reviews: {
         Row: {
@@ -1093,6 +1180,70 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_earnings: {
+        Row: {
+          amount_fcfa: number
+          booking_id: string | null
+          created_at: string
+          id: string
+          pack_id: string
+          paid_at: string | null
+          status: string
+          teacher_id: string
+          updated_at: string
+          validated_at: string | null
+          withdrawal_request_id: string | null
+        }
+        Insert: {
+          amount_fcfa: number
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          pack_id: string
+          paid_at?: string | null
+          status?: string
+          teacher_id: string
+          updated_at?: string
+          validated_at?: string | null
+          withdrawal_request_id?: string | null
+        }
+        Update: {
+          amount_fcfa?: number
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          pack_id?: string
+          paid_at?: string | null
+          status?: string
+          teacher_id?: string
+          updated_at?: string
+          validated_at?: string | null
+          withdrawal_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_earnings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_earnings_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_earnings_withdrawal_request_id_fkey"
+            columns: ["withdrawal_request_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_withdrawal_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_educations: {
         Row: {
           created_at: string
@@ -1172,6 +1323,27 @@ export type Database = {
           role_title?: string
           sort_order?: number
           start_year?: number | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      teacher_grades: {
+        Row: {
+          achieved_at: string
+          grade: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          achieved_at?: string
+          grade?: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          achieved_at?: string
+          grade?: string
           teacher_id?: string
           updated_at?: string
         }
@@ -1449,7 +1621,9 @@ export type Database = {
           admin_note: string | null
           amount_fcfa: number
           error_message: string | null
+          fee_fcfa: number
           id: string
+          is_monthly: boolean
           jeko_contact_id: string | null
           jeko_fees_fcfa: number
           jeko_reference: string | null
@@ -1467,7 +1641,9 @@ export type Database = {
           admin_note?: string | null
           amount_fcfa: number
           error_message?: string | null
+          fee_fcfa?: number
           id?: string
+          is_monthly?: boolean
           jeko_contact_id?: string | null
           jeko_fees_fcfa?: number
           jeko_reference?: string | null
@@ -1485,7 +1661,9 @@ export type Database = {
           admin_note?: string | null
           amount_fcfa?: number
           error_message?: string | null
+          fee_fcfa?: number
           id?: string
+          is_monthly?: boolean
           jeko_contact_id?: string | null
           jeko_fees_fcfa?: number
           jeko_reference?: string | null
@@ -1524,12 +1702,41 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      _open_reschedule_limit_dispute: {
-        Args: {
-          b: Database["public"]["Tables"]["bookings"]["Row"]
-          p_new_scheduled_at: string
+      activate_pack: {
+        Args: { p_pack_id: string }
+        Returns: {
+          address: string | null
+          buyer_id: string
+          child_id: string | null
+          city: string
+          commune: string | null
+          created_at: string
+          duration_minutes: number
+          expires_at: string | null
+          format: string
+          free_sessions: number
+          hold_expires_at: string | null
+          id: string
+          offer_id: string
+          pack_slug: string
+          paid_sessions: number
+          platform_fee_fcfa: number
+          purchased_at: string | null
+          sessions_total: number
+          sessions_used: number
+          status: string
+          teacher_amount_fcfa: number
+          teacher_id: string
+          teacher_rate_fcfa: number
+          total_fcfa: number
+          updated_at: string
         }
-        Returns: undefined
+        SetofOptions: {
+          from: "*"
+          to: "packs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_can_read_conversation: {
         Args: { p_conversation_id: string; p_user: string }
@@ -1604,7 +1811,9 @@ export type Database = {
           admin_note: string | null
           amount_fcfa: number
           error_message: string | null
+          fee_fcfa: number
           id: string
+          is_monthly: boolean
           jeko_contact_id: string | null
           jeko_fees_fcfa: number
           jeko_reference: string | null
@@ -1753,7 +1962,43 @@ export type Database = {
               isSetofReturn: false
             }
           }
-      cancel_booking: {
+      cancel_pack_payment: {
+        Args: { p_pack_id: string; p_reason?: string }
+        Returns: {
+          address: string | null
+          buyer_id: string
+          child_id: string | null
+          city: string
+          commune: string | null
+          created_at: string
+          duration_minutes: number
+          expires_at: string | null
+          format: string
+          free_sessions: number
+          hold_expires_at: string | null
+          id: string
+          offer_id: string
+          pack_slug: string
+          paid_sessions: number
+          platform_fee_fcfa: number
+          purchased_at: string | null
+          sessions_total: number
+          sessions_used: number
+          status: string
+          teacher_amount_fcfa: number
+          teacher_id: string
+          teacher_rate_fcfa: number
+          total_fcfa: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "packs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cancel_session: {
         Args: { p_booking_id: string; p_reason?: string }
         Returns: {
           address: string | null
@@ -1768,20 +2013,19 @@ export type Database = {
           format: string
           hold_expires_at: string | null
           id: string
+          is_free_session: boolean
           is_recurring: boolean
           message: string | null
           no_show_reported_at: string | null
           no_show_reported_by: string | null
           offer_id: string
+          pack_id: string | null
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
+          reschedule_used: boolean
           scheduled_at: string
+          session_index: number | null
           status: string
           status_reason: string | null
           teacher_id: string
@@ -1793,90 +2037,6 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
-      }
-      cancel_booking_payment: {
-        Args: { p_booking_id: string; p_reason?: string }
-        Returns: {
-          amount_fcfa: number
-          booking_id: string
-          cancelled_at: string | null
-          commission_fcfa: number
-          commission_rate: number
-          created_at: string
-          escrow_release_at: string | null
-          escrow_status: string
-          id: string
-          method: string
-          paid_at: string | null
-          payer_id: string
-          provider: string
-          provider_notified_at: string | null
-          provider_redirect_url: string | null
-          provider_reference: string | null
-          provider_request_id: string | null
-          provider_status: string | null
-          provider_transaction_id: string | null
-          refund_fcfa: number
-          refund_rate: number | null
-          refunded_at: string | null
-          released_at: string | null
-          status: string
-          teacher_id: string
-          teacher_payout_fcfa: number
-          updated_at: string
-          wallet_used_fcfa: number
-        }
-        SetofOptions: {
-          from: "*"
-          to: "payments"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      cancel_reschedule_proposal: {
-        Args: { p_booking_id: string }
-        Returns: {
-          address: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
-          child_id: string | null
-          city: string
-          commune: string | null
-          completed_at: string | null
-          created_at: string
-          duration_minutes: number
-          format: string
-          hold_expires_at: string | null
-          id: string
-          is_recurring: boolean
-          message: string | null
-          no_show_reported_at: string | null
-          no_show_reported_by: string | null
-          offer_id: string
-          price_fcfa: number
-          recurrence_end_date: string | null
-          requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
-          scheduled_at: string
-          status: string
-          status_reason: string | null
-          teacher_id: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "bookings"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      cancel_unpaid_booking_hold: {
-        Args: { p_booking_id: string }
-        Returns: undefined
       }
       complete_booking: {
         Args: { p_booking_id: string }
@@ -1893,20 +2053,19 @@ export type Database = {
           format: string
           hold_expires_at: string | null
           id: string
+          is_free_session: boolean
           is_recurring: boolean
           message: string | null
           no_show_reported_at: string | null
           no_show_reported_by: string | null
           offer_id: string
+          pack_id: string | null
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
+          reschedule_used: boolean
           scheduled_at: string
+          session_index: number | null
           status: string
           status_reason: string | null
           teacher_id: string
@@ -1929,7 +2088,9 @@ export type Database = {
           admin_note: string | null
           amount_fcfa: number
           error_message: string | null
+          fee_fcfa: number
           id: string
+          is_monthly: boolean
           jeko_contact_id: string | null
           jeko_fees_fcfa: number
           jeko_reference: string | null
@@ -1950,29 +2111,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      confirm_paid_booking: {
-        Args: { p_booking_id: string }
-        Returns: undefined
-      }
       conversation_role: {
         Args: { p_conversation_id: string; p_user: string }
         Returns: string
       }
-      create_booking_payment: {
-        Args: { p_booking_id: string; p_wallet_amount_fcfa?: number }
+      create_pack_payment: {
+        Args: { p_pack_id: string; p_wallet_amount_fcfa?: number }
         Returns: {
           amount_fcfa: number
-          booking_id: string
           cancelled_at: string | null
-          commission_fcfa: number
-          commission_rate: number
           created_at: string
-          escrow_release_at: string | null
-          escrow_status: string
           id: string
           method: string
+          pack_id: string | null
           paid_at: string | null
           payer_id: string
+          platform_fee_fcfa: number
           provider: string
           provider_notified_at: string | null
           provider_redirect_url: string | null
@@ -1983,10 +2137,9 @@ export type Database = {
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
-          released_at: string | null
           status: string
+          teacher_amount_fcfa: number
           teacher_id: string
-          teacher_payout_fcfa: number
           updated_at: string
           wallet_used_fcfa: number
         }
@@ -2043,14 +2196,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      expire_stale_payment_holds: { Args: never; Returns: undefined }
+      expire_stale_pack_holds: { Args: never; Returns: undefined }
       fail_withdrawal_payout: {
         Args: { p_error_message: string; p_withdrawal_id: string }
         Returns: {
           admin_note: string | null
           amount_fcfa: number
           error_message: string | null
+          fee_fcfa: number
           id: string
+          is_monthly: boolean
           jeko_contact_id: string | null
           jeko_fees_fcfa: number
           jeko_reference: string | null
@@ -2067,51 +2222,6 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "wallet_withdrawal_requests"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      force_majeure_reschedule: {
-        Args: {
-          p_booking_id: string
-          p_new_scheduled_at: string
-          p_reason: string
-        }
-        Returns: {
-          address: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
-          child_id: string | null
-          city: string
-          commune: string | null
-          completed_at: string | null
-          created_at: string
-          duration_minutes: number
-          format: string
-          hold_expires_at: string | null
-          id: string
-          is_recurring: boolean
-          message: string | null
-          no_show_reported_at: string | null
-          no_show_reported_by: string | null
-          offer_id: string
-          price_fcfa: number
-          recurrence_end_date: string | null
-          requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
-          scheduled_at: string
-          status: string
-          status_reason: string | null
-          teacher_id: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "bookings"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2151,25 +2261,22 @@ export type Database = {
         Args: { p_other: string; p_user: string }
         Returns: boolean
       }
-      jeko_save_payment_request: {
+      jeko_save_pack_payment_request: {
         Args: {
-          p_booking_id: string
           p_method: string
+          p_pack_id: string
           p_provider_reference: string
         }
         Returns: {
           amount_fcfa: number
-          booking_id: string
           cancelled_at: string | null
-          commission_fcfa: number
-          commission_rate: number
           created_at: string
-          escrow_release_at: string | null
-          escrow_status: string
           id: string
           method: string
+          pack_id: string | null
           paid_at: string | null
           payer_id: string
+          platform_fee_fcfa: number
           provider: string
           provider_notified_at: string | null
           provider_redirect_url: string | null
@@ -2180,10 +2287,9 @@ export type Database = {
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
-          released_at: string | null
           status: string
+          teacher_amount_fcfa: number
           teacher_id: string
-          teacher_payout_fcfa: number
           updated_at: string
           wallet_used_fcfa: number
         }
@@ -2194,76 +2300,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      lock_slot_and_create_booking: {
-        Args: {
-          p_address: string
-          p_child_id: string
-          p_commune: string
-          p_format: string
-          p_is_recurring: boolean
-          p_message: string
-          p_offer_id: string
-          p_recurrence_end_date: string
-          p_scheduled_at: string
-        }
-        Returns: {
-          address: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
-          child_id: string | null
-          city: string
-          commune: string | null
-          completed_at: string | null
-          created_at: string
-          duration_minutes: number
-          format: string
-          hold_expires_at: string | null
-          id: string
-          is_recurring: boolean
-          message: string | null
-          no_show_reported_at: string | null
-          no_show_reported_by: string | null
-          offer_id: string
-          price_fcfa: number
-          recurrence_end_date: string | null
-          requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
-          scheduled_at: string
-          status: string
-          status_reason: string | null
-          teacher_id: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "bookings"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
       }
-      mark_payment_paid: {
-        Args: { p_booking_id: string; p_method?: string }
+      mark_pack_payment_paid: {
+        Args: { p_method?: string; p_pack_id: string }
         Returns: {
           amount_fcfa: number
-          booking_id: string
           cancelled_at: string | null
-          commission_fcfa: number
-          commission_rate: number
           created_at: string
-          escrow_release_at: string | null
-          escrow_status: string
           id: string
           method: string
+          pack_id: string | null
           paid_at: string | null
           payer_id: string
+          platform_fee_fcfa: number
           provider: string
           provider_notified_at: string | null
           provider_redirect_url: string | null
@@ -2274,10 +2326,9 @@ export type Database = {
           refund_fcfa: number
           refund_rate: number | null
           refunded_at: string | null
-          released_at: string | null
           status: string
+          teacher_amount_fcfa: number
           teacher_id: string
-          teacher_payout_fcfa: number
           updated_at: string
           wallet_used_fcfa: number
         }
@@ -2299,7 +2350,9 @@ export type Database = {
           admin_note: string | null
           amount_fcfa: number
           error_message: string | null
+          fee_fcfa: number
           id: string
+          is_monthly: boolean
           jeko_contact_id: string | null
           jeko_fees_fcfa: number
           jeko_reference: string | null
@@ -2324,62 +2377,55 @@ export type Database = {
         Args: { p_child_id: string; p_learner_id: string; p_teacher_id: string }
         Returns: boolean
       }
-      propose_reschedule: {
-        Args: { p_booking_id: string; p_new_scheduled_at: string }
+      process_monthly_payouts: { Args: never; Returns: number }
+      purchase_pack: {
+        Args: {
+          p_address?: string
+          p_child_id?: string
+          p_commune?: string
+          p_format?: string
+          p_offer_id: string
+          p_pack_slug: string
+        }
         Returns: {
           address: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
+          buyer_id: string
           child_id: string | null
           city: string
           commune: string | null
-          completed_at: string | null
           created_at: string
           duration_minutes: number
+          expires_at: string | null
           format: string
+          free_sessions: number
           hold_expires_at: string | null
           id: string
-          is_recurring: boolean
-          message: string | null
-          no_show_reported_at: string | null
-          no_show_reported_by: string | null
           offer_id: string
-          price_fcfa: number
-          recurrence_end_date: string | null
-          requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
-          scheduled_at: string
+          pack_slug: string
+          paid_sessions: number
+          platform_fee_fcfa: number
+          purchased_at: string | null
+          sessions_total: number
+          sessions_used: number
           status: string
-          status_reason: string | null
+          teacher_amount_fcfa: number
           teacher_id: string
+          teacher_rate_fcfa: number
+          total_fcfa: number
           updated_at: string
         }
         SetofOptions: {
           from: "*"
-          to: "bookings"
+          to: "packs"
           isOneToOne: true
           isSetofReturn: false
         }
       }
-      quote_booking_refund: {
-        Args: { p_booking_id: string }
-        Returns: {
-          amount_fcfa: number
-          hours_before: number
-          payment_status: string
-          policy_label: string
-          refund_fcfa: number
-          refund_rate: number
-        }[]
+      quote_pack: {
+        Args: { p_offer_id: string; p_pack_slug: string }
+        Returns: Json
       }
-      release_escrow_to_teacher: {
-        Args: { p_booking_id: string }
-        Returns: undefined
-      }
+      refresh_teacher_grade: { Args: { p_teacher_id: string }; Returns: string }
       report_parent_no_show: {
         Args: { p_booking_id: string }
         Returns: {
@@ -2395,20 +2441,19 @@ export type Database = {
           format: string
           hold_expires_at: string | null
           id: string
+          is_free_session: boolean
           is_recurring: boolean
           message: string | null
           no_show_reported_at: string | null
           no_show_reported_by: string | null
           offer_id: string
+          pack_id: string | null
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
+          reschedule_used: boolean
           scheduled_at: string
+          session_index: number | null
           status: string
           status_reason: string | null
           teacher_id: string
@@ -2436,20 +2481,19 @@ export type Database = {
           format: string
           hold_expires_at: string | null
           id: string
+          is_free_session: boolean
           is_recurring: boolean
           message: string | null
           no_show_reported_at: string | null
           no_show_reported_by: string | null
           offer_id: string
+          pack_id: string | null
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
+          reschedule_used: boolean
           scheduled_at: string
+          session_index: number | null
           status: string
           status_reason: string | null
           teacher_id: string
@@ -2468,7 +2512,9 @@ export type Database = {
           admin_note: string | null
           amount_fcfa: number
           error_message: string | null
+          fee_fcfa: number
           id: string
+          is_monthly: boolean
           jeko_contact_id: string | null
           jeko_fees_fcfa: number
           jeko_reference: string | null
@@ -2489,12 +2535,8 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      respond_booking_request: {
-        Args: { p_accept: boolean; p_booking_id: string; p_reason?: string }
-        Returns: undefined
-      }
-      respond_reschedule: {
-        Args: { p_accept: boolean; p_booking_id: string }
+      reschedule_session: {
+        Args: { p_booking_id: string; p_new_scheduled_at: string }
         Returns: {
           address: string | null
           cancelled_at: string | null
@@ -2508,20 +2550,19 @@ export type Database = {
           format: string
           hold_expires_at: string | null
           id: string
+          is_free_session: boolean
           is_recurring: boolean
           message: string | null
           no_show_reported_at: string | null
           no_show_reported_by: string | null
           offer_id: string
+          pack_id: string | null
           price_fcfa: number
           recurrence_end_date: string | null
           requester_id: string
-          reschedule_count: number
-          reschedule_previous_at: string | null
-          reschedule_proposed_at: string | null
-          reschedule_proposed_by: string | null
-          reschedule_proposed_fee_rate: number | null
+          reschedule_used: boolean
           scheduled_at: string
+          session_index: number | null
           status: string
           status_reason: string | null
           teacher_id: string
@@ -2534,13 +2575,23 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      reserve_earnings_for_withdrawal: {
+        Args: { p_free: boolean; p_target_fcfa: number; p_teacher_id: string }
+        Returns: Json
+      }
+      respond_booking_request: {
+        Args: { p_accept: boolean; p_booking_id: string; p_reason?: string }
+        Returns: undefined
+      }
       retry_withdrawal_payout: {
         Args: { p_withdrawal_id: string }
         Returns: {
           admin_note: string | null
           amount_fcfa: number
           error_message: string | null
+          fee_fcfa: number
           id: string
+          is_monthly: boolean
           jeko_contact_id: string | null
           jeko_fees_fcfa: number
           jeko_reference: string | null
@@ -2557,6 +2608,53 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "wallet_withdrawal_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      schedule_pack_session: {
+        Args: {
+          p_address?: string
+          p_commune?: string
+          p_format?: string
+          p_message?: string
+          p_pack_id: string
+          p_scheduled_at: string
+        }
+        Returns: {
+          address: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          child_id: string | null
+          city: string
+          commune: string | null
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number
+          format: string
+          hold_expires_at: string | null
+          id: string
+          is_free_session: boolean
+          is_recurring: boolean
+          message: string | null
+          no_show_reported_at: string | null
+          no_show_reported_by: string | null
+          offer_id: string
+          pack_id: string | null
+          price_fcfa: number
+          recurrence_end_date: string | null
+          requester_id: string
+          reschedule_used: boolean
+          scheduled_at: string
+          session_index: number | null
+          status: string
+          status_reason: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -2581,6 +2679,7 @@ export type Database = {
           city: string
           commune: string
           display_name: string
+          grade: string
           headline: string
           identity_verified: boolean
           lessons_count: number
@@ -2588,6 +2687,7 @@ export type Database = {
           offers_home: boolean
           offers_online: boolean
           qualifications_verified: boolean
+          rate_cap_fcfa: number
           rating_avg: number
           rating_count: number
           sample_offer_id: string
@@ -2676,10 +2776,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      teacher_earnings_summary: { Args: never; Returns: Json }
+      teacher_rate_cap: { Args: { p_teacher_id: string }; Returns: number }
       teacher_recent_assignments: { Args: { p_limit?: number }; Returns: Json }
       teacher_student_profile: {
         Args: { p_child_id?: string; p_learner_id: string }
         Returns: Json
+      }
+      try_validate_session_earning: {
+        Args: { p_booking_id: string }
+        Returns: undefined
       }
     }
     Enums: {

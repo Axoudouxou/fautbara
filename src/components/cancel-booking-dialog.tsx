@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -7,13 +7,25 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Props = {
   bookingId: string;
+  scheduledAt: string;
+  rescheduleUsed?: boolean;
+  role?: "learner" | "teacher";
   onClose: () => void;
   onCancelled?: () => void;
   invalidateKeys?: unknown[][];
 };
 
+/**
+ * Annulation d'une séance programmée. Règle unique du nouveau modèle :
+ * à plus de 24h et sans report déjà utilisé, la séance revient dans la
+ * formule ; sinon elle est consommée. Le serveur (cancel_session) tranche,
+ * ce dialogue ne fait qu'annoncer la conséquence.
+ */
 export function CancelBookingDialog({
   bookingId,
+  scheduledAt,
+  rescheduleUsed = false,
+  role = "learner",
   onClose,
   onCancelled,
   invalidateKeys = [],
@@ -21,32 +33,23 @@ export function CancelBookingDialog({
   const queryClient = useQueryClient();
   const [reason, setReason] = useState("");
 
-  const quoteQuery = useQuery({
-    queryKey: ["refund-quote", bookingId],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("quote_booking_refund", {
-        p_booking_id: bookingId,
-      });
-      if (error) throw error;
-      return data?.[0] ?? null;
-    },
-  });
+  const hoursBefore = (new Date(scheduledAt).getTime() - Date.now()) / 3_600_000;
+  const keepsSession = role === "teacher" || (hoursBefore > 24 && !rescheduleUsed);
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
       const trimmed = reason.trim();
-      const { error } = await supabase.rpc(
-        "cancel_booking",
-        trimmed ? { p_booking_id: bookingId, p_reason: trimmed } : { p_booking_id: bookingId },
-      );
+      const { error } = await supabase.rpc("cancel_session", {
+        p_booking_id: bookingId,
+        ...(trimmed ? { p_reason: trimmed } : {}),
+      });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Séance annulée", {
-        description:
-          quote && quote.refund_fcfa > 0
-            ? `Remboursement prévu : ${quote.refund_fcfa.toLocaleString("fr-FR")} FCFA`
-            : "Aucun remboursement selon les conditions d'annulation.",
+        description: keepsSession
+          ? "La séance reste disponible dans la formule : vous pouvez la reprogrammer."
+          : "Annulation tardive : cette séance est considérée comme consommée.",
       });
       for (const key of invalidateKeys) queryClient.invalidateQueries({ queryKey: key });
       onCancelled?.();
@@ -57,8 +60,6 @@ export function CancelBookingDialog({
         description: err instanceof Error ? err.message : undefined,
       }),
   });
-
-  const quote = quoteQuery.data;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
@@ -75,42 +76,20 @@ export function CancelBookingDialog({
           </button>
         </div>
 
-        {quoteQuery.isLoading && (
-          <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" aria-hidden /> Calcul du remboursement…
-          </p>
-        )}
-
-        {quote && (
-          <div className="mt-4 space-y-3 rounded-2xl bg-secondary/50 p-4 text-sm">
-            <p className="inline-flex items-start gap-2 text-muted-foreground">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
-              {quote.policy_label}
-            </p>
-            <dl className="space-y-1">
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Montant de la séance</dt>
-                <dd className="text-foreground">
-                  {quote.amount_fcfa.toLocaleString("fr-FR")} FCFA
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Délai avant la séance</dt>
-                <dd className="text-foreground">
-                  {Number(quote.hours_before) > 0
-                    ? `${Number(quote.hours_before).toLocaleString("fr-FR")} h`
-                    : "séance passée"}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3 border-t border-border/70 pt-1">
-                <dt className="font-semibold text-foreground">Remboursement estimé</dt>
-                <dd className="font-semibold text-foreground">
-                  {quote.refund_fcfa.toLocaleString("fr-FR")} FCFA
-                </dd>
-              </div>
-            </dl>
-          </div>
-        )}
+        <div
+          className={`mt-4 flex items-start gap-2 rounded-2xl px-4 py-3 text-sm ${
+            keepsSession ? "bg-secondary/50 text-muted-foreground" : "bg-destructive-soft text-destructive"
+          }`}
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <span>
+            {keepsSession
+              ? "Annulation à plus de 24 h : la séance revient dans la formule et pourra être reprogrammée."
+              : rescheduleUsed
+                ? "Cette séance a déjà été reportée une fois : l'annuler la fait perdre définitivement."
+                : "Annulation à moins de 24 h : la séance est considérée comme consommée, sans remboursement."}
+          </span>
+        </div>
 
         <label className="mt-4 block text-sm font-semibold text-foreground" htmlFor="cancel-reason">
           Motif (optionnel)
@@ -142,11 +121,6 @@ export function CancelBookingDialog({
             Garder la séance
           </button>
         </div>
-
-        <p className="mt-3 text-xs text-muted-foreground">
-          Le remboursement est calculé côté serveur selon les conditions de la plateforme et
-          crédité immédiatement sur votre portefeuille BARA (réutilisable ou retirable).
-        </p>
       </div>
     </div>
   );

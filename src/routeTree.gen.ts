@@ -34,7 +34,7 @@ import { Route as AuthenticatedCompteEnfantsRouteImport } from './routes/_authen
 import { Route as AuthenticatedCompteLitigesRouteImport } from './routes/_authenticated/compte.litiges'
 import { Route as AuthenticatedComptePortefeuilleRouteImport } from './routes/_authenticated/compte.portefeuille'
 import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_authenticated/compte.reservations'
-import { Route as AuthenticatedPaiementBookingIdRouteImport } from './routes/_authenticated/paiement.$bookingId'
+import { Route as AuthenticatedPaiementPackIdRouteImport } from './routes/_authenticated/paiement.$packId'
 import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticated/pro.index'
 import { Route as AuthenticatedProCoursRouteImport } from './routes/_authenticated/pro.cours'
 import { Route as AuthenticatedProDemandesRouteImport } from './routes/_authenticated/pro.demandes'
@@ -181,10 +181,10 @@ const AuthenticatedCompteReservationsRoute =
     path: '/compte/reservations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPaiementBookingIdRoute =
-  AuthenticatedPaiementBookingIdRouteImport.update({
-    id: '/paiement/$bookingId',
-    path: '/paiement/$bookingId',
+const AuthenticatedPaiementPackIdRoute =
+  AuthenticatedPaiementPackIdRouteImport.update({
+    id: '/paiement/$packId',
+    path: '/paiement/$packId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProIndexRoute = AuthenticatedProIndexRouteImport.update({
@@ -266,7 +266,7 @@ export interface FileRoutesByFullPath {
   '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
-  '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
+  '/paiement/$packId': typeof AuthenticatedPaiementPackIdRoute
   '/pro/cours': typeof AuthenticatedProCoursRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
@@ -303,7 +303,7 @@ export interface FileRoutesByTo {
   '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
-  '/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
+  '/paiement/$packId': typeof AuthenticatedPaiementPackIdRoute
   '/pro/cours': typeof AuthenticatedProCoursRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
@@ -342,7 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/_authenticated/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
-  '/_authenticated/paiement/$bookingId': typeof AuthenticatedPaiementBookingIdRoute
+  '/_authenticated/paiement/$packId': typeof AuthenticatedPaiementPackIdRoute
   '/_authenticated/pro/cours': typeof AuthenticatedProCoursRoute
   '/_authenticated/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/_authenticated/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
@@ -381,7 +381,7 @@ export interface FileRouteTypes {
     | '/compte/litiges'
     | '/compte/portefeuille'
     | '/compte/reservations'
-    | '/paiement/$bookingId'
+    | '/paiement/$packId'
     | '/pro/cours'
     | '/pro/demandes'
     | '/pro/disponibilites'
@@ -418,7 +418,7 @@ export interface FileRouteTypes {
     | '/compte/litiges'
     | '/compte/portefeuille'
     | '/compte/reservations'
-    | '/paiement/$bookingId'
+    | '/paiement/$packId'
     | '/pro/cours'
     | '/pro/demandes'
     | '/pro/disponibilites'
@@ -456,7 +456,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compte/litiges'
     | '/_authenticated/compte/portefeuille'
     | '/_authenticated/compte/reservations'
-    | '/_authenticated/paiement/$bookingId'
+    | '/_authenticated/paiement/$packId'
     | '/_authenticated/pro/cours'
     | '/_authenticated/pro/demandes'
     | '/_authenticated/pro/disponibilites'
@@ -662,11 +662,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompteReservationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/paiement/$bookingId': {
-      id: '/_authenticated/paiement/$bookingId'
-      path: '/paiement/$bookingId'
-      fullPath: '/paiement/$bookingId'
-      preLoaderRoute: typeof AuthenticatedPaiementBookingIdRouteImport
+    '/_authenticated/paiement/$packId': {
+      id: '/_authenticated/paiement/$packId'
+      path: '/paiement/$packId'
+      fullPath: '/paiement/$packId'
+      preLoaderRoute: typeof AuthenticatedPaiementPackIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pro/': {
@@ -756,7 +756,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteLitigesRoute: typeof AuthenticatedCompteLitigesRoute
   AuthenticatedComptePortefeuilleRoute: typeof AuthenticatedComptePortefeuilleRoute
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
-  AuthenticatedPaiementBookingIdRoute: typeof AuthenticatedPaiementBookingIdRoute
+  AuthenticatedPaiementPackIdRoute: typeof AuthenticatedPaiementPackIdRoute
   AuthenticatedProCoursRoute: typeof AuthenticatedProCoursRoute
   AuthenticatedProDemandesRoute: typeof AuthenticatedProDemandesRoute
   AuthenticatedProDisponibilitesRoute: typeof AuthenticatedProDisponibilitesRoute
@@ -784,7 +784,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteLitigesRoute: AuthenticatedCompteLitigesRoute,
   AuthenticatedComptePortefeuilleRoute: AuthenticatedComptePortefeuilleRoute,
   AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
-  AuthenticatedPaiementBookingIdRoute: AuthenticatedPaiementBookingIdRoute,
+  AuthenticatedPaiementPackIdRoute: AuthenticatedPaiementPackIdRoute,
   AuthenticatedProCoursRoute: AuthenticatedProCoursRoute,
   AuthenticatedProDemandesRoute: AuthenticatedProDemandesRoute,
   AuthenticatedProDisponibilitesRoute: AuthenticatedProDisponibilitesRoute,
