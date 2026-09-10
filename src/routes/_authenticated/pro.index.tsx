@@ -89,19 +89,23 @@ function TeacherDashboard() {
     },
   });
 
-  const walletQuery = useQuery({
-    queryKey: ["wallet", user.id],
+  const earningsQuery = useQuery({
+    queryKey: ["teacher-earnings", user.id],
     enabled: isTeacher,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wallets")
-        .select("balance_fcfa")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("teacher_earnings_summary");
       if (error) throw error;
-      return data?.balance_fcfa ?? 0;
+      return data as {
+        pending_fcfa: number;
+        validated_fcfa: number;
+        reserved_fcfa: number;
+        paid_fcfa: number;
+        grade: string;
+        rate_cap_fcfa: number;
+      };
     },
   });
+
 
   if (rolesQuery.isLoading) {
     return (
