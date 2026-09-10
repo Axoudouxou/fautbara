@@ -20,10 +20,11 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Authentification requise" }, 401);
     }
 
-    const { bookingId } = await req.json();
-    if (typeof bookingId !== "string" || !bookingId) {
-      return jsonResponse({ error: "bookingId requis" }, 400);
+    const { packId } = await req.json();
+    if (typeof packId !== "string" || !packId) {
+      return jsonResponse({ error: "packId requis" }, 400);
     }
+
 
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
