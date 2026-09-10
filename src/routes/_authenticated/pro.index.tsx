@@ -19,6 +19,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { DOSSIER_LABEL, dossierStatus } from "@/lib/verification";
 import { NotificationsFeed } from "@/components/notifications-feed";
+import { gradeLabel } from "@/lib/packs";
+
 
 export const Route = createFileRoute("/_authenticated/pro/")({
   head: () => ({
