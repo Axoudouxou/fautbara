@@ -29,8 +29,16 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
+/**
+ * Date locale au format "YYYY-MM-DD". Volontairement pas `toISOString()` :
+ * pour un navigateur en avance sur UTC (ex. Europe/Paris), minuit local
+ * tombe la veille en UTC et le créneau du mardi devenait « lundi ».
+ */
 function toDateStr(date: Date) {
-  return date.toISOString().slice(0, 10);
+  const y = date.getFullYear();
+  const m = (date.getMonth() + 1).toString().padStart(2, "0");
+  const d = date.getDate().toString().padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function hhmmToMinutes(hhmm: string) {
@@ -48,6 +56,20 @@ function minutesToHHMM(mins: number) {
 
 function overlaps(aStartMin: number, aDur: number, bStartMin: number, bDur: number) {
   return aStartMin < bStartMin + bDur && bStartMin < aStartMin + aDur;
+}
+
+/**
+ * Les créneaux affichés sont toujours des heures d'Abidjan (UTC+0), jamais
+ * l'heure locale du navigateur : sinon un visiteur en Europe choisissait
+ * « mardi 10:00 » et la base recevait lundi/08:00, hors disponibilité.
+ */
+export function abidjanSlotDate(dateStr: string, time: string) {
+  return new Date(`${dateStr}T${time}:00Z`);
+}
+
+/** Formatage d'un créneau en heure d'Abidjan, quel que soit le fuseau du visiteur. */
+export function formatAbidjan(dateStr: string, time: string, options: Intl.DateTimeFormatOptions) {
+  return abidjanSlotDate(dateStr, time).toLocaleString("fr-FR", { ...options, timeZone: "UTC" });
 }
 
 /**
@@ -152,7 +174,7 @@ export function AvailabilitySlotGrid({
         for (let t = start; t + durationMinutes <= end; t += durationMinutes) {
           if (partialBlocks.some((b) => overlaps(t, durationMinutes, b.start, b.end - b.start))) continue;
 
-          const slotDate = new Date(`${dateStr}T${minutesToHHMM(t)}:00`);
+          const slotDate = abidjanSlotDate(dateStr, minutesToHHMM(t));
           if (slotDate.getTime() <= now) continue;
 
           const isBusy = busy.some((b) =>
@@ -349,7 +371,8 @@ export function TeacherAvailabilityCalendar({
         <div className="rounded-2xl border border-primary/30 bg-primary-soft/40 p-4">
           <p className="text-sm font-semibold text-foreground">
             Créneau du{" "}
-            {new Date(`${selectedSlot.date}T00:00:00`).toLocaleDateString("fr-FR", {
+            {abidjanSlotDate(selectedSlot.date, "12:00").toLocaleDateString("fr-FR", {
+              timeZone: "UTC",
               weekday: "long",
               day: "numeric",
               month: "long",

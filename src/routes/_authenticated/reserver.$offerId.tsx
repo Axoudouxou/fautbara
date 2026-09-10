@@ -8,7 +8,11 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { useSessionRoles } from "@/hooks/use-session-roles";
-import { AvailabilitySlotGrid } from "@/components/teacher-availability-calendar";
+import {
+  AvailabilitySlotGrid,
+  abidjanSlotDate,
+  formatAbidjan,
+} from "@/components/teacher-availability-calendar";
 
 export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
   validateSearch: (search) =>
@@ -121,10 +125,10 @@ function BookingPage() {
 
   const sessionRange = useMemo(() => {
     if (!date || !time || !offer) return { start: "", end: "" };
-    const start = new Date(`${date}T${time}:00`);
+    const start = abidjanSlotDate(date, time);
     const end = new Date(start.getTime() + offer.duration_minutes * 60_000);
     const fmt = (d: Date) =>
-      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
     return { start: fmt(start), end: fmt(end) };
   }, [date, time, offer]);
 
@@ -134,7 +138,7 @@ function BookingPage() {
       const { data, error } = await supabase.rpc("lock_slot_and_create_booking", {
         p_offer_id: offer.id,
         p_child_id: (childId || null) as unknown as string,
-        p_scheduled_at: new Date(`${date}T${time}:00`).toISOString(),
+        p_scheduled_at: abidjanSlotDate(date, time).toISOString(),
         p_format: format,
         p_commune: (format === "home" ? commune || null : null) as unknown as string,
         p_address: (format === "home" ? address.trim() || null : null) as unknown as string,
@@ -225,7 +229,7 @@ function BookingPage() {
       toast.error("Choisissez un créneau parmi les disponibilités du professeur");
       return;
     }
-    if (new Date(`${date}T${time}:00`) <= new Date()) {
+    if (abidjanSlotDate(date, time) <= new Date()) {
       toast.error("Choisissez un créneau à venir");
       return;
     }
@@ -323,7 +327,7 @@ function BookingPage() {
             <div className="rounded-2xl border border-primary/30 bg-primary-soft/50 px-4 py-3 text-sm">
               <p className="font-semibold text-foreground">
                 Séance du{" "}
-                {new Date(`${date}T${time}:00`).toLocaleDateString("fr-FR", {
+                {formatAbidjan(date, time, {
                   weekday: "long",
                   day: "numeric",
                   month: "long",
