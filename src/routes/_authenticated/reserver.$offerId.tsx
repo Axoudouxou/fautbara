@@ -1,18 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { CalendarCheck, Clock, Home, Laptop, Loader2, MapPin } from "lucide-react";
+import { BadgeCheck, Check, Home, Laptop, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { useSessionRoles } from "@/hooks/use-session-roles";
-import {
-  AvailabilitySlotGrid,
-  abidjanSlotDate,
-  formatAbidjan,
-} from "@/components/teacher-availability-calendar";
+import { formatFcfa, gradeLabel, type PackQuote } from "@/lib/packs";
 
 export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
   validateSearch: (search) =>
@@ -24,11 +20,11 @@ export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
       .parse(search),
   head: () => ({
     meta: [
-      { title: "Réserver un cours — BARA" },
+      { title: "Choisir une formule de cours — BARA" },
       {
         name: "description",
         content:
-          "Choisissez le bénéficiaire, le créneau et le format pour envoyer votre demande de cours particulier.",
+          "Choisissez une formule de séances ou une séance seule : rémunération de l'intervenant et frais BARA affichés clairement en francs.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -36,30 +32,21 @@ export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
   component: BookingPage,
 });
 
-const WEEKDAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-
-function hhmm(value: string) {
-  return value.slice(0, 5);
-}
+const PACK_ORDER = ["decouverte", "suivi", "renfort", "intensif", "examen", "seance"];
 
 function BookingPage() {
   const { user } = Route.useRouteContext();
   const { offerId } = Route.useParams();
-  const search = Route.useSearch();
   const navigate = useNavigate();
   const { roles, rolesLoading } = useSessionRoles();
   const canBook = roles.includes("parent") || roles.includes("student");
   const isParent = roles.includes("parent");
 
   const [childId, setChildId] = useState("");
-  const [date, setDate] = useState(search.date ?? "");
-  const [time, setTime] = useState(search.time ?? "");
+  const [packSlug, setPackSlug] = useState<string | null>(null);
   const [format, setFormat] = useState<"home" | "online">("home");
   const [commune, setCommune] = useState("");
   const [address, setAddress] = useState("");
-  const [message, setMessage] = useState("");
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [recurrenceEnd, setRecurrenceEnd] = useState("");
 
   const offerQuery = useQuery({
     queryKey: ["booking-offer", offerId],
@@ -79,30 +66,43 @@ function BookingPage() {
 
   const offer = offerQuery.data;
 
-  const teacherQuery = useQuery({
-    queryKey: ["booking-teacher", offer?.teacher_id],
-    enabled: Boolean(offer?.teacher_id),
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_teacher_public", {
-        p_teacher_id: offer!.teacher_id,
-      });
-      if (error) throw error;
-      return data?.[0] ?? null;
-    },
-  });
-
-  const slotsQuery = useQuery({
-    queryKey: ["booking-availabilities", offer?.teacher_id],
+  const gradeQuery = useQuery({
+    queryKey: ["teacher-grade", offer?.teacher_id],
     enabled: Boolean(offer?.teacher_id),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("availabilities")
-        .select("id, weekday, start_time, end_time, format")
+        .from("teacher_grades")
+        .select("grade")
         .eq("teacher_id", offer!.teacher_id)
-        .order("weekday")
-        .order("start_time");
+        .maybeSingle();
       if (error) throw error;
-      return data;
+      return data?.grade ?? "verified";
+    },
+  });
+
+  const quotesQuery = useQuery({
+    queryKey: ["pack-quotes", offerId],
+    enabled: Boolean(offer?.id),
+    queryFn: async () => {
+      const { data: types, error: typesError } = await supabase
+        .from("pack_types")
+        .select("slug, sort_order")
+        .eq("is_active", true)
+        .order("sort_order");
+      if (typesError) throw typesError;
+
+      const quotes: PackQuote[] = [];
+      for (const t of types ?? []) {
+        const { data, error } = await supabase.rpc("quote_pack", {
+          p_offer_id: offerId,
+          p_pack_slug: t.slug,
+        });
+        if (error) throw error;
+        quotes.push(data as unknown as PackQuote);
+      }
+      return quotes.sort(
+        (a, b) => PACK_ORDER.indexOf(a.slug) - PACK_ORDER.indexOf(b.slug),
+      );
     },
   });
 
@@ -120,50 +120,32 @@ function BookingPage() {
     },
   });
 
-  const slots = slotsQuery.data ?? [];
+  const quotes = quotesQuery.data ?? [];
   const children = childrenQuery.data ?? [];
+  const selectedQuote = quotes.find((q) => q.slug === packSlug) ?? null;
 
-  const sessionRange = useMemo(() => {
-    if (!date || !time || !offer) return { start: "", end: "" };
-    const start = abidjanSlotDate(date, time);
-    const end = new Date(start.getTime() + offer.duration_minutes * 60_000);
-    const fmt = (d: Date) =>
-      d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
-    return { start: fmt(start), end: fmt(end) };
-  }, [date, time, offer]);
-
-  const createMutation = useMutation({
+  const purchase = useMutation({
     mutationFn: async () => {
-      if (!offer) throw new Error("Offre indisponible");
-      const { data, error } = await supabase.rpc("lock_slot_and_create_booking", {
+      if (!offer || !packSlug) throw new Error("Choisissez une formule");
+      const { data, error } = await supabase.rpc("purchase_pack", {
         p_offer_id: offer.id,
-        p_child_id: (childId || null) as unknown as string,
-        p_scheduled_at: abidjanSlotDate(date, time).toISOString(),
+        p_pack_slug: packSlug,
+        ...(childId ? { p_child_id: childId } : {}),
         p_format: format,
-        p_commune: (format === "home" ? commune || null : null) as unknown as string,
-        p_address: (format === "home" ? address.trim() || null : null) as unknown as string,
-        p_message: (message.trim() || null) as unknown as string,
-        p_is_recurring: isRecurring,
-        p_recurrence_end_date: (isRecurring && recurrenceEnd ? recurrenceEnd : null) as unknown as string,
+        ...(format === "home" && commune ? { p_commune: commune } : {}),
+        ...(format === "home" && address.trim() ? { p_address: address.trim() } : {}),
       });
       if (error) throw error;
       return data;
     },
-    onSuccess: (booking) => {
-      if (booking?.status === "pending_payment") {
-        toast.success("Créneau réservé pour 15 minutes", {
-          description: "Réglez la séance avant la fin du compte à rebours pour la confirmer.",
-        });
-        navigate({ to: "/paiement/$bookingId", params: { bookingId: booking.id } });
-        return;
-      }
-      toast.success("Cours d'essai confirmé", {
-        description: "C'est votre première séance avec ce professeur : elle est gratuite et déjà confirmée.",
+    onSuccess: (pack) => {
+      toast.success("Formule réservée pour 15 minutes", {
+        description: "Réglez le montant pour l'activer et programmer vos séances.",
       });
-      navigate({ to: "/compte/reservations" });
+      navigate({ to: "/paiement/$packId", params: { packId: pack.id } });
     },
     onError: (err) =>
-      toast.error("Réservation impossible", {
+      toast.error("Achat impossible", {
         description: err instanceof Error ? err.message : undefined,
       }),
   });
@@ -173,11 +155,11 @@ function BookingPage() {
       <div className="container-page py-14">
         <div className="max-w-md rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
           <h1 className="font-display text-xl font-bold text-foreground">
-            Réservation réservée aux parents et apprenants
+            Réservation réservée aux familles et apprenants
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Votre compte professeur ne permet pas de réserver un cours auprès d&apos;un autre
-            professeur.
+            Votre compte intervenant ne permet pas d&apos;acheter une formule auprès d&apos;un autre
+            intervenant.
           </p>
           <Link
             to="/accueil"
@@ -211,7 +193,7 @@ function BookingPage() {
             search={{}}
             className="mt-6 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
-            Voir les professeurs
+            Voir les intervenants
           </Link>
         </div>
       </div>
@@ -225,23 +207,15 @@ function BookingPage() {
     offer.communes && offer.communes.length > 0 ? offer.communes : COMMUNES_ABIDJAN;
 
   function submit() {
-    if (!date || !time) {
-      toast.error("Choisissez un créneau parmi les disponibilités du professeur");
-      return;
-    }
-    if (abidjanSlotDate(date, time) <= new Date()) {
-      toast.error("Choisissez un créneau à venir");
+    if (!packSlug) {
+      toast.error("Choisissez une formule ou une séance seule");
       return;
     }
     if (format === "home" && !commune) {
-      toast.error("Indiquez la commune du cours");
+      toast.error("Indiquez la commune des cours");
       return;
     }
-    if (isRecurring && recurrenceEnd && recurrenceEnd <= date) {
-      toast.error("La fin de récurrence doit être après la première séance");
-      return;
-    }
-    createMutation.mutate();
+    purchase.mutate();
   }
 
   return (
@@ -251,256 +225,248 @@ function BookingPage() {
         params={{ id: offer.teacher_id }}
         className="text-sm font-semibold text-primary hover:underline"
       >
-        ← Retour au profil du professeur
+        ← Retour au profil de l&apos;intervenant
       </Link>
 
       <h1 className="mt-4 font-display text-2xl font-bold text-foreground sm:text-3xl">
-        Réserver un cours
+        Choisir une formule
       </h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-        Ce créneau est un créneau réel de l&apos;agenda du professeur : il est verrouillé 15 minutes
-        pour vous le temps de payer, sans attendre son acceptation.
+        Vous réglez une seule fois, puis vous programmez vos séances progressivement dans l&apos;agenda
+        de l&apos;intervenant, pendant toute la durée de validité.
+      </p>
+      <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-foreground">
+        <BadgeCheck className="size-3.5 text-primary" aria-hidden /> Grade{" "}
+        {gradeLabel(gradeQuery.data)} · {offer.subjects?.name}
       </p>
 
       {isOwnOffer && (
         <p className="mt-6 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning">
-          Il s&apos;agit de votre propre offre : vous ne pouvez pas la réserver.
+          Il s&apos;agit de votre propre offre : vous ne pouvez pas l&apos;acheter.
         </p>
       )}
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+      <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
         <form
-          className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+          className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
             submit();
           }}
         >
-          {isParent && (
-            <div>
-              <label htmlFor="bk-child" className="text-sm font-semibold text-foreground">
-                Pour qui ?
-              </label>
-              <select
-                id="bk-child"
-                value={childId}
-                onChange={(e) => setChildId(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Pour moi</option>
-                {children.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.first_name}
-                    {c.school_level ? ` — ${c.school_level}` : ""}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Besoin d&apos;ajouter un enfant ?{" "}
-                <Link to="/compte/enfants" className="font-semibold text-primary hover:underline">
-                  Gérer les profils enfants
-                </Link>
+          <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+            <h2 className="font-display font-bold text-foreground">Formules disponibles</h2>
+            {quotesQuery.isLoading && (
+              <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" aria-hidden /> Calcul des prix…
               </p>
-            </div>
-          )}
+            )}
+            <ul className="mt-4 space-y-3">
+              {quotes.map((q) => {
+                const selected = q.slug === packSlug;
+                return (
+                  <li key={q.slug}>
+                    <button
+                      type="button"
+                      disabled={!q.available}
+                      onClick={() => setPackSlug(q.slug)}
+                      className={`w-full rounded-2xl border p-4 text-left transition ${
+                        selected
+                          ? "border-primary bg-primary-soft/40"
+                          : "border-border hover:bg-secondary/60"
+                      } ${q.available ? "" : "opacity-50"}`}
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="font-display font-bold text-foreground">
+                            {q.name}
+                            {selected && <Check className="ml-2 inline size-4 text-primary" aria-hidden />}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{q.tagline}</p>
+                        </div>
+                        <p className="font-display text-lg font-bold text-foreground">
+                          {formatFcfa(q.total_fcfa)}
+                        </p>
+                      </div>
+                      <dl className="mt-3 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+                        <div className="flex justify-between gap-2 sm:col-span-2">
+                          <dt>
+                            {q.sessions_total} séance{q.sessions_total > 1 ? "s" : ""} de{" "}
+                            {q.duration_minutes} min
+                            {q.free_sessions > 0 ? ` dont ${q.free_sessions} offerte par BARA` : ""}
+                          </dt>
+                          <dd>Validité {q.validity_days} jours</dd>
+                        </div>
+                        <div className="flex justify-between gap-2">
+                          <dt>Rémunération de l&apos;intervenant</dt>
+                          <dd className="text-foreground">{formatFcfa(q.teacher_amount_fcfa)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-2">
+                          <dt>Frais BARA</dt>
+                          <dd className="text-foreground">{formatFcfa(q.platform_fee_fcfa)}</dd>
+                        </div>
+                      </dl>
+                      {!q.available && q.unavailable_reason && (
+                        <p className="mt-2 text-xs font-semibold text-warning">{q.unavailable_reason}</p>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
 
-          <div>
-            <p className="text-sm font-semibold text-foreground">Créneau de la séance</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Choisissez un créneau parmi les disponibilités réelles du professeur.
-            </p>
-            <div className="mt-3">
-              <AvailabilitySlotGrid
-                teacherId={offer.teacher_id}
-                durationMinutes={offer.duration_minutes}
-                initialDate={search.date}
-                selected={date && time ? { date, time } : null}
-                onSelectSlot={(d, t) => {
-                  setDate(d);
-                  setTime(t);
-                }}
-              />
-            </div>
-          </div>
-
-          {date && time && (
-            <div className="rounded-2xl border border-primary/30 bg-primary-soft/50 px-4 py-3 text-sm">
-              <p className="font-semibold text-foreground">
-                Séance du{" "}
-                {formatAbidjan(date, time, {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}{" "}
-                de {sessionRange.start} à {sessionRange.end}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Durée : {offer.duration_minutes} minutes (heure d&apos;Abidjan).
-              </p>
-            </div>
-          )}
-
-          <fieldset>
-            <legend className="text-sm font-semibold text-foreground">Format du cours</legend>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {offer.offers_home && (
-                <button
-                  type="button"
-                  onClick={() => setFormat("home")}
-                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${
-                    format === "home"
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Home className="size-4" aria-hidden /> À domicile
-                </button>
-              )}
-              {offer.offers_online && (
-                <button
-                  type="button"
-                  onClick={() => setFormat("online")}
-                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${
-                    format === "online"
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Laptop className="size-4" aria-hidden /> En ligne
-                </button>
-              )}
-            </div>
-          </fieldset>
-
-          {format === "home" && (
-            <div className="grid gap-4 sm:grid-cols-2">
+          <section className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+            {isParent && (
               <div>
-                <label htmlFor="bk-commune" className="text-sm font-semibold text-foreground">
-                  Commune
+                <label htmlFor="bk-child" className="text-sm font-semibold text-foreground">
+                  Pour qui ?
                 </label>
                 <select
-                  id="bk-commune"
-                  value={commune}
-                  onChange={(e) => setCommune(e.target.value)}
+                  id="bk-child"
+                  value={childId}
+                  onChange={(e) => setChildId(e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Sélectionner…</option>
-                  {communeOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
+                  <option value="">Pour moi</option>
+                  {children.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.first_name}
+                      {c.school_level ? ` — ${c.school_level}` : ""}
                     </option>
                   ))}
                 </select>
-              </div>
-              <div>
-                <label htmlFor="bk-address" className="text-sm font-semibold text-foreground">
-                  Adresse <span className="font-normal text-muted-foreground">(privée)</span>
-                </label>
-                <input
-                  id="bk-address"
-                  type="text"
-                  maxLength={200}
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Quartier, repère…"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-3 rounded-2xl border border-border p-4">
-            <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <input
-                type="checkbox"
-                checked={isRecurring}
-                onChange={(e) => setIsRecurring(e.target.checked)}
-                className="size-4 rounded border-input"
-              />
-              Cours récurrent chaque semaine, au même créneau
-            </label>
-            {isRecurring && (
-              <div>
-                <label htmlFor="bk-recur" className="text-sm font-semibold text-foreground">
-                  Jusqu&apos;au (optionnel)
-                </label>
-                <input
-                  id="bk-recur"
-                  type="date"
-                  min={date || undefined}
-                  value={recurrenceEnd}
-                  onChange={(e) => setRecurrenceEnd(e.target.value)}
-                  className={inputClass}
-                />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Besoin d&apos;ajouter un enfant ?{" "}
+                  <Link to="/compte/enfants" className="font-semibold text-primary hover:underline">
+                    Gérer les profils enfants
+                  </Link>
+                </p>
               </div>
             )}
-          </div>
 
-          <div>
-            <label htmlFor="bk-message" className="text-sm font-semibold text-foreground">
-              Message au professeur
-            </label>
-            <textarea
-              id="bk-message"
-              rows={4}
-              maxLength={1000}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Niveau de l'élève, objectifs, contraintes d'horaires…"
-              className={inputClass}
-            />
-          </div>
+            <fieldset>
+              <legend className="text-sm font-semibold text-foreground">Format des séances</legend>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {offer.offers_home && (
+                  <button
+                    type="button"
+                    onClick={() => setFormat("home")}
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${
+                      format === "home"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <Home className="size-4" aria-hidden /> À domicile
+                  </button>
+                )}
+                {offer.offers_online && (
+                  <button
+                    type="button"
+                    onClick={() => setFormat("online")}
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${
+                      format === "online"
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <Laptop className="size-4" aria-hidden /> En ligne
+                  </button>
+                )}
+              </div>
+            </fieldset>
 
-          <button
-            type="submit"
-            disabled={createMutation.isPending || isOwnOffer}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-          >
-            {createMutation.isPending ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <CalendarCheck className="size-4" aria-hidden />
+            {format === "home" && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="bk-commune" className="text-sm font-semibold text-foreground">
+                    Commune
+                  </label>
+                  <select
+                    id="bk-commune"
+                    value={commune}
+                    onChange={(e) => setCommune(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">Sélectionner…</option>
+                    {communeOptions.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="bk-address" className="text-sm font-semibold text-foreground">
+                    Adresse <span className="font-normal text-muted-foreground">(privée)</span>
+                  </label>
+                  <input
+                    id="bk-address"
+                    type="text"
+                    maxLength={200}
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Quartier, repère…"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
             )}
-            Réserver ce créneau
-          </button>
+
+            <button
+              type="submit"
+              disabled={purchase.isPending || isOwnOffer || !packSlug}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            >
+              {purchase.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+              Continuer vers le paiement
+            </button>
+          </section>
         </form>
 
-        <aside className="h-fit rounded-3xl border border-border bg-secondary/40 p-6 lg:sticky lg:top-24">
-          <p className="text-xs font-bold uppercase tracking-wide text-primary">
-            {offer.subjects?.name}
-          </p>
-          <h2 className="mt-1 font-display text-lg font-bold text-foreground">{offer.title}</h2>
-          {teacherQuery.data && (
-            <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-              <MapPin className="size-4" aria-hidden />
-              {teacherQuery.data.display_name}
-              {teacherQuery.data.commune ? ` · ${teacherQuery.data.commune}` : ""}
+        <aside className="h-fit rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+          <h2 className="font-display font-bold text-foreground">Récapitulatif</h2>
+          {selectedQuote ? (
+            <dl className="mt-4 space-y-2 text-sm">
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Formule</dt>
+                <dd className="font-semibold text-foreground">{selectedQuote.name}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Séances</dt>
+                <dd className="text-foreground">
+                  {selectedQuote.sessions_total}
+                  {selectedQuote.free_sessions > 0 ? ` (dont ${selectedQuote.free_sessions} offerte)` : ""}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Tarif par séance</dt>
+                <dd className="text-foreground">{formatFcfa(selectedQuote.teacher_rate_fcfa)}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Rémunération intervenant</dt>
+                <dd className="text-foreground">{formatFcfa(selectedQuote.teacher_amount_fcfa)}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Frais BARA</dt>
+                <dd className="text-foreground">{formatFcfa(selectedQuote.platform_fee_fcfa)}</dd>
+              </div>
+              <div className="flex justify-between gap-3 border-t border-border pt-2">
+                <dt className="font-semibold text-foreground">Total à payer</dt>
+                <dd className="font-display text-lg font-bold text-foreground">
+                  {formatFcfa(selectedQuote.total_fcfa)}
+                </dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Sélectionnez une formule pour voir le détail du prix.
             </p>
           )}
-          <p className="mt-4 font-display text-2xl font-bold text-foreground">
-            {offer.price_fcfa.toLocaleString("fr-FR")} FCFA
-            <span className="text-sm font-medium text-muted-foreground"> / séance</span>
-          </p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Clock className="size-4" aria-hidden />
-            {offer.duration_minutes} minutes
-          </p>
-
-          <div className="mt-5 border-t border-border pt-4">
-            <p className="text-sm font-semibold text-foreground">Créneaux habituels</p>
-            <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-              {slots.length === 0 && <li>Non renseignés par le professeur.</li>}
-              {slots.map((s) => (
-                <li key={s.id}>
-                  {WEEKDAYS[s.weekday]} · {hhmm(s.start_time)} – {hhmm(s.end_time)}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <p className="mt-5 text-xs text-muted-foreground">
-            Première séance avec ce professeur : elle est gratuite et confirmée immédiatement.
-            Sinon, le créneau est verrouillé 15 minutes le temps de régler le paiement en ligne.
+          <p className="mt-4 text-xs text-muted-foreground">
+            L&apos;intervenant perçoit l&apos;intégralité de son tarif : les frais BARA sont
+            entièrement séparés et ne sont jamais déduits de sa rémunération.
           </p>
         </aside>
       </div>
