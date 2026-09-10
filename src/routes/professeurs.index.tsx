@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 
 import { getCatalog, searchFiltersSchema, searchTeachers, type TeacherCard } from "@/lib/catalog.functions";
+import { gradeLabel } from "@/lib/packs";
+
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { Slider } from "@/components/ui/slider";
 
