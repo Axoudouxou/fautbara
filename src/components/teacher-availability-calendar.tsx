@@ -371,7 +371,8 @@ export function TeacherAvailabilityCalendar({
         <div className="rounded-2xl border border-primary/30 bg-primary-soft/40 p-4">
           <p className="text-sm font-semibold text-foreground">
             Créneau du{" "}
-            {new Date(`${selectedSlot.date}T00:00:00`).toLocaleDateString("fr-FR", {
+            {abidjanSlotDate(selectedSlot.date, "12:00").toLocaleDateString("fr-FR", {
+              timeZone: "UTC",
               weekday: "long",
               day: "numeric",
               month: "long",

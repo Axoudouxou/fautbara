@@ -327,7 +327,7 @@ function BookingPage() {
             <div className="rounded-2xl border border-primary/30 bg-primary-soft/50 px-4 py-3 text-sm">
               <p className="font-semibold text-foreground">
                 Séance du{" "}
-                {new Date(`${date}T${time}:00`).toLocaleDateString("fr-FR", {
+                {formatAbidjan(date, time, {
                   weekday: "long",
                   day: "numeric",
                   month: "long",
