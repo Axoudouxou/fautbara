@@ -14,7 +14,6 @@ import {
   PACK_STATUS_LABELS,
   SESSION_STATUS_LABELS,
   formatDate,
-  formatFcfa,
 } from "@/lib/packs";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
@@ -248,6 +247,7 @@ function BookingsPage() {
                     <PackSessionScheduler
                       packId={p.id}
                       teacherId={p.teacher_id}
+                      teacherName={teacher?.display_name}
                       durationMinutes={p.duration_minutes}
                       sessionsLeft={left}
                       invalidateKeys={[
