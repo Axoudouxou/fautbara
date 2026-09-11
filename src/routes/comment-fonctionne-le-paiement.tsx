@@ -25,6 +25,7 @@ export const Route = createFileRoute("/comment-fonctionne-le-paiement")({
 });
 
 function PaymentExplainedPage() {
+  const { retour, packId } = Route.useSearch();
   return (
     <div className="container-page max-w-2xl py-14 sm:py-20">
       <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
@@ -91,12 +92,22 @@ function PaymentExplainedPage() {
         </section>
       </div>
 
-      <Link
-        to="/devenir-professeur"
-        className="mt-8 inline-flex text-sm font-semibold text-primary hover:underline"
-      >
-        ← Retour à « Devenir intervenant »
-      </Link>
+      {retour === "paiement" && packId ? (
+        <Link
+          to="/paiement/$packId"
+          params={{ packId }}
+          className="mt-8 inline-flex text-sm font-semibold text-primary hover:underline"
+        >
+          ← Retour au paiement
+        </Link>
+      ) : (
+        <Link
+          to="/devenir-professeur"
+          className="mt-8 inline-flex text-sm font-semibold text-primary hover:underline"
+        >
+          ← Retour à « Devenir intervenant »
+        </Link>
+      )}
     </div>
   );
 }
