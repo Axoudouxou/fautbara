@@ -59,23 +59,24 @@ export function notificationTarget(n: NotificationRef): LinkProps | null {
     const params = new URLSearchParams(queryString);
 
     if (path === "/compte/reservations") {
-      return {
-        to: "/compte/reservations",
-        search: {
-          pack: uuidParam(params, "pack"),
-          booking: uuidParam(params, "booking"),
-          agenda: params.get("agenda") === "1" ? true : undefined,
-        },
-      };
+      const search: { pack?: string; booking?: string; agenda?: boolean } = {};
+      const pack = uuidParam(params, "pack");
+      const booking = uuidParam(params, "booking");
+      if (pack) search.pack = pack;
+      if (booking) search.booking = booking;
+      if (params.get("agenda") === "1") search.agenda = true;
+      return { to: "/compte/reservations", search };
     }
     if (path === "/pro/cours") {
-      return { to: "/pro/cours", search: { booking: uuidParam(params, "booking") } };
+      const booking = uuidParam(params, "booking");
+      return { to: "/pro/cours", search: booking ? { booking } : {} };
     }
-    if (path === "/messages") {
-      return { to: "/messages", search: { conversation: uuidParam(params, "conversation") } };
-    }
-    if (path === "/pro/messages") {
-      return { to: "/pro/messages", search: { conversation: uuidParam(params, "conversation") } };
+    if (path === "/messages" || path === "/pro/messages") {
+      const conversation = uuidParam(params, "conversation");
+      const search = conversation ? { conversation } : {};
+      return path === "/messages"
+        ? { to: "/messages", search }
+        : { to: "/pro/messages", search };
     }
     const teacher = /^\/professeurs\/([^/]+)$/.exec(path);
     if (teacher?.[1] && UUID.test(teacher[1])) {
