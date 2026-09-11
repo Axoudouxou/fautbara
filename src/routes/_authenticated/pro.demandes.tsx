@@ -252,16 +252,24 @@ function TeacherRequestsPage() {
               />
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {r.status === "accepted" && (
-                  <button
-                    type="button"
-                    onClick={() => statusMutation.mutate({ id: r.id, status: "completed" })}
-                    disabled={statusMutation.isPending}
-                    className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-60"
-                  >
-                    <Check className="size-3.5" aria-hidden /> Marquer comme terminée
-                  </button>
-                )}
+                {r.status === "accepted" &&
+                  new Date(r.scheduled_at).getTime() <= Date.now() && (
+                    <button
+                      type="button"
+                      onClick={() => statusMutation.mutate({ id: r.id, status: "completed" })}
+                      disabled={statusMutation.isPending}
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                    >
+                      <Check className="size-3.5" aria-hidden /> Marquer comme terminée
+                    </button>
+                  )}
+                {r.status === "accepted" &&
+                  new Date(r.scheduled_at).getTime() > Date.now() && (
+                    <p className="w-full rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+                      Vous pourrez clôturer cette séance et remplir son compte-rendu à partir de
+                      l&apos;heure prévue ({formatSlot(r.scheduled_at)}).
+                    </p>
+                  )}
                 {r.status === "completed" && (
                   <button
                     type="button"
