@@ -361,7 +361,11 @@ function SessionCard({
     className: "bg-muted text-muted-foreground",
   };
   return (
-    <li className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+    <li
+      className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+        highlight ? "border-primary ring-2 ring-primary/30" : "border-border"
+      }`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-primary">
