@@ -9,7 +9,7 @@ import { AvailabilitySlotGrid, abidjanSlotDate, formatAbidjan } from "@/componen
 type Props = {
   packId: string;
   teacherId: string;
-  teacherName?: string;
+  teacherName?: string | undefined;
   durationMinutes: number;
   sessionsLeft: number;
   invalidateKeys: unknown[][];
