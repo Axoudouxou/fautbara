@@ -12,6 +12,8 @@ type Props = {
   teacherName?: string | undefined;
   durationMinutes: number;
   sessionsLeft: number;
+  /** Ouvre l'agenda d'emblée (arrivée depuis une notification). */
+  defaultOpen?: boolean | undefined;
   invalidateKeys: unknown[][];
 };
 

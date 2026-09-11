@@ -17,6 +17,11 @@ import {
 } from "@/lib/packs";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    pack: typeof search.pack === "string" ? search.pack : undefined,
+    booking: typeof search.booking === "string" ? search.booking : undefined,
+    agenda: search.agenda === true || search.agenda === "1" ? true : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Mes formules et séances — BARA" },
