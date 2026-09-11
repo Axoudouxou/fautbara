@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, Coins, ShieldCheck, Wallet } from "lucide-react";
+import { z } from "zod";
 
 export const Route = createFileRoute("/comment-fonctionne-le-paiement")({
+  validateSearch: (search) =>
+    z
+      .object({
+        retour: z.enum(["paiement"]).optional(),
+        packId: z.string().uuid().optional(),
+      })
+      .parse(search),
   head: () => ({
     meta: [
       { title: "Comment fonctionne le paiement — BARA" },
