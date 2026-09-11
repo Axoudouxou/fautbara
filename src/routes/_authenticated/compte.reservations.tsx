@@ -267,6 +267,7 @@ function BookingsPage() {
                       teacherId={p.teacher_id}
                       teacherName={teacher?.display_name}
                       durationMinutes={p.duration_minutes}
+                      defaultOpen={packParam === p.id && agendaParam === true}
                       sessionsLeft={left}
                       invalidateKeys={[
                         ["my-packs", user.id],
@@ -301,7 +302,10 @@ function BookingsPage() {
               return (
                 <li
                   key={b.id}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+                  id={`seance-${b.id}`}
+                  className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+                    bookingParam === b.id ? "border-primary ring-2 ring-primary/30" : "border-border"
+                  }`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
