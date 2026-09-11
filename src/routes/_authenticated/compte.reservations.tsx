@@ -182,7 +182,10 @@ function BookingsPage() {
               return (
                 <li
                   key={p.id}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+                  id={`pack-${p.id}`}
+                  className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+                    packParam === p.id ? "border-primary ring-2 ring-primary/30" : "border-border"
+                  }`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
