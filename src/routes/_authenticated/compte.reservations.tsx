@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, Home, Laptop, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
@@ -69,6 +69,7 @@ export function formatTimeRange(iso: string, durationMinutes: number) {
 
 function BookingsPage() {
   const { user } = Route.useRouteContext();
+  const { pack: packParam, booking: bookingParam, agenda: agendaParam } = Route.useSearch();
   const [cancelTarget, setCancelTarget] = useState<
     { id: string; scheduledAt: string; rescheduleUsed: boolean } | null
   >(null);
