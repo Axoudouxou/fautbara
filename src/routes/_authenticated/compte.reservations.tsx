@@ -16,12 +16,16 @@ import {
   formatDate,
 } from "@/lib/packs";
 
+type ReservationsSearch = { pack?: string; booking?: string; agenda?: boolean };
+
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    pack: typeof search.pack === "string" ? search.pack : undefined,
-    booking: typeof search.booking === "string" ? search.booking : undefined,
-    agenda: search.agenda === true || search.agenda === "1" ? true : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): ReservationsSearch => {
+    const out: ReservationsSearch = {};
+    if (typeof search["pack"] === "string") out.pack = search["pack"];
+    if (typeof search["booking"] === "string") out.booking = search["booking"];
+    if (search["agenda"] === true || search["agenda"] === "1") out.agenda = true;
+    return out;
+  },
   head: () => ({
     meta: [
       { title: "Mes formules et séances — BARA" },

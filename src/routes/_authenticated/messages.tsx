@@ -14,9 +14,8 @@ import {
 } from "@/lib/messaging";
 
 export const Route = createFileRoute("/_authenticated/messages")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    conversation: typeof search.conversation === "string" ? search.conversation : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { conversation?: string } =>
+    typeof search["conversation"] === "string" ? { conversation: search["conversation"] } : {},
   head: () => ({
     meta: [
       { title: "Messagerie — BARA" },
