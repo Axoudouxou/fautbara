@@ -49,6 +49,7 @@ const VIEWS: { key: View; label: string }[] = [
 
 function TeacherCoursesPage() {
   const { user } = Route.useRouteContext();
+  const { booking: bookingParam } = Route.useSearch();
   const [view, setView] = useState<View>("sessions");
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
 
