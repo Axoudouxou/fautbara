@@ -637,6 +637,8 @@ export type Database = {
         Row: {
           body: string | null
           created_at: string
+          entity_id: string | null
+          entity_type: string | null
           id: string
           kind: string
           link: string | null
@@ -647,6 +649,8 @@ export type Database = {
         Insert: {
           body?: string | null
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
           kind?: string
           link?: string | null
@@ -657,6 +661,8 @@ export type Database = {
         Update: {
           body?: string | null
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
           kind?: string
           link?: string | null
