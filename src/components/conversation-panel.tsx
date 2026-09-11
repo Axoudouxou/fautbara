@@ -746,25 +746,27 @@ function EditAssignmentForm({
   const save = useMutation({
     mutationFn: async () => {
       if (!title.trim()) throw new Error("Un titre est requis");
-      const patch: Record<string, unknown> = {
-        title: title.trim(),
-        description: description.trim() || null,
-        due_date: dueDate || null,
-      };
+      let uploaded: { path: string; name: string; size: number } | null = null;
       if (file) {
         if (file.size > MAX_FILE_BYTES) throw new Error("Fichier trop volumineux (10 Mo maximum)");
         const path = `${conversationId}/${crypto.randomUUID()}-${sanitize(file.name)}`;
         const up = await supabase.storage.from(BUCKET).upload(path, file);
         if (up.error) throw up.error;
-        patch.storage_path = path;
-        patch.file_name = file.name;
-        patch.file_size = file.size;
-      } else if (removeFile && assignment.storage_path) {
-        patch.storage_path = null;
-        patch.file_name = null;
-        patch.file_size = null;
+        uploaded = { path, name: file.name, size: file.size };
       }
-      const { error } = await supabase.from("assignments").update(patch).eq("id", assignment.id);
+      const { error } = await supabase
+        .from("assignments")
+        .update({
+          title: title.trim(),
+          description: description.trim() || null,
+          due_date: dueDate || null,
+          ...(uploaded
+            ? { storage_path: uploaded.path, file_name: uploaded.name, file_size: uploaded.size }
+            : removeFile && assignment.storage_path
+              ? { storage_path: null, file_name: null, file_size: null }
+              : {}),
+        })
+        .eq("id", assignment.id);
       if (error) throw error;
       // Nettoie l'ancien fichier une fois la mise à jour réussie.
       if ((file || removeFile) && assignment.storage_path) {
