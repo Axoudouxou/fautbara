@@ -1888,80 +1888,43 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      admin_set_teacher_verification:
-        | {
-            Args: {
-              p_identity_verified: boolean
-              p_qualifications_verified: boolean
-              p_teacher_id: string
-              p_verification_status: string
-            }
-            Returns: {
-              bio: string | null
-              created_at: string
-              headline: string | null
-              id: string
-              identity_verified: boolean
-              intro_video_url: string | null
-              languages: string[]
-              main_degree: string | null
-              offers_home: boolean
-              offers_online: boolean
-              qualifications_verified: boolean
-              teaching_method: string | null
-              updated_at: string
-              user_id: string
-              verification_decided_at: string | null
-              verification_note: string | null
-              verification_status: string
-              verification_submitted_at: string | null
-              years_experience: number | null
-              zones: string[]
-            }
-            SetofOptions: {
-              from: "*"
-              to: "teacher_profiles"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
-        | {
-            Args: {
-              p_identity_verified: boolean
-              p_note?: string
-              p_qualifications_verified: boolean
-              p_teacher_id: string
-              p_verification_status: string
-            }
-            Returns: {
-              bio: string | null
-              created_at: string
-              headline: string | null
-              id: string
-              identity_verified: boolean
-              intro_video_url: string | null
-              languages: string[]
-              main_degree: string | null
-              offers_home: boolean
-              offers_online: boolean
-              qualifications_verified: boolean
-              teaching_method: string | null
-              updated_at: string
-              user_id: string
-              verification_decided_at: string | null
-              verification_note: string | null
-              verification_status: string
-              verification_submitted_at: string | null
-              years_experience: number | null
-              zones: string[]
-            }
-            SetofOptions: {
-              from: "*"
-              to: "teacher_profiles"
-              isOneToOne: true
-              isSetofReturn: false
-            }
-          }
+      admin_set_teacher_verification: {
+        Args: {
+          p_identity_verified: boolean
+          p_note?: string
+          p_qualifications_verified: boolean
+          p_teacher_id: string
+          p_verification_status: string
+        }
+        Returns: {
+          bio: string | null
+          created_at: string
+          headline: string | null
+          id: string
+          identity_verified: boolean
+          intro_video_url: string | null
+          languages: string[]
+          main_degree: string | null
+          offers_home: boolean
+          offers_online: boolean
+          qualifications_verified: boolean
+          teaching_method: string | null
+          updated_at: string
+          user_id: string
+          verification_decided_at: string | null
+          verification_note: string | null
+          verification_status: string
+          verification_submitted_at: string | null
+          years_experience: number | null
+          zones: string[]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "teacher_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_pack_payment: {
         Args: { p_pack_id: string; p_reason?: string }
         Returns: {
