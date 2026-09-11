@@ -445,6 +445,7 @@ function PaymentPage() {
           </ul>
           <Link
             to="/comment-fonctionne-le-paiement"
+            search={{ retour: "paiement", packId }}
             className="inline-flex text-sm font-semibold text-primary hover:underline"
           >
             En savoir plus

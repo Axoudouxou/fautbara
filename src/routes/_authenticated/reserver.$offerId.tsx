@@ -297,14 +297,6 @@ function BookingPage() {
                           </dt>
                           <dd>Validité {q.validity_days} jours</dd>
                         </div>
-                        <div className="flex justify-between gap-2">
-                          <dt>Rémunération de l&apos;intervenant</dt>
-                          <dd className="text-foreground">{formatFcfa(q.teacher_amount_fcfa)}</dd>
-                        </div>
-                        <div className="flex justify-between gap-2">
-                          <dt>Frais BARA</dt>
-                          <dd className="text-foreground">{formatFcfa(q.platform_fee_fcfa)}</dd>
-                        </div>
                       </dl>
                       {!q.available && q.unavailable_reason && (
                         <p className="mt-2 text-xs font-semibold text-warning">{q.unavailable_reason}</p>
