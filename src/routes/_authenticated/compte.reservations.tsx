@@ -225,14 +225,6 @@ function BookingsPage() {
                       <dt className="text-muted-foreground">Programmable jusqu&apos;au</dt>
                       <dd className="text-foreground">{formatDate(p.expires_at)}</dd>
                     </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Rémunération intervenant</dt>
-                      <dd className="text-foreground">{formatFcfa(p.teacher_amount_fcfa)}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Frais BARA</dt>
-                      <dd className="text-foreground">{formatFcfa(p.platform_fee_fcfa)}</dd>
-                    </div>
                   </dl>
 
                   {p.free_sessions > 0 && (
