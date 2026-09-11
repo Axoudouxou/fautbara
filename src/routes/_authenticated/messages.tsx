@@ -14,6 +14,9 @@ import {
 } from "@/lib/messaging";
 
 export const Route = createFileRoute("/_authenticated/messages")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    conversation: typeof search.conversation === "string" ? search.conversation : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Messagerie — BARA" },
@@ -37,7 +40,8 @@ type EligiblePair = {
 
 function MessagesPage() {
   const { user } = Route.useRouteContext();
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const { conversation: conversationParam } = Route.useSearch();
+  const [activeId, setActiveId] = useState<string | null>(conversationParam ?? null);
   const [childFilter, setChildFilter] = useState<string>("all");
 
   // Un compte enfant (créé par le parent) n'a accès qu'aux devoirs.

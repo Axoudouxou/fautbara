@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { STATUS_LABELS, formatSlot, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/pro/cours")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    booking: typeof search.booking === "string" ? search.booking : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Mes cours — espace intervenant BARA" },
