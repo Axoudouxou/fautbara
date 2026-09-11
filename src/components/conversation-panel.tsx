@@ -722,6 +722,178 @@ function NewAssignmentForm({
   );
 }
 
+/**
+ * Modification d'un devoir déjà envoyé : corriger le titre, les consignes,
+ * l'échéance, ou remplacer/retirer un fichier joint par erreur. Le fichier
+ * remplacé est supprimé du stockage pour éviter toute confusion.
+ */
+function EditAssignmentForm({
+  assignment,
+  conversationId,
+  onSaved,
+}: {
+  assignment: AssignmentRow;
+  conversationId: string;
+  onSaved: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(assignment.title);
+  const [description, setDescription] = useState(assignment.description ?? "");
+  const [dueDate, setDueDate] = useState(assignment.due_date ?? "");
+  const [file, setFile] = useState<File | null>(null);
+  const [removeFile, setRemoveFile] = useState(false);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!title.trim()) throw new Error("Un titre est requis");
+      const patch: Record<string, unknown> = {
+        title: title.trim(),
+        description: description.trim() || null,
+        due_date: dueDate || null,
+      };
+      if (file) {
+        if (file.size > MAX_FILE_BYTES) throw new Error("Fichier trop volumineux (10 Mo maximum)");
+        const path = `${conversationId}/${crypto.randomUUID()}-${sanitize(file.name)}`;
+        const up = await supabase.storage.from(BUCKET).upload(path, file);
+        if (up.error) throw up.error;
+        patch.storage_path = path;
+        patch.file_name = file.name;
+        patch.file_size = file.size;
+      } else if (removeFile && assignment.storage_path) {
+        patch.storage_path = null;
+        patch.file_name = null;
+        patch.file_size = null;
+      }
+      const { error } = await supabase.from("assignments").update(patch).eq("id", assignment.id);
+      if (error) throw error;
+      // Nettoie l'ancien fichier une fois la mise à jour réussie.
+      if ((file || removeFile) && assignment.storage_path) {
+        await supabase.storage.from(BUCKET).remove([assignment.storage_path]);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Devoir mis à jour");
+      setOpen(false);
+      setFile(null);
+      setRemoveFile(false);
+      onSaved();
+    },
+    onError: (e: Error) => toast.error(e.message || "Modification impossible"),
+  });
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary"
+      >
+        <Pencil className="size-3.5" aria-hidden /> Modifier
+      </button>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        save.mutate();
+      }}
+      className="mt-3 space-y-3 rounded-2xl border border-border bg-secondary/40 p-4"
+    >
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Titre"
+        aria-label="Titre du devoir"
+        className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+      />
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={3}
+        placeholder="Consignes détaillées"
+        aria-label="Consignes"
+        className="w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+      />
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-xs font-semibold text-foreground">
+          À rendre le
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="ml-2 rounded-xl border border-input bg-background px-2 py-1.5 text-xs"
+          />
+        </label>
+        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:bg-secondary">
+          <Paperclip className="size-3.5" aria-hidden />
+          {file
+            ? file.name
+            : assignment.storage_path && !removeFile
+              ? `Remplacer « ${assignment.file_name ?? "le fichier"} »`
+              : "Joindre un fichier (10 Mo max)"}
+          <input
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              if (f && f.size > MAX_FILE_BYTES) {
+                toast.error("Fichier trop volumineux (10 Mo maximum)");
+                return;
+              }
+              setFile(f);
+              if (f) setRemoveFile(false);
+            }}
+          />
+        </label>
+        {assignment.storage_path && !file && !removeFile && (
+          <button
+            type="button"
+            onClick={() => setRemoveFile(true)}
+            className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10"
+          >
+            Retirer le fichier
+          </button>
+        )}
+        {removeFile && !file && (
+          <span className="inline-flex items-center gap-2 text-xs font-semibold text-destructive">
+            Le fichier actuel sera retiré.
+            <button
+              type="button"
+              onClick={() => setRemoveFile(false)}
+              className="underline hover:no-underline"
+            >
+              Annuler
+            </button>
+          </span>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={save.isPending}
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50"
+        >
+          {save.isPending && <Loader2 className="size-3.5 animate-spin" aria-hidden />}
+          Enregistrer
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+            setFile(null);
+            setRemoveFile(false);
+          }}
+          className="rounded-full border border-border px-4 py-2 text-xs font-semibold hover:bg-secondary"
+        >
+          Annuler
+        </button>
+      </div>
+    </form>
+  );
+}
+
 /** Carte structurée pour un événement de la réservation (pas du texte brut). */
 function SystemEventCard({ event }: { event: ConversationTimelineEvent }) {
   const dateTime = (iso: string) =>
