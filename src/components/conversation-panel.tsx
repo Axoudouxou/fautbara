@@ -13,6 +13,7 @@ import {
   MessageSquare,
   NotebookText,
   Paperclip,
+  Pencil,
   Send,
   Sparkles,
   Star,
@@ -548,6 +549,13 @@ export function ConversationPanel({
                     </button>
                   )}
                 </div>
+                {role === "teacher" && (
+                  <EditAssignmentForm
+                    assignment={a}
+                    conversationId={conversationId}
+                    onSaved={() => assignmentsQuery.refetch()}
+                  />
+                )}
               </li>
             ))}
           </ul>
