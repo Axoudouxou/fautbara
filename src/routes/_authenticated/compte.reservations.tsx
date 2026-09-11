@@ -181,6 +181,33 @@ function BookingsPage() {
                       <p className="mt-1 text-sm text-muted-foreground">
                         Pour {p.children?.first_name ?? "moi"} · {p.teacher_offers?.title}
                       </p>
+                      {teacher && (
+                        <Link
+                          to="/professeurs/$id"
+                          params={{ id: p.teacher_id }}
+                          className="mt-2 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 hover:bg-secondary"
+                        >
+                          <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-xs font-bold text-primary-soft-foreground">
+                            {teacher.avatar_url ? (
+                              <img
+                                src={teacher.avatar_url}
+                                alt={`Photo de ${teacher.display_name}`}
+                                className="size-full object-cover"
+                              />
+                            ) : (
+                              teacher.display_name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .slice(0, 2)
+                                .join("")
+                                .toUpperCase()
+                            )}
+                          </span>
+                          <span className="text-sm font-semibold text-foreground">
+                            {teacher.display_name}
+                          </span>
+                        </Link>
+                      )}
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>
                       {status.label}
