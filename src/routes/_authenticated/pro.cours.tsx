@@ -341,6 +341,7 @@ function TeacherCoursesPage() {
 function SessionCard({
   session,
   learner,
+  highlight = false,
 }: {
   session: {
     id: string;
