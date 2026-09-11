@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, Home, Laptop, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
@@ -16,7 +16,16 @@ import {
   formatDate,
 } from "@/lib/packs";
 
+type ReservationsSearch = { pack?: string; booking?: string; agenda?: boolean };
+
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
+  validateSearch: (search: Record<string, unknown>): ReservationsSearch => {
+    const out: ReservationsSearch = {};
+    if (typeof search["pack"] === "string") out.pack = search["pack"];
+    if (typeof search["booking"] === "string") out.booking = search["booking"];
+    if (search["agenda"] === true || search["agenda"] === "1") out.agenda = true;
+    return out;
+  },
   head: () => ({
     meta: [
       { title: "Mes formules et séances — BARA" },
@@ -64,6 +73,7 @@ export function formatTimeRange(iso: string, durationMinutes: number) {
 
 function BookingsPage() {
   const { user } = Route.useRouteContext();
+  const { pack: packParam, booking: bookingParam, agenda: agendaParam } = Route.useSearch();
   const [cancelTarget, setCancelTarget] = useState<
     { id: string; scheduledAt: string; rescheduleUsed: boolean } | null
   >(null);
@@ -121,6 +131,15 @@ function BookingsPage() {
   const teachers = teachersQuery.data ?? new Map<string, { display_name: string; avatar_url: string | null }>();
   const loading = packsQuery.isLoading || bookingsQuery.isLoading;
 
+  // Arrivée depuis une notification : on amène l'élément concerné à l'écran.
+  useEffect(() => {
+    if (loading) return;
+    const anchor = packParam ? `pack-${packParam}` : bookingParam ? `seance-${bookingParam}` : null;
+    if (!anchor) return;
+    document.getElementById(anchor)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [loading, packParam, bookingParam]);
+
+
   return (
     <div className="container-page py-10 sm:py-14">
       <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Mes cours</h1>
@@ -167,7 +186,10 @@ function BookingsPage() {
               return (
                 <li
                   key={p.id}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+                  id={`pack-${p.id}`}
+                  className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+                    packParam === p.id ? "border-primary ring-2 ring-primary/30" : "border-border"
+                  }`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -249,6 +271,7 @@ function BookingsPage() {
                       teacherId={p.teacher_id}
                       teacherName={teacher?.display_name}
                       durationMinutes={p.duration_minutes}
+                      defaultOpen={packParam === p.id && agendaParam === true}
                       sessionsLeft={left}
                       invalidateKeys={[
                         ["my-packs", user.id],
@@ -283,7 +306,10 @@ function BookingsPage() {
               return (
                 <li
                   key={b.id}
-                  className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+                  id={`seance-${b.id}`}
+                  className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+                    bookingParam === b.id ? "border-primary ring-2 ring-primary/30" : "border-border"
+                  }`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>

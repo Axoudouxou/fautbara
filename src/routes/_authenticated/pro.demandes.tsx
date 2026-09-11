@@ -252,24 +252,32 @@ function TeacherRequestsPage() {
               />
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {r.status === "accepted" &&
-                  new Date(r.scheduled_at).getTime() <= Date.now() && (
+                {r.status === "accepted" && (
+                  <>
                     <button
                       type="button"
                       onClick={() => statusMutation.mutate({ id: r.id, status: "completed" })}
-                      disabled={statusMutation.isPending}
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                      disabled={
+                        statusMutation.isPending ||
+                        new Date(r.scheduled_at).getTime() > Date.now()
+                      }
+                      title={
+                        new Date(r.scheduled_at).getTime() > Date.now()
+                          ? `Disponible à partir de l'heure prévue (${formatSlot(r.scheduled_at)})`
+                          : undefined
+                      }
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Check className="size-3.5" aria-hidden /> Marquer comme terminée
                     </button>
-                  )}
-                {r.status === "accepted" &&
-                  new Date(r.scheduled_at).getTime() > Date.now() && (
-                    <p className="w-full rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-                      Vous pourrez clôturer cette séance et remplir son compte-rendu à partir de
-                      l&apos;heure prévue ({formatSlot(r.scheduled_at)}).
-                    </p>
-                  )}
+                    {new Date(r.scheduled_at).getTime() > Date.now() && (
+                      <p className="w-full rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+                        Vous pourrez clôturer cette séance et remplir son compte-rendu à partir de
+                        l&apos;heure prévue ({formatSlot(r.scheduled_at)}).
+                      </p>
+                    )}
+                  </>
+                )}
                 {r.status === "completed" && (
                   <button
                     type="button"

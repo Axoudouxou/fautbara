@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { STATUS_LABELS, formatSlot, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/pro/cours")({
+  validateSearch: (search: Record<string, unknown>): { booking?: string } =>
+    typeof search["booking"] === "string" ? { booking: search["booking"] } : {},
   head: () => ({
     meta: [
       { title: "Mes cours — espace intervenant BARA" },
@@ -46,6 +48,7 @@ const VIEWS: { key: View; label: string }[] = [
 
 function TeacherCoursesPage() {
   const { user } = Route.useRouteContext();
+  const { booking: bookingParam } = Route.useSearch();
   const [view, setView] = useState<View>("sessions");
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
 
@@ -216,7 +219,12 @@ function TeacherCoursesPage() {
             ) : (
               <ul className="mt-4 space-y-4">
                 {upcoming.map((s) => (
-                  <SessionCard key={s.id} session={s} learner={learnerLabel(s)} />
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    learner={learnerLabel(s)}
+                    highlight={bookingParam === s.id}
+                  />
                 ))}
               </ul>
             )}
@@ -228,7 +236,12 @@ function TeacherCoursesPage() {
             ) : (
               <ul className="mt-4 space-y-4">
                 {past.map((s) => (
-                  <SessionCard key={s.id} session={s} learner={learnerLabel(s)} />
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    learner={learnerLabel(s)}
+                    highlight={bookingParam === s.id}
+                  />
                 ))}
               </ul>
             )}
@@ -327,6 +340,7 @@ function TeacherCoursesPage() {
 function SessionCard({
   session,
   learner,
+  highlight = false,
 }: {
   session: {
     id: string;
@@ -339,13 +353,18 @@ function SessionCard({
     teacher_offers: { title: string; subjects: { name: string } | null } | null;
   };
   learner: string;
+  highlight?: boolean;
 }) {
   const status = STATUS_LABELS[session.status] ?? {
     label: session.status,
     className: "bg-muted text-muted-foreground",
   };
   return (
-    <li className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+    <li
+      className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+        highlight ? "border-primary ring-2 ring-primary/30" : "border-border"
+      }`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-primary">

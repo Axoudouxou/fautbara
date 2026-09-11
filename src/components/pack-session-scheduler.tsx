@@ -12,6 +12,8 @@ type Props = {
   teacherName?: string | undefined;
   durationMinutes: number;
   sessionsLeft: number;
+  /** Ouvre l'agenda d'emblée (arrivée depuis une notification). */
+  defaultOpen?: boolean | undefined;
   invalidateKeys: unknown[][];
 };
 
@@ -26,10 +28,11 @@ export function PackSessionScheduler({
   teacherName,
   durationMinutes,
   sessionsLeft,
+  defaultOpen = false,
   invalidateKeys,
 }: Props) {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [slot, setSlot] = useState<{ date: string; time: string } | null>(null);
   const [message, setMessage] = useState("");
 

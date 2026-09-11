@@ -5,3 +5,5 @@
 ## À traiter
 - [x] Intervenant : erreur quand il marque une séance comme terminée — corrigé (bouton visible uniquement après l'heure prévue)
 - [x] Devoirs : modification et remplacement de fichier ajoutés pour l'intervenant
+
+- [x] Bouton « Marquer comme terminée » : toujours visible, grisé avant l'heure prévue

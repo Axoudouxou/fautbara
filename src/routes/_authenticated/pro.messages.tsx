@@ -9,6 +9,8 @@ import { ConversationPanel } from "@/components/conversation-panel";
 import { ensureConversation, initials, useConversations } from "@/lib/messaging";
 
 export const Route = createFileRoute("/_authenticated/pro/messages")({
+  validateSearch: (search: Record<string, unknown>): { conversation?: string } =>
+    typeof search["conversation"] === "string" ? { conversation: search["conversation"] } : {},
   head: () => ({
     meta: [
       { title: "Messagerie professeur — BARA" },
@@ -33,7 +35,8 @@ type Pair = {
 
 function TeacherMessages() {
   const { user } = Route.useRouteContext();
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const { conversation: conversationParam } = Route.useSearch();
+  const [activeId, setActiveId] = useState<string | null>(conversationParam ?? null);
 
   const conversationsQuery = useConversations(user.id, "teacher");
   const conversations = conversationsQuery.data ?? [];
