@@ -14,7 +14,6 @@ import {
   PACK_STATUS_LABELS,
   SESSION_STATUS_LABELS,
   formatDate,
-  formatFcfa,
 } from "@/lib/packs";
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
@@ -101,6 +100,25 @@ function BookingsPage() {
 
   const packs = packsQuery.data ?? [];
   const bookings = bookingsQuery.data ?? [];
+  const teacherIds = [
+    ...new Set([
+      ...packs.map((p) => p.teacher_id),
+      ...bookings.map((b) => b.teacher_id),
+    ]),
+  ];
+  const teachersQuery = useQuery({
+    queryKey: ["my-teachers", teacherIds],
+    enabled: teacherIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", teacherIds);
+      if (error) throw error;
+      return new Map(data.map((t) => [t.user_id, t]));
+    },
+  });
+  const teachers = teachersQuery.data ?? new Map<string, { display_name: string; avatar_url: string | null }>();
   const loading = packsQuery.isLoading || bookingsQuery.isLoading;
 
   return (
@@ -143,6 +161,7 @@ function BookingsPage() {
                 label: p.status,
                 className: "bg-muted text-muted-foreground",
               };
+              const teacher = teachers.get(p.teacher_id);
               const left = Math.max(p.sessions_total - p.sessions_used, 0);
               const expired = Boolean(p.expires_at && new Date(p.expires_at) <= new Date());
               return (
@@ -161,6 +180,33 @@ function BookingsPage() {
                       <p className="mt-1 text-sm text-muted-foreground">
                         Pour {p.children?.first_name ?? "moi"} · {p.teacher_offers?.title}
                       </p>
+                      {teacher && (
+                        <Link
+                          to="/professeurs/$id"
+                          params={{ id: p.teacher_id }}
+                          className="mt-2 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 hover:bg-secondary"
+                        >
+                          <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-xs font-bold text-primary-soft-foreground">
+                            {teacher.avatar_url ? (
+                              <img
+                                src={teacher.avatar_url}
+                                alt={`Photo de ${teacher.display_name}`}
+                                className="size-full object-cover"
+                              />
+                            ) : (
+                              teacher.display_name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .slice(0, 2)
+                                .join("")
+                                .toUpperCase()
+                            )}
+                          </span>
+                          <span className="text-sm font-semibold text-foreground">
+                            {teacher.display_name}
+                          </span>
+                        </Link>
+                      )}
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>
                       {status.label}
@@ -177,14 +223,6 @@ function BookingsPage() {
                     <div className="flex justify-between gap-3">
                       <dt className="text-muted-foreground">Programmable jusqu&apos;au</dt>
                       <dd className="text-foreground">{formatDate(p.expires_at)}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Rémunération intervenant</dt>
-                      <dd className="text-foreground">{formatFcfa(p.teacher_amount_fcfa)}</dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Frais BARA</dt>
-                      <dd className="text-foreground">{formatFcfa(p.platform_fee_fcfa)}</dd>
                     </div>
                   </dl>
 
@@ -209,6 +247,7 @@ function BookingsPage() {
                     <PackSessionScheduler
                       packId={p.id}
                       teacherId={p.teacher_id}
+                      teacherName={teacher?.display_name}
                       durationMinutes={p.duration_minutes}
                       sessionsLeft={left}
                       invalidateKeys={[

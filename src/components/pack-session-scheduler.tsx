@@ -9,6 +9,7 @@ import { AvailabilitySlotGrid, abidjanSlotDate, formatAbidjan } from "@/componen
 type Props = {
   packId: string;
   teacherId: string;
+  teacherName?: string | undefined;
   durationMinutes: number;
   sessionsLeft: number;
   invalidateKeys: unknown[][];
@@ -22,6 +23,7 @@ type Props = {
 export function PackSessionScheduler({
   packId,
   teacherId,
+  teacherName,
   durationMinutes,
   sessionsLeft,
   invalidateKeys,
@@ -76,7 +78,7 @@ export function PackSessionScheduler({
   return (
     <div className="mt-3 space-y-3 rounded-2xl border border-border bg-background p-4">
       <p className="text-sm font-semibold text-foreground">
-        Choisissez un créneau dans l&apos;agenda de l&apos;intervenant
+        Choisissez un créneau dans l&apos;agenda de {teacherName ?? "l'intervenant"}
       </p>
       <AvailabilitySlotGrid
         teacherId={teacherId}
