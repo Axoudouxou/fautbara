@@ -220,7 +220,12 @@ function TeacherCoursesPage() {
             ) : (
               <ul className="mt-4 space-y-4">
                 {upcoming.map((s) => (
-                  <SessionCard key={s.id} session={s} learner={learnerLabel(s)} />
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    learner={learnerLabel(s)}
+                    highlight={bookingParam === s.id}
+                  />
                 ))}
               </ul>
             )}
@@ -232,7 +237,12 @@ function TeacherCoursesPage() {
             ) : (
               <ul className="mt-4 space-y-4">
                 {past.map((s) => (
-                  <SessionCard key={s.id} session={s} learner={learnerLabel(s)} />
+                  <SessionCard
+                    key={s.id}
+                    session={s}
+                    learner={learnerLabel(s)}
+                    highlight={bookingParam === s.id}
+                  />
                 ))}
               </ul>
             )}
@@ -343,6 +353,7 @@ function SessionCard({
     teacher_offers: { title: string; subjects: { name: string } | null } | null;
   };
   learner: string;
+  highlight?: boolean;
 }) {
   const status = STATUS_LABELS[session.status] ?? {
     label: session.status,
