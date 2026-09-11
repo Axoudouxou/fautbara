@@ -101,6 +101,25 @@ function BookingsPage() {
 
   const packs = packsQuery.data ?? [];
   const bookings = bookingsQuery.data ?? [];
+  const teacherIds = [
+    ...new Set([
+      ...packs.map((p) => p.teacher_id),
+      ...bookings.map((b) => b.teacher_id),
+    ]),
+  ];
+  const teachersQuery = useQuery({
+    queryKey: ["my-teachers", teacherIds],
+    enabled: teacherIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", teacherIds);
+      if (error) throw error;
+      return new Map(data.map((t) => [t.user_id, t]));
+    },
+  });
+  const teachers = teachersQuery.data ?? new Map<string, { display_name: string; avatar_url: string | null }>();
   const loading = packsQuery.isLoading || bookingsQuery.isLoading;
 
   return (
@@ -143,6 +162,7 @@ function BookingsPage() {
                 label: p.status,
                 className: "bg-muted text-muted-foreground",
               };
+              const teacher = teachers.get(p.teacher_id);
               const left = Math.max(p.sessions_total - p.sessions_used, 0);
               const expired = Boolean(p.expires_at && new Date(p.expires_at) <= new Date());
               return (
