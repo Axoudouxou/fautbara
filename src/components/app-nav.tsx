@@ -65,7 +65,7 @@ const parentTabs: Tab[] = [
   accountTab,
 ];
 
-/** Étudiant / adulte : Accueil · Mes cours · Rechercher · Messages · Mon compte */
+/** Étudiant / adulte : Accueil · Mon parcours · Mes cours · Rechercher · Mon compte */
 const studentTabs: Tab[] = [
   homeTab,
   { label: "Mon parcours", short: "Parcours", icon: RouteIcon, link: linkOptions({ to: "/parcours" }) },
@@ -92,7 +92,7 @@ const childTabs: Tab[] = [
   { label: "Messages", short: "Messages", icon: MessageSquare, link: linkOptions({ to: "/messages" }) },
 ];
 
-/** Intervenant : Accueil · Mes cours · Mes offres · Demandes · Mon compte */
+/** Intervenant : Accueil · Mes élèves · Agenda · Demandes · Mon compte */
 const teacherTabs: Tab[] = [
   homeTab,
   { label: "Mes élèves", short: "Élèves", icon: Users, link: linkOptions({ to: "/pro/cours", search: { view: "students" } }) },
@@ -156,9 +156,6 @@ export function AppTabsBar({ role, isChild = false }: { role: AppRole | null; is
 export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | null; isChild?: boolean }) {
   const tabs = tabsForRole(role, isChild);
   const hasPrimaryAction = role !== "admin" && !isChild;
-  const mobileTabs = hasPrimaryAction ? [tabs[0], tabs[1], tabs.at(-2), tabs.at(-1)].filter((tab): tab is Tab => Boolean(tab)) : tabs;
-  const firstHalf = mobileTabs.slice(0, 2);
-  const secondHalf = mobileTabs.slice(2);
 
   const renderTab = (tab: Tab) => {
     const Icon = tab.icon;
@@ -183,10 +180,9 @@ export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | nu
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       aria-label="Navigation de l'application"
     >
-      <ul className="grid grid-cols-5 items-end">
-        {firstHalf.map(renderTab)}
-        {hasPrimaryAction && <li className="relative flex min-h-16 items-center justify-center"><MobilePrimaryAction role={role} /></li>}
-        {secondHalf.map(renderTab)}
+      <ul className="relative grid grid-cols-5 items-end">
+        {tabs.map(renderTab)}
+        {hasPrimaryAction && <li className="pointer-events-none absolute inset-x-0 top-0 flex justify-center"><MobilePrimaryAction role={role} /></li>}
       </ul>
     </nav>
   );
@@ -200,7 +196,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
           <Button
             type="button"
             size="icon"
-            className="absolute bottom-3 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]"
+            className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]"
             aria-label="Ajouter ou gérer mon activité"
           >
             <Plus className="size-5" aria-hidden />
@@ -219,7 +215,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
   }
 
   return (
-    <Button asChild size="icon" className="absolute bottom-3 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
+    <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
       <Link
         to="/professeurs"
         search={{}}

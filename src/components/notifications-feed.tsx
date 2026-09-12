@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Bell, Check, ChevronRight, CircleAlert, Info, Sparkles } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { notificationTarget } from "@/lib/notification-links";
 
@@ -78,13 +79,15 @@ export function NotificationsFeed({ userId }: { userId: string }) {
                 <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
               ) : (
                 !n.read_at && (
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    variant="outline"
                     onClick={() => markRead.mutate(n.id)}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-secondary"
+                    className="h-7 shrink-0 rounded-full px-3 text-[11px] text-muted-foreground"
                   >
                     <Check className="size-3" aria-hidden /> Lu
-                  </button>
+                  </Button>
                 )
               )}
             </>
