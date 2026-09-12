@@ -5,15 +5,12 @@ import {
   ArrowRight,
   BookOpen,
   CalendarDays,
-  Clock3,
   Laptop,
   Loader2,
   MapPin,
   MessageCircle,
-  Package,
   Pencil,
   Target,
-  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -280,100 +277,107 @@ function LearningJourneyPage() {
             const progress = Math.min(pack.sessions_used, pack.sessions_total);
 
             return (
-              <article key={pack.id} className="overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5">
-                <div className="grid min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_15rem] lg:grid-cols-[minmax(0,1fr)_18rem]">
-                  <div className="min-w-0">
-                    <div className="flex items-start gap-3">
-                      <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
-                        <BookOpen className="size-6" aria-hidden />
+              <article
+                key={pack.id}
+                className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]"
+              >
+                <Link
+                  to="/matiere/$packId"
+                  params={{ packId: pack.id }}
+                  className="block p-4 hover:bg-secondary/30"
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
+                      <BookOpen className="size-5" aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-display text-base font-bold text-foreground">{title}</span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        Avec {teacher?.display_name ?? "Intervenant"}
                       </span>
-                      <div className="min-w-0">
-                        <h2 className="font-display text-base font-bold text-foreground sm:text-lg">{title}</h2>
-                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                          {learningObjectiveLabel(objective) || "Objectif à préciser"}
-                        </p>
-                      </div>
-                    </div>
+                    </span>
+                    <UserAvatar
+                      name={teacher?.display_name ?? "Intervenant"}
+                      src={teacher?.avatar_url}
+                      className="ml-auto size-8 shrink-0 rounded-full"
+                    />
+                  </span>
 
-                    <dl className="mt-4 space-y-2 text-xs sm:text-sm">
-                      <div className="flex items-start gap-2">
-                        <BookOpen className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                        <dt className="font-semibold text-foreground">Matière :</dt>
-                        <dd className="min-w-0 text-muted-foreground">{subject}</dd>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Target className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                        <dt className="font-semibold text-foreground">Objectif :</dt>
-                        <dd className="min-w-0 text-muted-foreground">{learningObjectiveLabel(objective) || "À préciser"}</dd>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <UserRound className="size-4 shrink-0 text-primary" aria-hidden />
-                        <dt className="font-semibold text-foreground">Intervenant :</dt>
-                        <dd className="min-w-0 truncate text-muted-foreground">{teacher?.display_name ?? "Intervenant"}</dd>
-                        <UserAvatar name={teacher?.display_name ?? "Intervenant"} src={teacher?.avatar_url} className="size-7 shrink-0 rounded-full" />
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Package className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                        <dt className="font-semibold text-foreground">Formule :</dt>
-                        <dd className="min-w-0 text-muted-foreground">
-                          {pack.pack_types?.name ?? pack.pack_slug} · {pack.sessions_total} séances
-                        </dd>
-                      </div>
-                    </dl>
+                  <span className="mt-3 flex min-w-0 items-start gap-2">
+                    <Target className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                    <span className="min-w-0">
+                      <span className="block text-[11px] text-muted-foreground">Objectif</span>
+                      <span className="block text-sm font-semibold text-foreground">
+                        {learningObjectiveLabel(objective) || "À préciser"}
+                      </span>
+                    </span>
+                  </span>
 
-                    <div className="mt-4 rounded-xl bg-secondary px-3 py-3">
-                      <div className="flex items-center justify-between gap-3 text-xs">
-                        <span className="font-semibold text-foreground">
-                          {left} séance{left > 1 ? "s" : ""} restante{left > 1 ? "s" : ""} sur {pack.sessions_total}
-                        </span>
-                        <span className="shrink-0 text-muted-foreground">{Math.round((progress / Math.max(pack.sessions_total, 1)) * 100)} %</span>
-                      </div>
-                      <div className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.max(pack.sessions_total, 1)}, minmax(0, 1fr))` }}>
-                        {Array.from({ length: Math.max(pack.sessions_total, 1) }).map((_, index) => (
-                          <span key={index} className={`h-1.5 rounded-full ${index < progress ? "bg-primary" : "bg-border"}`} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex min-w-0 flex-col gap-2">
-                    <div className="rounded-2xl bg-secondary p-4">
-                      <div className="flex gap-3">
-                        <CalendarDays className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">Prochain cours</p>
-                          {next ? (
-                            <>
-                              <p className="mt-0.5 text-sm font-bold capitalize text-foreground">{formatCourseDay(next.scheduled_at)}</p>
-                              <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Clock3 className="size-3.5" aria-hidden /> {formatCourseTime(next.scheduled_at, next.duration_minutes)}
-                              </p>
-                              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                                {next.format === "online" ? <Laptop className="size-3.5" aria-hidden /> : <MapPin className="size-3.5" aria-hidden />}
-                                {next.format === "online" ? "En ligne" : `À domicile${next.commune ? ` · ${next.commune}` : ""}`}
-                              </p>
-                            </>
-                          ) : (
-                            <p className="mt-1 text-sm font-semibold text-foreground">Aucune séance programmée</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <Button asChild className="h-10 w-full rounded-xl">
-                      <Link to="/matiere/$packId" params={{ packId: pack.id }}>
-                        Voir le parcours <ArrowRight aria-hidden />
-                      </Link>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={contactTeacher.isPending}
-                      onClick={() => contactTeacher.mutate(pack.teacher_id)}
-                      className="h-10 w-full rounded-xl"
+                  <span className="mt-3 block">
+                    <span className="block text-xs font-semibold text-foreground">
+                      {progress} sur {pack.sessions_total} séances
+                    </span>
+                    <span
+                      className="mt-2 grid gap-1"
+                      style={{ gridTemplateColumns: `repeat(${Math.max(pack.sessions_total, 1)}, minmax(0, 1fr))` }}
                     >
-                      <MessageCircle aria-hidden /> Contacter l’intervenant
-                    </Button>
-                  </div>
+                      {Array.from({ length: Math.max(pack.sessions_total, 1) }).map((_, index) => (
+                        <span key={index} className={`h-1.5 rounded-full ${index < progress ? "bg-primary" : "bg-border"}`} />
+                      ))}
+                    </span>
+                  </span>
+                </Link>
+
+                <div className="border-t border-border">
+                  {next ? (
+                    <Link
+                      to="/seance/$bookingId"
+                      params={{ bookingId: next.id }}
+                      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-4 hover:bg-secondary/30"
+                    >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
+                        <CalendarDays className="size-4" aria-hidden />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] text-muted-foreground">Prochain cours</span>
+                        <span className="block truncate text-sm font-semibold capitalize text-foreground">
+                          {formatCourseDay(next.scheduled_at)} • {formatCourseTime(next.scheduled_at, next.duration_minutes)}
+                        </span>
+                        <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          {next.format === "online" ? <Laptop className="size-3" aria-hidden /> : <MapPin className="size-3" aria-hidden />}
+                          {next.format === "online" ? "En ligne" : `À domicile${next.commune ? ` · ${next.commune}` : ""}`}
+                        </span>
+                      </span>
+                      <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </Link>
+                  ) : (
+                    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 p-4">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
+                        <CalendarDays className="size-4" aria-hidden />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[11px] text-muted-foreground">Prochain cours</span>
+                        <span className="block text-sm font-semibold text-foreground">Aucune séance programmée</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 border-t border-border p-3">
+                  <Button asChild variant="secondary" className="h-10 rounded-xl">
+                    <Link to="/matiere/$packId" params={{ packId: pack.id }}>
+                      Voir le parcours <ArrowRight aria-hidden />
+                    </Link>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={contactTeacher.isPending}
+                    onClick={() => contactTeacher.mutate(pack.teacher_id)}
+                    className="h-10 min-w-0 rounded-xl"
+                  >
+                    <MessageCircle aria-hidden /> <span className="truncate">Contacter</span>
+                  </Button>
                 </div>
               </article>
             );
