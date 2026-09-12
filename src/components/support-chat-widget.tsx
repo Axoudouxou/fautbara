@@ -64,14 +64,14 @@ export function SupportChatWidget() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Aide BARA"
-          className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-3 z-30 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-card)] transition-transform hover:scale-105 md:bottom-6 md:right-6 md:z-50 md:size-14"
+          className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-50 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-card)] md:bottom-6 md:right-6 md:size-14"
         >
           <MessageCircle className="size-6" aria-hidden />
         </button>
       )}
 
       {open && (
-        <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-3 z-[60] flex max-h-[min(70vh,32rem)] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] md:bottom-6 md:right-6">
+        <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-3 z-[60] flex max-h-[calc(100dvh-7rem-env(safe-area-inset-bottom))] w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)] md:bottom-6 md:right-6 md:max-h-[min(70vh,32rem)]">
           <div className="flex items-center justify-between gap-2 border-b border-border/60 bg-secondary/50 px-4 py-3">
             <div className="flex items-center gap-2">
               {(category || entry) && (

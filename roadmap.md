@@ -43,9 +43,13 @@
 - [ ] Reprise complète des 22 écrans à l'identique de la maquette (ordre : Parent, Adulte, Intervenant) — attente du renvoi de l'image de référence
 
 ## Corrections demandées — navigation, parcours et compte
-- [ ] Fixer le bouton central `+` et le chatbot sans chevauchement sur mobile
+- [x] Fixer le bouton central `+` et le chatbot sans chevauchement sur mobile
 - [ ] Remplacer l’objectif libre par une sélection prédéfinie affichée dans le parcours
 - [ ] Utiliser les niveaux scolaires prédéfinis partout où la classe est modifiable
 - [ ] Rendre les profils enfants modifiables, avec informations de parcours et photo
 - [ ] Ajouter la suppression sécurisée et irréversible du compte avec double confirmation
 - [ ] Vérifier ces parcours sur mobile pendant le défilement et sur ordinateur
+
+## Notifications et actions mobiles
+- [x] Remplacer les widgets de notifications des accueils par une cloche avec compteur dans l’en-tête
+- [ ] Vérifier la cloche et les boutons fixes pendant un défilement mobile réel
