@@ -42,18 +42,23 @@ import { Route as AuthenticatedCompteReservationsRouteImport } from './routes/_a
 import { Route as AuthenticatedMatierePackIdRouteImport } from './routes/_authenticated/matiere.$packId'
 import { Route as AuthenticatedPaiementPackIdRouteImport } from './routes/_authenticated/paiement.$packId'
 import { Route as AuthenticatedProIndexRouteImport } from './routes/_authenticated/pro.index'
+import { Route as AuthenticatedProAgendaRouteImport } from './routes/_authenticated/pro.agenda'
 import { Route as AuthenticatedProCoursRouteImport } from './routes/_authenticated/pro.cours'
 import { Route as AuthenticatedProDemandesRouteImport } from './routes/_authenticated/pro.demandes'
 import { Route as AuthenticatedProDisponibilitesRouteImport } from './routes/_authenticated/pro.disponibilites'
 import { Route as AuthenticatedProMessagesRouteImport } from './routes/_authenticated/pro.messages'
 import { Route as AuthenticatedProOffresRouteImport } from './routes/_authenticated/pro.offres'
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
+import { Route as AuthenticatedProProgressionRouteImport } from './routes/_authenticated/pro.progression'
+import { Route as AuthenticatedProRemunerationsRouteImport } from './routes/_authenticated/pro.remunerations'
 import { Route as AuthenticatedProVerificationRouteImport } from './routes/_authenticated/pro.verification'
 import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
 import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/backend-config'
 import { Route as AuthenticatedCompteEnfantsIndexRouteImport } from './routes/_authenticated/compte.enfants.index'
 import { Route as AuthenticatedCompteEnfantsChildIdRouteImport } from './routes/_authenticated/compte.enfants.$childId'
 import { Route as AuthenticatedCompteProgrammerPackIdRouteImport } from './routes/_authenticated/compte.programmer.$packId'
+import { Route as AuthenticatedProElevesIndexRouteImport } from './routes/_authenticated/pro.eleves.index'
+import { Route as AuthenticatedProElevesLearnerIdRouteImport } from './routes/_authenticated/pro.eleves.$learnerId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -234,6 +239,11 @@ const AuthenticatedProIndexRoute = AuthenticatedProIndexRouteImport.update({
   path: '/pro/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProAgendaRoute = AuthenticatedProAgendaRouteImport.update({
+  id: '/pro/agenda',
+  path: '/pro/agenda',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProCoursRoute = AuthenticatedProCoursRouteImport.update({
   id: '/pro/cours',
   path: '/pro/cours',
@@ -267,6 +277,18 @@ const AuthenticatedProProfilRoute = AuthenticatedProProfilRouteImport.update({
   path: '/pro/profil',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProProgressionRoute =
+  AuthenticatedProProgressionRouteImport.update({
+    id: '/pro/progression',
+    path: '/pro/progression',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProRemunerationsRoute =
+  AuthenticatedProRemunerationsRouteImport.update({
+    id: '/pro/remunerations',
+    path: '/pro/remunerations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProVerificationRoute =
   AuthenticatedProVerificationRouteImport.update({
     id: '/pro/verification',
@@ -302,6 +324,18 @@ const AuthenticatedCompteProgrammerPackIdRoute =
     path: '/compte/programmer/$packId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProElevesIndexRoute =
+  AuthenticatedProElevesIndexRouteImport.update({
+    id: '/pro/eleves/',
+    path: '/pro/eleves/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProElevesLearnerIdRoute =
+  AuthenticatedProElevesLearnerIdRouteImport.update({
+    id: '/pro/eleves/$learnerId',
+    path: '/pro/eleves/$learnerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -333,12 +367,15 @@ export interface FileRoutesByFullPath {
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/matiere/$packId': typeof AuthenticatedMatierePackIdRoute
   '/paiement/$packId': typeof AuthenticatedPaiementPackIdRoute
+  '/pro/agenda': typeof AuthenticatedProAgendaRoute
   '/pro/cours': typeof AuthenticatedProCoursRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/messages': typeof AuthenticatedProMessagesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro/progression': typeof AuthenticatedProProgressionRoute
+  '/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
@@ -347,7 +384,9 @@ export interface FileRoutesByFullPath {
   '/pro/': typeof AuthenticatedProIndexRoute
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
+  '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
   '/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
+  '/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -379,12 +418,15 @@ export interface FileRoutesByTo {
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/matiere/$packId': typeof AuthenticatedMatierePackIdRoute
   '/paiement/$packId': typeof AuthenticatedPaiementPackIdRoute
+  '/pro/agenda': typeof AuthenticatedProAgendaRoute
   '/pro/cours': typeof AuthenticatedProCoursRoute
   '/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/pro/messages': typeof AuthenticatedProMessagesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro/progression': typeof AuthenticatedProProgressionRoute
+  '/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
@@ -393,7 +435,9 @@ export interface FileRoutesByTo {
   '/pro': typeof AuthenticatedProIndexRoute
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
+  '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsIndexRoute
+  '/pro/eleves': typeof AuthenticatedProElevesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -427,12 +471,15 @@ export interface FileRoutesById {
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
   '/_authenticated/matiere/$packId': typeof AuthenticatedMatierePackIdRoute
   '/_authenticated/paiement/$packId': typeof AuthenticatedPaiementPackIdRoute
+  '/_authenticated/pro/agenda': typeof AuthenticatedProAgendaRoute
   '/_authenticated/pro/cours': typeof AuthenticatedProCoursRoute
   '/_authenticated/pro/demandes': typeof AuthenticatedProDemandesRoute
   '/_authenticated/pro/disponibilites': typeof AuthenticatedProDisponibilitesRoute
   '/_authenticated/pro/messages': typeof AuthenticatedProMessagesRoute
   '/_authenticated/pro/offres': typeof AuthenticatedProOffresRoute
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
+  '/_authenticated/pro/progression': typeof AuthenticatedProProgressionRoute
+  '/_authenticated/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/_authenticated/pro/verification': typeof AuthenticatedProVerificationRoute
   '/_authenticated/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
@@ -441,7 +488,9 @@ export interface FileRoutesById {
   '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
   '/_authenticated/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/_authenticated/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
+  '/_authenticated/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
   '/_authenticated/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
+  '/_authenticated/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -475,12 +524,15 @@ export interface FileRouteTypes {
     | '/compte/reservations'
     | '/matiere/$packId'
     | '/paiement/$packId'
+    | '/pro/agenda'
     | '/pro/cours'
     | '/pro/demandes'
     | '/pro/disponibilites'
     | '/pro/messages'
     | '/pro/offres'
     | '/pro/profil'
+    | '/pro/progression'
+    | '/pro/remunerations'
     | '/pro/verification'
     | '/reserver/$offerId'
     | '/api/public/backend-config'
@@ -489,7 +541,9 @@ export interface FileRouteTypes {
     | '/pro/'
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
+    | '/pro/eleves/$learnerId'
     | '/compte/enfants/'
+    | '/pro/eleves/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -521,12 +575,15 @@ export interface FileRouteTypes {
     | '/compte/reservations'
     | '/matiere/$packId'
     | '/paiement/$packId'
+    | '/pro/agenda'
     | '/pro/cours'
     | '/pro/demandes'
     | '/pro/disponibilites'
     | '/pro/messages'
     | '/pro/offres'
     | '/pro/profil'
+    | '/pro/progression'
+    | '/pro/remunerations'
     | '/pro/verification'
     | '/reserver/$offerId'
     | '/api/public/backend-config'
@@ -535,7 +592,9 @@ export interface FileRouteTypes {
     | '/pro'
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
+    | '/pro/eleves/$learnerId'
     | '/compte/enfants'
+    | '/pro/eleves'
   id:
     | '__root__'
     | '/'
@@ -568,12 +627,15 @@ export interface FileRouteTypes {
     | '/_authenticated/compte/reservations'
     | '/_authenticated/matiere/$packId'
     | '/_authenticated/paiement/$packId'
+    | '/_authenticated/pro/agenda'
     | '/_authenticated/pro/cours'
     | '/_authenticated/pro/demandes'
     | '/_authenticated/pro/disponibilites'
     | '/_authenticated/pro/messages'
     | '/_authenticated/pro/offres'
     | '/_authenticated/pro/profil'
+    | '/_authenticated/pro/progression'
+    | '/_authenticated/pro/remunerations'
     | '/_authenticated/pro/verification'
     | '/_authenticated/reserver/$offerId'
     | '/api/public/backend-config'
@@ -582,7 +644,9 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/'
     | '/_authenticated/compte/enfants/$childId'
     | '/_authenticated/compte/programmer/$packId'
+    | '/_authenticated/pro/eleves/$learnerId'
     | '/_authenticated/compte/enfants/'
+    | '/_authenticated/pro/eleves/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -833,6 +897,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/agenda': {
+      id: '/_authenticated/pro/agenda'
+      path: '/pro/agenda'
+      fullPath: '/pro/agenda'
+      preLoaderRoute: typeof AuthenticatedProAgendaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pro/cours': {
       id: '/_authenticated/pro/cours'
       path: '/pro/cours'
@@ -873,6 +944,20 @@ declare module '@tanstack/react-router' {
       path: '/pro/profil'
       fullPath: '/pro/profil'
       preLoaderRoute: typeof AuthenticatedProProfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro/progression': {
+      id: '/_authenticated/pro/progression'
+      path: '/pro/progression'
+      fullPath: '/pro/progression'
+      preLoaderRoute: typeof AuthenticatedProProgressionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro/remunerations': {
+      id: '/_authenticated/pro/remunerations'
+      path: '/pro/remunerations'
+      fullPath: '/pro/remunerations'
+      preLoaderRoute: typeof AuthenticatedProRemunerationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/pro/verification': {
@@ -917,6 +1002,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompteProgrammerPackIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/eleves/': {
+      id: '/_authenticated/pro/eleves/'
+      path: '/pro/eleves'
+      fullPath: '/pro/eleves/'
+      preLoaderRoute: typeof AuthenticatedProElevesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro/eleves/$learnerId': {
+      id: '/_authenticated/pro/eleves/$learnerId'
+      path: '/pro/eleves/$learnerId'
+      fullPath: '/pro/eleves/$learnerId'
+      preLoaderRoute: typeof AuthenticatedProElevesLearnerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -940,12 +1039,15 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
   AuthenticatedMatierePackIdRoute: typeof AuthenticatedMatierePackIdRoute
   AuthenticatedPaiementPackIdRoute: typeof AuthenticatedPaiementPackIdRoute
+  AuthenticatedProAgendaRoute: typeof AuthenticatedProAgendaRoute
   AuthenticatedProCoursRoute: typeof AuthenticatedProCoursRoute
   AuthenticatedProDemandesRoute: typeof AuthenticatedProDemandesRoute
   AuthenticatedProDisponibilitesRoute: typeof AuthenticatedProDisponibilitesRoute
   AuthenticatedProMessagesRoute: typeof AuthenticatedProMessagesRoute
   AuthenticatedProOffresRoute: typeof AuthenticatedProOffresRoute
   AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
+  AuthenticatedProProgressionRoute: typeof AuthenticatedProProgressionRoute
+  AuthenticatedProRemunerationsRoute: typeof AuthenticatedProRemunerationsRoute
   AuthenticatedProVerificationRoute: typeof AuthenticatedProVerificationRoute
   AuthenticatedReserverOfferIdRoute: typeof AuthenticatedReserverOfferIdRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -953,7 +1055,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProIndexRoute: typeof AuthenticatedProIndexRoute
   AuthenticatedCompteEnfantsChildIdRoute: typeof AuthenticatedCompteEnfantsChildIdRoute
   AuthenticatedCompteProgrammerPackIdRoute: typeof AuthenticatedCompteProgrammerPackIdRoute
+  AuthenticatedProElevesLearnerIdRoute: typeof AuthenticatedProElevesLearnerIdRoute
   AuthenticatedCompteEnfantsIndexRoute: typeof AuthenticatedCompteEnfantsIndexRoute
+  AuthenticatedProElevesIndexRoute: typeof AuthenticatedProElevesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -977,12 +1081,15 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,
   AuthenticatedMatierePackIdRoute: AuthenticatedMatierePackIdRoute,
   AuthenticatedPaiementPackIdRoute: AuthenticatedPaiementPackIdRoute,
+  AuthenticatedProAgendaRoute: AuthenticatedProAgendaRoute,
   AuthenticatedProCoursRoute: AuthenticatedProCoursRoute,
   AuthenticatedProDemandesRoute: AuthenticatedProDemandesRoute,
   AuthenticatedProDisponibilitesRoute: AuthenticatedProDisponibilitesRoute,
   AuthenticatedProMessagesRoute: AuthenticatedProMessagesRoute,
   AuthenticatedProOffresRoute: AuthenticatedProOffresRoute,
   AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
+  AuthenticatedProProgressionRoute: AuthenticatedProProgressionRoute,
+  AuthenticatedProRemunerationsRoute: AuthenticatedProRemunerationsRoute,
   AuthenticatedProVerificationRoute: AuthenticatedProVerificationRoute,
   AuthenticatedReserverOfferIdRoute: AuthenticatedReserverOfferIdRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
@@ -992,7 +1099,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedCompteEnfantsChildIdRoute,
   AuthenticatedCompteProgrammerPackIdRoute:
     AuthenticatedCompteProgrammerPackIdRoute,
+  AuthenticatedProElevesLearnerIdRoute: AuthenticatedProElevesLearnerIdRoute,
   AuthenticatedCompteEnfantsIndexRoute: AuthenticatedCompteEnfantsIndexRoute,
+  AuthenticatedProElevesIndexRoute: AuthenticatedProElevesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

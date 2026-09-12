@@ -36,3 +36,7 @@
 - [x] Aligner les 7 écrans Adulte et compléter les vues matière/compte-rendu
 - [ ] Aligner les 8 écrans Intervenant et compléter élève/rémunérations/progression
 - [ ] Vérifier les trois rôles sur mobile et ordinateur
+
+## Fidélité à la maquette envoyée
+- [x] Écrans Intervenant : accueil du jour, mes élèves, fiche élève, agenda, rémunérations, ma progression
+- [ ] Reprendre écran par écran la maquette envoyée et corriger chaque écart signalé par l'utilisateur

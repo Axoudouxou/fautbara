@@ -48,7 +48,8 @@ export function accountTabs(isTeacher: boolean): SectionTab[] {
   if (isTeacher) {
     tabs.push({ label: "Profil public", to: "/pro/profil" });
     tabs.push({ label: "Vérification", to: "/pro/verification" });
-    tabs.push({ label: "Revenus", to: "/compte/portefeuille" });
+    tabs.push({ label: "Rémunérations", to: "/pro/remunerations" });
+    tabs.push({ label: "Ma progression", to: "/pro/progression" });
   } else {
     tabs.push({ label: "Paiements", to: "/compte/portefeuille" });
   }
