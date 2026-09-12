@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, CalendarClock, ClipboardList, Loader2, Target } from "lucide-react";
 
-import { EmptyState, ProgressBar } from "@/components/product-ui";
+import { EmptyState, ProgressBar, StatTile } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/packs";
 
@@ -50,13 +50,22 @@ function LearningJourneyPage() {
   const sessionsLeft = activePack ? Math.max(activePack.sessions_total - activePack.sessions_used, 0) : 0;
   const objectiveLabels: Record<string, string> = { exam: "Réussir un examen", catchup: "Combler mes lacunes", advance: "Aller plus loin", confidence: "Reprendre confiance" };
 
+  const pendingAssignments = data.assignments.filter((item) => item.status !== "done").length;
+
   return (
-    <main className="container-page py-8 sm:py-12">
+    <main className="container-page py-6 sm:py-12">
       <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Votre apprentissage</p>
-      <h1 className="mt-1 font-display text-3xl font-bold text-foreground">Mon parcours</h1>
+      <h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">Mon parcours</h1>
       <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Vos objectifs, vos cours et les retours de vos intervenants au même endroit.</p>
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="mt-5 grid grid-cols-3 gap-2.5">
+        <StatTile icon={BookOpen} value={sessionsLeft} label={sessionsLeft > 1 ? "séances restantes" : "séance restante"} />
+        <StatTile icon={CalendarClock} value={nextBooking ? new Date(nextBooking.scheduled_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "—"} label="prochaine séance" />
+        <StatTile icon={ClipboardList} value={pendingAssignments} label={pendingAssignments > 1 ? "travaux à faire" : "travail à faire"} />
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+
         <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
           <div className="flex items-start justify-between gap-4">
             <div><p className="text-xs font-bold uppercase tracking-wide text-primary">Formule active</p><h2 className="mt-1 font-display text-xl font-bold text-foreground">{activePack?.teacher_offers?.subjects?.name ?? "Aucune formule active"}</h2></div>
