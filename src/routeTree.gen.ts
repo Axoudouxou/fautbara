@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AideRouteImport } from './routes/aide'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommentFonctionneLePaiementRouteImport } from './routes/comment-fonctionne-le-paiement'
 import { Route as DevenirProfesseurRouteImport } from './routes/devenir-professeur'
@@ -53,6 +54,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AideRoute = AideRouteImport.update({
+  id: '/aide',
+  path: '/aide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -245,6 +251,7 @@ const ApiPublicBackendConfigRoute = ApiPublicBackendConfigRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aide': typeof AideRoute
   '/auth': typeof AuthRoute
   '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
   '/devenir-professeur': typeof DevenirProfesseurRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aide': typeof AideRoute
   '/auth': typeof AuthRoute
   '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
   '/devenir-professeur': typeof DevenirProfesseurRoute
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/aide': typeof AideRoute
   '/auth': typeof AuthRoute
   '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
   '/devenir-professeur': typeof DevenirProfesseurRoute
@@ -360,6 +369,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/aide'
     | '/auth'
     | '/comment-fonctionne-le-paiement'
     | '/devenir-professeur'
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/aide'
     | '/auth'
     | '/comment-fonctionne-le-paiement'
     | '/devenir-professeur'
@@ -435,6 +446,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/aide'
     | '/auth'
     | '/comment-fonctionne-le-paiement'
     | '/devenir-professeur'
@@ -474,6 +486,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AideRoute: typeof AideRoute
   AuthRoute: typeof AuthRoute
   CommentFonctionneLePaiementRoute: typeof CommentFonctionneLePaiementRoute
   DevenirProfesseurRoute: typeof DevenirProfesseurRoute
@@ -499,6 +512,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aide': {
+      id: '/aide'
+      path: '/aide'
+      fullPath: '/aide'
+      preLoaderRoute: typeof AideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -804,6 +824,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AideRoute: AideRoute,
   AuthRoute: AuthRoute,
   CommentFonctionneLePaiementRoute: CommentFonctionneLePaiementRoute,
   DevenirProfesseurRoute: DevenirProfesseurRoute,
