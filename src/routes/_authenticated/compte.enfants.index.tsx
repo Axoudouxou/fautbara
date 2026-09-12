@@ -12,6 +12,10 @@ export const Route = createFileRoute("/_authenticated/compte/enfants/")({
     meta: [
       { title: "Mes enfants — BARA" },
       { name: "description", content: "Créez et gérez les profils de vos enfants pour réserver leurs cours particuliers." },
+      { property: "og:title", content: "Mes enfants — BARA" },
+      { property: "og:description", content: "Créez et gérez les profils de vos enfants pour réserver leurs cours particuliers." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
