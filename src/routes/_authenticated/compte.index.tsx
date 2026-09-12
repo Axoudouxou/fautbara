@@ -218,7 +218,7 @@ function AccountPage() {
           )}
         </section>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <AccountGroup title="Mon activité">
             <AccountRow
               to="/compte/portefeuille"
