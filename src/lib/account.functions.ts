@@ -28,7 +28,6 @@ export const closeMyAccount = createServerFn({ method: "POST" })
 
     const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(context.userId, {
       email: anonymousEmail,
-      phone: undefined,
       user_metadata: {},
       ban_duration: "876000h",
     });
