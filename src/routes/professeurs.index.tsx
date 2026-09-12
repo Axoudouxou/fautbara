@@ -93,10 +93,12 @@ function TeachersPage() {
     ? catalog.subjects.find((s) => s.slug === search.matiere)?.name
     : undefined;
 
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([
     search.prixMin ?? 0,
     search.prixMax ?? PRICE_SLIDER_MAX,
   ]);
+
 
   // Garde le curseur synchronisé quand les filtres changent sans passer par
   // lui (ex. lien "Réinitialiser", navigation précédente/suivante).
