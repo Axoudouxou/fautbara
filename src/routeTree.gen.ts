@@ -20,6 +20,7 @@ import { Route as AuthenticatedAccueilRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedChoisirEnfantRouteImport } from './routes/_authenticated/choisir-enfant'
 import { Route as AuthenticatedDevoirsRouteImport } from './routes/_authenticated/devoirs'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedParcoursRouteImport } from './routes/_authenticated/parcours'
 import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
@@ -108,6 +109,12 @@ const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -293,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/choisir-enfant': typeof AuthenticatedChoisirEnfantRoute
   '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/parcours': typeof AuthenticatedParcoursRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -336,6 +344,7 @@ export interface FileRoutesByTo {
   '/choisir-enfant': typeof AuthenticatedChoisirEnfantRoute
   '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/parcours': typeof AuthenticatedParcoursRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -381,6 +390,7 @@ export interface FileRoutesById {
   '/_authenticated/choisir-enfant': typeof AuthenticatedChoisirEnfantRoute
   '/_authenticated/devoirs': typeof AuthenticatedDevoirsRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/parcours': typeof AuthenticatedParcoursRoute
   '/matieres/$slug': typeof MatieresSlugRoute
@@ -426,6 +436,7 @@ export interface FileRouteTypes {
     | '/choisir-enfant'
     | '/devoirs'
     | '/messages'
+    | '/notifications'
     | '/onboarding'
     | '/parcours'
     | '/matieres/$slug'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/choisir-enfant'
     | '/devoirs'
     | '/messages'
+    | '/notifications'
     | '/onboarding'
     | '/parcours'
     | '/matieres/$slug'
@@ -513,6 +525,7 @@ export interface FileRouteTypes {
     | '/_authenticated/choisir-enfant'
     | '/_authenticated/devoirs'
     | '/_authenticated/messages'
+    | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/parcours'
     | '/matieres/$slug'
@@ -638,6 +651,13 @@ declare module '@tanstack/react-router' {
       path: '/messages'
       fullPath: '/messages'
       preLoaderRoute: typeof AuthenticatedMessagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -865,6 +885,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChoisirEnfantRoute: typeof AuthenticatedChoisirEnfantRoute
   AuthenticatedDevoirsRoute: typeof AuthenticatedDevoirsRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedParcoursRoute: typeof AuthenticatedParcoursRoute
   AuthenticatedAdminAideRoute: typeof AuthenticatedAdminAideRoute
@@ -898,6 +919,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChoisirEnfantRoute: AuthenticatedChoisirEnfantRoute,
   AuthenticatedDevoirsRoute: AuthenticatedDevoirsRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedParcoursRoute: AuthenticatedParcoursRoute,
   AuthenticatedAdminAideRoute: AuthenticatedAdminAideRoute,
