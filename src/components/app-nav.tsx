@@ -9,7 +9,6 @@ import {
   Inbox,
   LayoutDashboard,
   MessageSquare,
-  Plus,
   Route as RouteIcon,
   Search,
   UserCog,
@@ -18,8 +17,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSessionRoles, type AppRole } from "@/hooks/use-session-roles";
 
 type Tab = {
@@ -155,7 +152,6 @@ export function AppTabsBar({ role, isChild = false }: { role: AppRole | null; is
 /** Barre de navigation basse, mobile-first. */
 export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | null; isChild?: boolean }) {
   const tabs = tabsForRole(role, isChild);
-  const hasPrimaryAction = role !== "admin" && !isChild;
 
   const renderTab = (tab: Tab) => {
     const Icon = tab.icon;
@@ -176,60 +172,14 @@ export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | nu
   };
 
   return (
-    <>
-      <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
-        aria-label="Navigation de l'application"
-      >
-        <ul className="grid grid-cols-5 items-end">{tabs.map(renderTab)}</ul>
-      </nav>
-      {hasPrimaryAction ? <MobilePrimaryAction role={role} /> : null}
-    </>
-  );
-}
-
-function MobilePrimaryAction({ role }: { role: AppRole | null }) {
-  if (role === "teacher") {
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            size="icon"
-            className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)] md:hidden"
-            aria-label="Ajouter ou gérer mon activité"
-          >
-            <Plus className="size-5" aria-hidden />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent side="top" align="center" className="w-64 rounded-2xl p-2">
-          <Link to="/pro/disponibilites" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-foreground hover:bg-secondary">
-            <CalendarDays className="size-4 text-primary" aria-hidden /> Gérer mes disponibilités
-          </Link>
-          <Link to="/pro/offres" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-foreground hover:bg-secondary">
-            <BookOpen className="size-4 text-primary" aria-hidden /> Créer une offre
-          </Link>
-        </PopoverContent>
-      </Popover>
-    );
-  }
-
-  if (role === "parent") {
-    return (
-      <Button asChild size="icon" className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)] md:hidden">
-        <Link to="/choisir-enfant" aria-label="Rechercher un intervenant pour un enfant">
-          <Plus className="size-5" aria-hidden />
-        </Link>
-      </Button>
-    );
-  }
-
-  return (
-    <Button asChild size="icon" className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)] md:hidden">
-      <Link to="/professeurs" search={{}} aria-label="Rechercher un intervenant pour moi">
-        <Plus className="size-5" aria-hidden />
-      </Link>
-    </Button>
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      aria-label="Navigation de l'application"
+    >
+      <ul className={`grid items-end ${tabs.length === 4 ? "grid-cols-4" : "grid-cols-5"}`}>
+        {tabs.map(renderTab)}
+      </ul>
+    </nav>
   );
 }
 
