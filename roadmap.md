@@ -20,10 +20,10 @@
 - [x] Vérifier compilation, authentification, permissions, paiements et affichages mobile/ordinateur
 - [x] Documenter précisément le premier lot livré
 
-## Refonte mobile — 21 écrans Parent, Adulte et Intervenant
+## Refonte mobile — 22 écrans Parent, Adulte et Intervenant
 - [ ] Lot 1 : navigation mobile différenciée et bouton central selon le rôle
 - [ ] Lot 2 : finaliser les 7 écrans Parent avec les données familiales réelles
 - [ ] Lot 3 : finaliser les 7 écrans Adulte avec objectifs et suivi personnel
-- [ ] Lot 4 : finaliser les 7 écrans Intervenant avec élèves, agenda, demandes et rémunérations
+- [ ] Lot 4 : finaliser les 8 écrans Intervenant avec élèves, agenda, demandes, rémunérations et progression de grade
 - [ ] Lot 5 : vérifier comptes-rendus, permissions, paiements, formules, routes historiques et données
 - [ ] Lot 6 : valider les trois parcours sur mobile et ordinateur
