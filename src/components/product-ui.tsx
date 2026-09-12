@@ -56,9 +56,12 @@ export function ProgressBar({ value, label }: { value: number; label: string }) 
         <span className="font-semibold text-foreground">{label}</span>
         <span className="text-muted-foreground">{Math.round(bounded)} %</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={label} aria-valuenow={bounded} aria-valuemin={0} aria-valuemax={100}>
-        <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${bounded}%` }} />
-      </div>
+      <progress
+        className="h-2 w-full overflow-hidden rounded-full accent-primary"
+        aria-label={label}
+        value={bounded}
+        max={100}
+      />
     </div>
   );
 }

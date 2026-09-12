@@ -20,6 +20,7 @@ import { Route as AuthenticatedAccueilRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDevoirsRouteImport } from './routes/_authenticated/devoirs'
 import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedParcoursRouteImport } from './routes/_authenticated/parcours'
 import { Route as MatieresIndexRouteImport } from './routes/matieres.index'
 import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
 import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
@@ -47,6 +48,7 @@ import { Route as AuthenticatedProProfilRouteImport } from './routes/_authentica
 import { Route as AuthenticatedProVerificationRouteImport } from './routes/_authenticated/pro.verification'
 import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
 import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/backend-config'
+import { Route as AuthenticatedCompteEnfantsChildIdRouteImport } from './routes/_authenticated/compte.enfants.$childId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -101,6 +103,11 @@ const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedParcoursRoute = AuthenticatedParcoursRouteImport.update({
+  id: '/parcours',
+  path: '/parcours',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const MatieresIndexRoute = MatieresIndexRouteImport.update({
@@ -254,6 +261,12 @@ const ApiPublicBackendConfigRoute = ApiPublicBackendConfigRouteImport.update({
   path: '/api/public/backend-config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCompteEnfantsChildIdRoute =
+  AuthenticatedCompteEnfantsChildIdRouteImport.update({
+    id: '/$childId',
+    path: '/$childId',
+    getParentRoute: () => AuthenticatedCompteEnfantsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -266,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/parcours': typeof AuthenticatedParcoursRoute
   '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
@@ -276,7 +290,7 @@ export interface FileRoutesByFullPath {
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/admin/retraits': typeof AuthenticatedAdminRetraitsRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
-  '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/compte/enfants': typeof AuthenticatedCompteEnfantsRouteWithChildren
   '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
@@ -293,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/compte/': typeof AuthenticatedCompteIndexRoute
   '/pro/': typeof AuthenticatedProIndexRoute
+  '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -305,6 +320,7 @@ export interface FileRoutesByTo {
   '/devoirs': typeof AuthenticatedDevoirsRoute
   '/messages': typeof AuthenticatedMessagesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/parcours': typeof AuthenticatedParcoursRoute
   '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres': typeof MatieresIndexRoute
@@ -315,7 +331,7 @@ export interface FileRoutesByTo {
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/admin/retraits': typeof AuthenticatedAdminRetraitsRoute
   '/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
-  '/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/compte/enfants': typeof AuthenticatedCompteEnfantsRouteWithChildren
   '/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/compte/reservations': typeof AuthenticatedCompteReservationsRoute
@@ -332,6 +348,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/compte': typeof AuthenticatedCompteIndexRoute
   '/pro': typeof AuthenticatedProIndexRoute
+  '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -346,6 +363,7 @@ export interface FileRoutesById {
   '/_authenticated/devoirs': typeof AuthenticatedDevoirsRoute
   '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/parcours': typeof AuthenticatedParcoursRoute
   '/matieres/$slug': typeof MatieresSlugRoute
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
@@ -356,7 +374,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
   '/_authenticated/admin/retraits': typeof AuthenticatedAdminRetraitsRoute
   '/_authenticated/compte/calendrier': typeof AuthenticatedCompteCalendrierRoute
-  '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRoute
+  '/_authenticated/compte/enfants': typeof AuthenticatedCompteEnfantsRouteWithChildren
   '/_authenticated/compte/litiges': typeof AuthenticatedCompteLitigesRoute
   '/_authenticated/compte/portefeuille': typeof AuthenticatedComptePortefeuilleRoute
   '/_authenticated/compte/reservations': typeof AuthenticatedCompteReservationsRoute
@@ -373,6 +391,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/compte/': typeof AuthenticatedCompteIndexRoute
   '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
+  '/_authenticated/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -387,6 +406,7 @@ export interface FileRouteTypes {
     | '/devoirs'
     | '/messages'
     | '/onboarding'
+    | '/parcours'
     | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres/'
@@ -414,6 +434,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/compte/'
     | '/pro/'
+    | '/compte/enfants/$childId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -426,6 +447,7 @@ export interface FileRouteTypes {
     | '/devoirs'
     | '/messages'
     | '/onboarding'
+    | '/parcours'
     | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres'
@@ -453,6 +475,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/compte'
     | '/pro'
+    | '/compte/enfants/$childId'
   id:
     | '__root__'
     | '/'
@@ -466,6 +489,7 @@ export interface FileRouteTypes {
     | '/_authenticated/devoirs'
     | '/_authenticated/messages'
     | '/_authenticated/onboarding'
+    | '/_authenticated/parcours'
     | '/matieres/$slug'
     | '/professeurs/$id'
     | '/matieres/'
@@ -493,6 +517,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/compte/'
     | '/_authenticated/pro/'
+    | '/_authenticated/compte/enfants/$childId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -587,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/parcours': {
+      id: '/_authenticated/parcours'
+      path: '/parcours'
+      fullPath: '/parcours'
+      preLoaderRoute: typeof AuthenticatedParcoursRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/matieres/': {
@@ -778,21 +810,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBackendConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/compte/enfants/$childId': {
+      id: '/_authenticated/compte/enfants/$childId'
+      path: '/$childId'
+      fullPath: '/compte/enfants/$childId'
+      preLoaderRoute: typeof AuthenticatedCompteEnfantsChildIdRouteImport
+      parentRoute: typeof AuthenticatedCompteEnfantsRoute
+    }
   }
 }
+
+interface AuthenticatedCompteEnfantsRouteChildren {
+  AuthenticatedCompteEnfantsChildIdRoute: typeof AuthenticatedCompteEnfantsChildIdRoute
+}
+
+const AuthenticatedCompteEnfantsRouteChildren: AuthenticatedCompteEnfantsRouteChildren =
+  {
+    AuthenticatedCompteEnfantsChildIdRoute:
+      AuthenticatedCompteEnfantsChildIdRoute,
+  }
+
+const AuthenticatedCompteEnfantsRouteWithChildren =
+  AuthenticatedCompteEnfantsRoute._addFileChildren(
+    AuthenticatedCompteEnfantsRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccueilRoute: typeof AuthenticatedAccueilRoute
   AuthenticatedDevoirsRoute: typeof AuthenticatedDevoirsRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedParcoursRoute: typeof AuthenticatedParcoursRoute
   AuthenticatedAdminAideRoute: typeof AuthenticatedAdminAideRoute
   AuthenticatedAdminLitigesRoute: typeof AuthenticatedAdminLitigesRoute
   AuthenticatedAdminOffresRoute: typeof AuthenticatedAdminOffresRoute
   AuthenticatedAdminProfesseursRoute: typeof AuthenticatedAdminProfesseursRoute
   AuthenticatedAdminRetraitsRoute: typeof AuthenticatedAdminRetraitsRoute
   AuthenticatedCompteCalendrierRoute: typeof AuthenticatedCompteCalendrierRoute
-  AuthenticatedCompteEnfantsRoute: typeof AuthenticatedCompteEnfantsRoute
+  AuthenticatedCompteEnfantsRoute: typeof AuthenticatedCompteEnfantsRouteWithChildren
   AuthenticatedCompteLitigesRoute: typeof AuthenticatedCompteLitigesRoute
   AuthenticatedComptePortefeuilleRoute: typeof AuthenticatedComptePortefeuilleRoute
   AuthenticatedCompteReservationsRoute: typeof AuthenticatedCompteReservationsRoute
@@ -815,13 +870,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDevoirsRoute: AuthenticatedDevoirsRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedParcoursRoute: AuthenticatedParcoursRoute,
   AuthenticatedAdminAideRoute: AuthenticatedAdminAideRoute,
   AuthenticatedAdminLitigesRoute: AuthenticatedAdminLitigesRoute,
   AuthenticatedAdminOffresRoute: AuthenticatedAdminOffresRoute,
   AuthenticatedAdminProfesseursRoute: AuthenticatedAdminProfesseursRoute,
   AuthenticatedAdminRetraitsRoute: AuthenticatedAdminRetraitsRoute,
   AuthenticatedCompteCalendrierRoute: AuthenticatedCompteCalendrierRoute,
-  AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRoute,
+  AuthenticatedCompteEnfantsRoute: AuthenticatedCompteEnfantsRouteWithChildren,
   AuthenticatedCompteLitigesRoute: AuthenticatedCompteLitigesRoute,
   AuthenticatedComptePortefeuilleRoute: AuthenticatedComptePortefeuilleRoute,
   AuthenticatedCompteReservationsRoute: AuthenticatedCompteReservationsRoute,

@@ -8,6 +8,7 @@ import {
   Laptop,
   Loader2,
   Sparkles,
+  Route as RouteIcon,
   Wallet,
   UserPlus,
 } from "lucide-react";
@@ -44,6 +45,7 @@ type BookingRow = {
   status: string;
   created_at: string;
   teacher_id: string;
+  child_id?: string | null;
   children: { first_name: string } | null;
   teacher_offers: {
     title: string;
@@ -179,7 +181,7 @@ function LearnerHome({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("children")
-        .select("id, first_name")
+        .select("id, first_name, school_level")
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data;
@@ -192,7 +194,7 @@ function LearnerHome({
       const { data, error } = await supabase
         .from("bookings")
         .select(
-          "id, scheduled_at, duration_minutes, format, status, created_at, teacher_id, children(first_name), teacher_offers(title, subject_id, subjects(name, category_id))",
+          "id, scheduled_at, duration_minutes, format, status, created_at, teacher_id, child_id, children(first_name), teacher_offers(title, subject_id, subjects(name, category_id))",
         )
         .eq("requester_id", userId)
         .order("scheduled_at", { ascending: false });
@@ -202,6 +204,19 @@ function LearnerHome({
   });
 
   const bookings = bookingsQuery.data ?? [];
+  const packsQuery = useQuery({
+    queryKey: ["home-packs", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("packs")
+        .select("id, child_id, status, sessions_total, sessions_used, expires_at, teacher_offers(subjects(name))")
+        .eq("buyer_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const packs = packsQuery.data ?? [];
   const now = Date.now();
   const upcoming = [...bookings]
     .filter(
@@ -275,15 +290,15 @@ function LearnerHome({
 
   let title: string;
   if (upcoming) {
-    title = "Votre prochain cours arrive bientôt !";
+    title = isParent ? "La prochaine séance de la famille" : "Votre prochaine séance";
   } else if (last) {
     title = isParent
-      ? `Reprenez l'apprentissage. Les objectifs de ${childName || "votre enfant"} vous attendent !`
-      : "Reprenez votre apprentissage. Vos objectifs vous attendent !";
+      ? "Suivez les parcours de vos enfants"
+      : "Continuez à avancer vers votre objectif";
   } else {
     title = isParent
-      ? `Trouvons le bon professeur pour ${childName || "votre enfant"}`
-      : "Trouvons le bon professeur pour vous";
+      ? "Organisez le premier accompagnement de votre enfant"
+      : "Commencez votre parcours d’apprentissage";
   }
 
   return (
@@ -379,11 +394,11 @@ function LearnerHome({
               <Sparkles className="size-5" aria-hidden />
             </span>
             <p className="mt-3 font-display text-lg font-bold text-foreground">
-              Commencez par un cours d&apos;essai
+              Trouvez l&apos;intervenant adapté
             </p>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Une première séance pour valider le courant avec le professeur, le niveau et la
-              méthode — avant de vous engager sur un cours régulier.
+              Comparez les profils, les méthodes et les disponibilités, puis choisissez une formule
+              Découverte ou une séance individuelle.
             </p>
             <div className="mt-5">
               <Link
@@ -434,6 +449,44 @@ function LearnerHome({
           </>
         )}
       </div>
+
+      {isParent && children.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Suivi familial</p>
+              <h2 className="mt-1 font-display text-xl font-bold text-foreground">Mes enfants</h2>
+            </div>
+            <Link to="/compte/enfants" className="text-sm font-semibold text-primary hover:underline">Voir tous les profils</Link>
+          </div>
+          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {children.map((child) => {
+              const childPacks = packs.filter((pack) => pack.child_id === child.id && pack.status === "active");
+              const childBookings = bookings.filter((booking) => booking.child_id === child.id && booking.status === "accepted" && new Date(booking.scheduled_at) > new Date());
+              const nextChildBooking = childBookings.sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at))[0];
+              const sessionsLeft = childPacks.reduce((sum, pack) => sum + Math.max(pack.sessions_total - pack.sessions_used, 0), 0);
+              return (
+                <li key={child.id} className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-11 items-center justify-center rounded-2xl bg-primary-soft font-display font-bold text-primary-soft-foreground">{child.first_name.charAt(0).toUpperCase()}</span>
+                    <div><h3 className="font-display font-bold text-foreground">{child.first_name}</h3><p className="text-xs text-muted-foreground">{child.school_level || "Niveau à préciser"}</p></div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 text-sm"><div><p className="font-display text-xl font-bold text-foreground">{sessionsLeft}</p><p className="text-xs text-muted-foreground">séance{sessionsLeft > 1 ? "s" : ""} restante{sessionsLeft > 1 ? "s" : ""}</p></div><div><p className="font-display text-xl font-bold text-foreground">{childPacks.length}</p><p className="text-xs text-muted-foreground">formule{childPacks.length > 1 ? "s" : ""} active{childPacks.length > 1 ? "s" : ""}</p></div></div>
+                  <p className="mt-3 text-xs text-muted-foreground">{nextChildBooking ? `Prochaine séance ${new Date(nextChildBooking.scheduled_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}` : "Aucune séance programmée"}</p>
+                  <Link to="/compte/enfants/$childId" params={{ childId: child.id }} className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline">Voir son parcours</Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {!isParent && (
+        <section className="mt-8 flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4"><span className="flex size-11 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground"><RouteIcon className="size-5" aria-hidden /></span><div><h2 className="font-display text-lg font-bold text-foreground">Mon parcours</h2><p className="text-sm text-muted-foreground">Objectifs, formules, comptes-rendus et travail à faire.</p></div></div>
+          <Link to="/parcours" className={CTA}>Voir mon parcours</Link>
+        </section>
+      )}
 
       <HomeShortcutTabs
         tabs={[
