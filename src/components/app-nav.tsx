@@ -9,6 +9,7 @@ import {
   Inbox,
   LayoutDashboard,
   MessageSquare,
+  Route as RouteIcon,
   Search,
   UserCog,
   Users,
@@ -64,6 +65,7 @@ const parentTabs: Tab[] = [
 /** Étudiant / adulte : Accueil · Mes cours · Rechercher · Messages · Mon compte */
 const studentTabs: Tab[] = [
   homeTab,
+  { label: "Mon parcours", short: "Parcours", icon: RouteIcon, link: linkOptions({ to: "/parcours" }) },
   {
     label: "Mes cours",
     short: "Mes cours",
@@ -71,7 +73,6 @@ const studentTabs: Tab[] = [
     link: linkOptions({ to: "/compte/reservations" }),
   },
   searchTab,
-  { label: "Messages", short: "Messages", icon: MessageSquare, link: linkOptions({ to: "/messages" }) },
   accountTab,
 ];
 

@@ -11,3 +11,11 @@
 - [x] Clôture de séance : règle normale rétablie (uniquement après l'heure prévue)
 - [ ] Alerte e-mail support vers teamlightech@gmail.com — bloquée : aucun domaine d'envoi configuré
 - [ ] Vérifier une clôture réelle + portefeuille — bloquée : prochaine séance acceptée le 05/11/2026
+
+## Premier lot UX — Parent et adulte apprenant
+- [ ] Créer les fondations UX communes réutilisables
+- [ ] Transformer l’accueil parent en cockpit familial
+- [ ] Enrichir « Mes enfants » avec un parcours enfant dédié
+- [ ] Distinguer l’accueil et le parcours de l’adulte apprenant
+- [ ] Vérifier compilation, authentification, permissions, paiements et affichages mobile/ordinateur
+- [ ] Documenter précisément le premier lot livré

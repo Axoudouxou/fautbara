@@ -239,12 +239,12 @@ function BookingsPage() {
                     <div className="flex justify-between gap-3">
                       <dt className="text-muted-foreground">Séances restantes</dt>
                       <dd className="font-semibold text-foreground">
-                        {left} / {p.sessions_total}
+                        {left} séance{left > 1 ? "s" : ""}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Programmable jusqu&apos;au</dt>
-                      <dd className="text-foreground">{formatDate(p.expires_at)}</dd>
+                      <dt className="text-muted-foreground">Validité de la formule</dt>
+                      <dd className="text-foreground">Jusqu&apos;au {formatDate(p.expires_at)}</dd>
                     </div>
                   </dl>
 

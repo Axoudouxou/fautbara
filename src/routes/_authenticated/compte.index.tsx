@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/compte/")({
 const ROLE_LABELS: Record<string, string> = {
   parent: "Parent",
   student: "Étudiant / adulte",
-  teacher: "Professeur",
+  teacher: "Intervenant",
   admin: "Administrateur",
 };
 
@@ -246,6 +246,21 @@ function AccountPage() {
                 <span className="block text-sm text-muted-foreground">
                   Créez et gérez les profils pour lesquels vous réservez.
                 </span>
+              </span>
+            </Link>
+          )}
+
+          {roles.includes("student") && (
+            <Link
+              to="/parcours"
+              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
+            >
+              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                <SlidersHorizontal className="size-5" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-display font-bold text-foreground">Mon parcours</span>
+                <span className="block text-sm text-muted-foreground">Objectifs, formules, comptes-rendus et devoirs.</span>
               </span>
             </Link>
           )}
