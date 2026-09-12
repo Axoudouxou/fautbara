@@ -50,7 +50,7 @@ function ChildrenPage() {
 
   const overviewQuery = useQuery({
     queryKey: ["children-overview", user.id],
-    enabled: children.length > 0,
+    enabled: Boolean(childrenQuery.data?.length),
     queryFn: async () => {
       const [packs, bookings] = await Promise.all([
         supabase.from("packs").select("child_id, status, sessions_total, sessions_used").eq("buyer_id", user.id),

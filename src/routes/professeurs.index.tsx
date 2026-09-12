@@ -320,7 +320,7 @@ function TeacherRow({
 }: {
   teacher: TeacherCard;
   activeSubjectName?: string;
-  childId?: string;
+  childId?: string | undefined;
 }) {
   const subjectLabel = activeSubjectName ?? teacher.subjects[0];
 

@@ -8,7 +8,6 @@ import { CancelBookingDialog } from "@/components/cancel-booking-dialog";
 import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 import { LeaveReviewDialog } from "@/components/leave-review-dialog";
 import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
-import { PackSessionScheduler } from "@/components/pack-session-scheduler";
 import { SectionTabs, learnerCoursesTabs } from "@/components/section-tabs";
 import {
   PACK_STATUS_LABELS,
@@ -74,7 +73,7 @@ export function formatTimeRange(iso: string, durationMinutes: number) {
 
 function BookingsPage() {
   const { user } = Route.useRouteContext();
-  const { pack: packParam, booking: bookingParam, agenda: agendaParam, enfant: childParam } = Route.useSearch();
+  const { pack: packParam, booking: bookingParam, enfant: childParam } = Route.useSearch();
   const [childFilter, setChildFilter] = useState(childParam ?? "all");
   const [cancelTarget, setCancelTarget] = useState<
     { id: string; scheduledAt: string; rescheduleUsed: boolean } | null

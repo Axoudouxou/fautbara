@@ -645,7 +645,7 @@ function SidebarContent({
   lessonsCount: number;
   teacherId: string;
   firstOfferId: string | null;
-  childId?: string;
+  childId?: string | undefined;
 }) {
   return (
     <>
@@ -693,7 +693,7 @@ function MobileBookingBar({
   minPrice: number | null;
   teacherId: string;
   firstOfferId: string | null;
-  childId?: string;
+  childId?: string | undefined;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -720,7 +720,7 @@ function BookingCta({
 }: {
   teacherId: string;
   firstOfferId: string | null;
-  childId?: string;
+  childId?: string | undefined;
   compact?: boolean;
 }) {
   const { ready, signedIn, primaryRole } = useSessionRoles();

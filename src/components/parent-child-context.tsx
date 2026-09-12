@@ -23,7 +23,7 @@ export function useSelectedChild(childId?: string) {
   });
 }
 
-export function ParentChildContext({ childId }: { childId?: string }) {
+export function ParentChildContext({ childId }: { childId?: string | undefined }) {
   const childQuery = useSelectedChild(childId);
   const child = childQuery.data;
   if (!child) return null;
