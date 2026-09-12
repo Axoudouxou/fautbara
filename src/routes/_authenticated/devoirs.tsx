@@ -40,10 +40,26 @@ function HomeworkPage() {
 
       const { data, error } = await supabase
         .from("assignments")
-        .select("id, title, description, due_date, status, created_at, conversation_id, teacher_id")
+        .select(
+          "id, title, description, due_date, status, created_at, conversation_id, teacher_id, session_report_id",
+        )
         .in("conversation_id", convIds)
         .order("created_at", { ascending: false });
       if (error) throw error;
+
+      // Rattache chaque devoir au compte-rendu de la séance dont il est issu.
+      const reportIds = Array.from(
+        new Set((data ?? []).map((a) => a.session_report_id).filter((id): id is string => Boolean(id))),
+      );
+      const bookingByReport = new Map<string, string>();
+      if (reportIds.length > 0) {
+        const { data: reports } = await supabase
+          .from("session_reports")
+          .select("id, booking_id")
+          .in("id", reportIds);
+        for (const r of reports ?? []) bookingByReport.set(r.id, r.booking_id);
+      }
+
 
       const teacherIds = Array.from(new Set((data ?? []).map((a) => a.teacher_id)));
       const names = new Map<string, string>();
@@ -58,6 +74,7 @@ function HomeworkPage() {
       return (data ?? []).map((a) => ({
         ...a,
         teacherName: names.get(a.teacher_id) ?? "Votre intervenant",
+        reportBookingId: a.session_report_id ? bookingByReport.get(a.session_report_id) ?? null : null,
       }));
     },
   });
@@ -136,12 +153,23 @@ function HomeworkPage() {
                         })}
                       </p>
                     )}
-                    <Link
-                      to="/messages"
-                      className="mt-4 inline-flex rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
-                    >
-                      Ouvrir la conversation
-                    </Link>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Link
+                        to="/messages"
+                        className="inline-flex rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
+                      >
+                        Ouvrir la conversation
+                      </Link>
+                      {h.reportBookingId && (
+                        <Link
+                          to="/compte-rendu/$bookingId"
+                          params={{ bookingId: h.reportBookingId }}
+                          className="inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                        >
+                          Voir le compte-rendu
+                        </Link>
+                      )}
+                    </div>
                   </li>
                 );
               })}

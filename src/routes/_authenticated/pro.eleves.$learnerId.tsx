@@ -9,7 +9,7 @@ import { TeacherGate } from "@/components/teacher-gate";
 import { SESSION_STATUS_LABELS } from "@/lib/packs";
 import {
   ATTENDANCE_OPTIONS,
-  HOMEWORK_DONE_OPTIONS,
+  ENGAGEMENT_LEVELS,
   PROGRESS_LEVELS,
   labelFor,
 } from "@/lib/session-reports";
@@ -296,13 +296,13 @@ function TeacherStudentPage() {
                   <p className="mt-1 text-xs text-muted-foreground">
                     {labelFor(ATTENDANCE_OPTIONS, r.attendance)} ·{" "}
                     {labelFor(PROGRESS_LEVELS, r.progress_level)}
-                    {r.homework_done
-                      ? ` · Travail : ${labelFor(HOMEWORK_DONE_OPTIONS, r.homework_done)}`
-                      : ""}{" "}
-                    · Engagement {r.engagement_rating}/5
+                    {r.homework_done ? ` · Travail : ${r.homework_done}` : ""} · Engagement{" "}
+                    {labelFor(ENGAGEMENT_LEVELS, r.engagement_level)}
                   </p>
                   {r.next_steps && (
-                    <p className="mt-1 text-xs text-foreground">Prochaine fois : {r.next_steps}</p>
+                    <p className="mt-1 text-xs text-foreground">
+                      À travailler pour la prochaine séance : {r.next_steps}
+                    </p>
                   )}
                 </li>
               ))}

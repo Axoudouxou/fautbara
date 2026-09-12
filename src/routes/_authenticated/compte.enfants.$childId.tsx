@@ -16,6 +16,7 @@ import {
 import { EmptyState, ProgressBar, RowCard, SectionHeading, UserAvatar } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/packs";
+import { ATTENDANCE_OPTIONS, ENGAGEMENT_LEVELS, PROGRESS_LEVELS, labelFor } from "@/lib/session-reports";
 
 export const Route = createFileRoute("/_authenticated/compte/enfants/$childId")({
   head: () => ({
@@ -84,7 +85,7 @@ function ChildJourneyPage() {
         supabase
           .from("session_reports")
           .select(
-            "id, booking_id, teacher_id, attendance, content_note, progress_level, homework_done, engagement_rating, next_steps, created_at",
+            "id, booking_id, teacher_id, attendance, content_note, progress_level, homework_done, engagement_level, next_steps, created_at",
           )
           .eq("learner_id", user.id)
           .eq("child_id", childId)
@@ -385,26 +386,30 @@ function ChildJourneyPage() {
                   <dl className="mt-2.5 grid gap-2.5 text-sm sm:grid-cols-2">
                     <div>
                       <dt className="text-xs text-muted-foreground">Présence</dt>
-                      <dd className="font-semibold text-foreground">{report.attendance}</dd>
+                      <dd className="font-semibold text-foreground">
+                        {labelFor(ATTENDANCE_OPTIONS, report.attendance)}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted-foreground">Niveau d’avancement</dt>
-                      <dd className="font-semibold text-foreground">{report.progress_level}</dd>
+                      <dd className="font-semibold text-foreground">
+                        {labelFor(PROGRESS_LEVELS, report.progress_level)}
+                      </dd>
                     </div>
                     <div className="sm:col-span-2">
                       <dt className="text-xs text-muted-foreground">Contenu travaillé</dt>
                       <dd className="text-foreground">{report.content_note}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted-foreground">Travail fait depuis la dernière fois</dt>
+                      <dt className="text-xs text-muted-foreground">Travail depuis la dernière séance</dt>
                       <dd className="text-foreground">{report.homework_done || "Non renseigné"}</dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted-foreground">Engagement</dt>
-                      <dd className="text-foreground">{report.engagement_rating}/5</dd>
+                      <dd className="text-foreground">{labelFor(ENGAGEMENT_LEVELS, report.engagement_level)}</dd>
                     </div>
                     <div className="sm:col-span-2">
-                      <dt className="text-xs text-muted-foreground">Note pour la prochaine fois</dt>
+                      <dt className="text-xs text-muted-foreground">À travailler pour la prochaine séance</dt>
                       <dd className="text-foreground">{report.next_steps || "Non renseignée"}</dd>
                     </div>
                   </dl>

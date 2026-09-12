@@ -27,6 +27,7 @@ export type Database = {
           id: string
           seen_at: string | null
           seen_by: string | null
+          session_report_id: string | null
           status: string
           storage_path: string | null
           teacher_id: string
@@ -45,6 +46,7 @@ export type Database = {
           id?: string
           seen_at?: string | null
           seen_by?: string | null
+          session_report_id?: string | null
           status?: string
           storage_path?: string | null
           teacher_id: string
@@ -63,6 +65,7 @@ export type Database = {
           id?: string
           seen_at?: string | null
           seen_by?: string | null
+          session_report_id?: string | null
           status?: string
           storage_path?: string | null
           teacher_id?: string
@@ -75,6 +78,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_session_report_id_fkey"
+            columns: ["session_report_id"]
+            isOneToOne: false
+            referencedRelation: "session_reports"
             referencedColumns: ["id"]
           },
         ]
@@ -1091,6 +1101,47 @@ export type Database = {
           },
         ]
       }
+      session_report_documents: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          report_id: string
+          storage_path: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          report_id: string
+          storage_path: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          report_id?: string
+          storage_path?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_report_documents_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "session_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_reports: {
         Row: {
           attendance: string
@@ -1098,7 +1149,8 @@ export type Database = {
           child_id: string | null
           content_note: string
           created_at: string
-          engagement_rating: number
+          engagement_level: string
+          engagement_rating: number | null
           homework_done: string | null
           id: string
           learner_id: string
@@ -1113,7 +1165,8 @@ export type Database = {
           child_id?: string | null
           content_note: string
           created_at?: string
-          engagement_rating: number
+          engagement_level?: string
+          engagement_rating?: number | null
           homework_done?: string | null
           id?: string
           learner_id: string
@@ -1128,7 +1181,8 @@ export type Database = {
           child_id?: string | null
           content_note?: string
           created_at?: string
-          engagement_rating?: number
+          engagement_level?: string
+          engagement_rating?: number | null
           homework_done?: string | null
           id?: string
           learner_id?: string
@@ -2807,6 +2861,7 @@ export type Database = {
           id: string
           seen_at: string | null
           seen_by: string | null
+          session_report_id: string | null
           status: string
           storage_path: string | null
           teacher_id: string

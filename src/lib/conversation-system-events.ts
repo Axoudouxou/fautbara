@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Attendance, HomeworkDone, ProgressLevel } from "@/lib/session-reports";
+import { engagementScore, type Attendance, type EngagementLevel, type ProgressLevel } from "@/lib/session-reports";
 
 export type ConversationTimelineEvent =
   | {
@@ -19,7 +19,8 @@ export type ConversationTimelineEvent =
       attendance: Attendance;
       contentNote: string;
       progressLevel: ProgressLevel;
-      homeworkDone: HomeworkDone | null;
+      homeworkDone: string | null;
+      engagementLevel: EngagementLevel;
       engagementRating: number;
       nextSteps: string | null;
     };
@@ -65,7 +66,7 @@ export function useConversationSystemContext(
           ? await supabase
               .from("session_reports")
               .select(
-                "id, created_at, attendance, content_note, progress_level, homework_done, engagement_rating, next_steps",
+                "id, created_at, attendance, content_note, progress_level, homework_done, engagement_level, next_steps",
               )
               .in("booking_id", ids)
               .order("created_at", { ascending: true })
@@ -98,8 +99,9 @@ export function useConversationSystemContext(
           attendance: r.attendance as Attendance,
           contentNote: r.content_note,
           progressLevel: r.progress_level as ProgressLevel,
-          homeworkDone: r.homework_done as HomeworkDone | null,
-          engagementRating: r.engagement_rating,
+          homeworkDone: r.homework_done,
+          engagementLevel: r.engagement_level as EngagementLevel,
+          engagementRating: engagementScore(r.engagement_level as EngagementLevel),
           nextSteps: r.next_steps,
         })),
       ].sort((a, b) => a.sortAt.localeCompare(b.sortAt));
