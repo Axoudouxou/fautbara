@@ -60,7 +60,7 @@ function ChildJourneyPage() {
     queryFn: async () => {
       const child = await supabase
         .from("children")
-        .select("id, first_name, birth_year, school_level")
+        .select("id, first_name, birth_year, school_level, notes, avatar_path")
         .eq("id", childId)
         .eq("parent_id", user.id)
         .maybeSingle();
@@ -109,8 +109,20 @@ function ChildJourneyPage() {
             .order("created_at", { ascending: false })
         : { data: [], error: null };
       if (assignments.error) throw assignments.error;
+      let childAvatarUrl: string | null = null;
+      if (child.data.avatar_path) {
+        const signed = await supabase.storage.from("child-photos").createSignedUrl(child.data.avatar_path, 3600);
+        if (signed.error) throw signed.error;
+        childAvatarUrl = signed.data.signedUrl;
+      }
+      const level = child.data.school_level
+        ? await supabase.from("levels").select("name").eq("slug", child.data.school_level).maybeSingle()
+        : { data: null, error: null };
+      if (level.error) throw level.error;
       return {
         child: child.data,
+        childAvatarUrl,
+        childLevel: level.data?.name ?? child.data.school_level,
         packs: packs.data ?? [],
         bookings: bookings.data ?? [],
         reports: reports.data ?? [],
@@ -161,11 +173,11 @@ function ChildJourneyPage() {
       </Link>
 
       <header className="mt-4 flex items-center gap-3">
-        <UserAvatar name={data.child.first_name} className="size-14" />
+        <UserAvatar name={data.child.first_name} src={data.childAvatarUrl} className="size-14" />
         <div className="min-w-0 flex-1">
           <h1 className="truncate font-display text-xl font-bold text-foreground sm:text-2xl">{data.child.first_name}</h1>
           <p className="truncate text-sm text-muted-foreground">
-            {[data.child.school_level || "Niveau à préciser", age ? `${age} ans` : null].filter(Boolean).join(" · ")}
+            {[data.childLevel || "Niveau à préciser", age ? `${age} ans` : null].filter(Boolean).join(" · ")}
           </p>
         </div>
       </header>
@@ -190,6 +202,12 @@ function ChildJourneyPage() {
 
       {tab === "Vue d'ensemble" && (
         <div className="mt-5 space-y-5">
+          {data.child.notes && (
+            <section className={CARD} aria-label="Informations utiles au parcours">
+              <SectionHeading title="Informations utiles" />
+              <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{data.child.notes}</p>
+            </section>
+          )}
           <section aria-label="Formules">
             <SectionHeading
               title="Formules"

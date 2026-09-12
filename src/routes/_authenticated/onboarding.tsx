@@ -234,7 +234,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
   const finishMutation = useMutation({
     mutationFn: async (data: LearnerData) => {
       const preferredCommunes = data.commune ? [data.commune] : [];
-      const levelSlugs = data.schoolSystem !== "autre" && data.levelSlug ? [data.levelSlug] : [];
+      const levelSlugs = data.levelSlug ? [data.levelSlug] : [];
 
       const { error: prefsError } = await supabase.from("learning_preferences").upsert(
         {
@@ -247,7 +247,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
           school_systems: data.schoolSystem ? [data.schoolSystem] : [],
           school_system_other: data.schoolSystem === "autre" ? data.schoolSystemOther.trim() || null : null,
           level_slugs: levelSlugs,
-          level_other: data.schoolSystem === "autre" ? data.levelOther.trim() || null : null,
+           level_other: null,
           filiere: data.filiere.trim() || null,
           learning_style: data.learningStyle,
           objective: data.objective,
@@ -265,7 +265,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
         const match = childrenQuery.data?.find(
           (c) => c.first_name.toLowerCase() === trimmedName.toLowerCase(),
         );
-        const schoolLevel = data.levelSlug || data.levelOther.trim() || null;
+         const schoolLevel = data.levelSlug || null;
         if (match) {
           if (schoolLevel && schoolLevel !== match.school_level) {
             await supabase.from("children").update({ school_level: schoolLevel }).eq("id", match.id);
@@ -477,7 +477,7 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
             </div>
           )}
 
-          {(data.schoolSystem === "ivoirien" || data.schoolSystem === "francais") && (
+          {data.schoolSystem && (
             <div>
               <label htmlFor="level-select" className="text-sm font-semibold text-foreground">
                 Niveau
@@ -495,22 +495,6 @@ function LearnerOnboarding({ userId, isParent }: { userId: string; isParent: boo
                   </option>
                 ))}
               </select>
-            </div>
-          )}
-
-          {data.schoolSystem === "autre" && (
-            <div>
-              <label htmlFor="level-other" className="text-sm font-semibold text-foreground">
-                Niveau
-              </label>
-              <input
-                id="level-other"
-                type="text"
-                value={data.levelOther}
-                onChange={(e) => setData((d) => ({ ...d, levelOther: e.target.value }))}
-                placeholder="Ex. Year 10"
-                className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
-              />
             </div>
           )}
 

@@ -155,6 +155,11 @@ function ChildrenPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      const child = children.find((item) => item.id === id);
+      if (child?.avatar_path) {
+        const removal = await supabase.storage.from("child-photos").remove([child.avatar_path]);
+        if (removal.error) throw removal.error;
+      }
       const { error } = await supabase.from("children").delete().eq("id", id).eq("parent_id", user.id);
       if (error) throw error;
     },
