@@ -7,7 +7,7 @@ import { ArrowRight, Loader2, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionRoles } from "@/hooks/use-session-roles";
 
-export const Route = createFileRoute("/_authenticated/compte/enfants")({
+export const Route = createFileRoute("/_authenticated/compte/enfants/")({
   head: () => ({
     meta: [
       { title: "Mes enfants — BARA" },
