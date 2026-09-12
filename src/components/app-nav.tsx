@@ -217,8 +217,8 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
   return (
     <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
       <Link
-        to="/professeurs"
-        search={{}}
+        to={role === "parent" ? "/choisir-enfant" : "/professeurs"}
+        search={role === "parent" ? undefined : {}}
         aria-label={role === "parent" ? "Rechercher un intervenant pour un enfant" : "Rechercher un intervenant pour moi"}
       >
         <Plus className="size-5" aria-hidden />

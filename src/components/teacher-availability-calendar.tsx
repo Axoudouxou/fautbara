@@ -345,9 +345,11 @@ export function AvailabilitySlotGrid({
 export function TeacherAvailabilityCalendar({
   teacherId,
   offers,
+  childId,
 }: {
   teacherId: string;
   offers: CalendarOffer[];
+  childId?: string | undefined;
 }) {
   const navigate = useNavigate();
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
@@ -357,7 +359,7 @@ export function TeacherAvailabilityCalendar({
     if (offers.length <= 1) {
       const offerId = offers[0]?.id;
       if (!offerId) return;
-      navigate({ to: "/reserver/$offerId", params: { offerId }, search: { date, time } });
+      navigate({ to: "/reserver/$offerId", params: { offerId }, search: { date, time, enfant: childId } });
       return;
     }
     setSelectedSlot({ date, time });
@@ -412,7 +414,7 @@ export function TeacherAvailabilityCalendar({
               navigate({
                 to: "/reserver/$offerId",
                 params: { offerId: selectedOfferId },
-                search: { date: selectedSlot.date, time: selectedSlot.time },
+                search: { date: selectedSlot.date, time: selectedSlot.time, enfant: childId },
               })
             }
             className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"

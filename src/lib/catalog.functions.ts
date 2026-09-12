@@ -24,6 +24,7 @@ function publicClient() {
 }
 
 export const searchFiltersSchema = z.object({
+  enfant: z.string().uuid().optional(),
   q: z.string().trim().max(80).optional(),
   matiere: z.string().trim().max(80).optional(),
   niveau: z.string().trim().max(80).optional(),
