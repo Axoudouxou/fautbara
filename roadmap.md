@@ -53,3 +53,7 @@
 ## Notifications et actions mobiles
 - [x] Remplacer les widgets de notifications des accueils par une cloche avec compteur dans l’en-tête
 - [x] Vérifier la cloche et les boutons fixes pendant un défilement mobile réel
+
+## Mes cours parent
+- [x] Afficher les cours par enfant en conservant les actions existantes
+- [ ] Vérifier le regroupement avec le compte parent sur mobile
