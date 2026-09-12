@@ -235,7 +235,30 @@ function dayTime(iso: string) {
   )}`;
 }
 
+function hourOf(iso: string) {
+  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function relDay(iso: string) {
+  const d = new Date(iso);
+  const today = new Date();
+  const diff = Math.round(
+    (new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() -
+      new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) /
+      86_400_000,
+  );
+  if (diff === 0) return "Aujourd'hui";
+  if (diff === 1) return "Demain";
+  return d.toLocaleDateString("fr-FR", { weekday: "long" });
+}
+
+function childLevel(children: { id: string; school_level: string | null }[], childId: string | null | undefined) {
+  if (!childId) return null;
+  return children.find((c) => c.id === childId)?.school_level ?? null;
+}
+
 const SOFT_CARD = "rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]";
+
 
 function Greeting({ firstName, subtitle }: { firstName: string; subtitle: string }) {
   return (
@@ -324,21 +347,60 @@ function ParentHome({ userId, firstName }: { userId: string; firstName: string }
     );
   }
 
+  const weekEnd = now + 7 * 24 * 60 * 60 * 1000;
+  const weekCount = upcoming.filter((b) => new Date(b.scheduled_at).getTime() <= weekEnd).length;
+
   return (
     <main className="container-page py-6 sm:py-12">
-      <Greeting firstName={firstName} subtitle="Voici ce qui se passe pour vos enfants." />
+      <Greeting firstName={firstName} subtitle="Voici ce qui se passe pour votre famille cette semaine." />
 
-      <section className="mt-5" aria-label="Cette semaine">
-        <SectionHeading title="Cette semaine" />
-        <div className="mt-3 grid grid-cols-3 gap-2.5">
+      <section className="mt-4" aria-label="Cette semaine">
+        <div className="grid grid-cols-3 gap-2.5">
           <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
-          <StatTile
-            icon={CalendarClock}
-            value={upcoming.length}
-            label={upcoming.length > 1 ? "séances à venir" : "séance à venir"}
-          />
+          <StatTile icon={CalendarClock} value={weekCount} label={weekCount > 1 ? "cours cette semaine" : "cours cette semaine"} />
           <StatTile icon={Inbox} value={todo.length} label={todo.length > 1 ? "actions à faire" : "action à faire"} />
         </div>
+      </section>
+
+      <section className="mt-6" aria-label="Prochains cours">
+        <SectionHeading title="Prochains cours" />
+        {upcoming.length > 0 ? (
+          <>
+            <ul className="mt-3 space-y-2.5">
+              {upcoming.slice(0, 3).map((b) => (
+                <li key={b.id}>
+                  <Link to="/compte/reservations" className="block">
+                    <RowCard className="transition-colors hover:bg-secondary">
+                      <span className="w-[72px] shrink-0">
+                        <span className="block text-[11px] font-semibold text-muted-foreground">{relDay(b.scheduled_at)}</span>
+                        <span className="block font-display text-base font-bold leading-tight text-foreground">
+                          {hourOf(b.scheduled_at)}
+                        </span>
+                      </span>
+                      <span className="min-w-0 flex-1 border-l border-border pl-3">
+                        <span className="block truncate text-sm font-bold text-foreground">
+                          {b.teacher_offers?.subjects?.name ?? "Cours particulier"}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {[b.children?.first_name, childLevel(children, b.child_id)].filter(Boolean).join(" · ") ||
+                            formatLabel(b.format)}
+                        </span>
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </RowCard>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link to="/compte/calendrier" className={`mt-3 w-full ${CTA}`}>
+              Voir le calendrier
+            </Link>
+          </>
+        ) : (
+          <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
+            Aucune séance programmée.
+          </p>
+        )}
       </section>
 
       {todo.length > 0 && (
@@ -359,47 +421,6 @@ function ParentHome({ userId, firstName }: { userId: string; firstName: string }
         </section>
       )}
 
-      <section className="mt-6" aria-label="Prochains cours">
-        <SectionHeading
-          title="Prochains cours"
-          action={
-            <Link to="/compte/reservations" className="text-xs font-semibold text-primary hover:underline">
-              Tout voir
-            </Link>
-          }
-        />
-        {upcoming.length > 0 ? (
-          <ul className="mt-3 space-y-2.5">
-            {upcoming.slice(0, 3).map((b) => (
-              <li key={b.id}>
-                <Link to="/compte/reservations" className="block">
-                  <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
-                    <p className="text-sm font-bold text-foreground">
-                      {b.children?.first_name ?? "Séance"}
-                      <span className="font-semibold text-muted-foreground">
-                        {" · "}
-                        {b.teacher_offers?.subjects?.name ?? "Cours particulier"}
-                      </span>
-                    </p>
-                    <p className="mt-1 text-sm text-foreground">{dayTime(b.scheduled_at)}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      Avec {data?.teacherNames.get(b.teacher_id) ?? "votre intervenant"} · {formatLabel(b.format)}
-                    </p>
-                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
-                      Voir la séance <ChevronRight className="size-3.5" aria-hidden />
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
-            Aucune séance programmée.
-          </p>
-        )}
-      </section>
-
       <section className="mt-6" aria-label="Mes enfants">
         <SectionHeading
           title="Mes enfants"
@@ -414,42 +435,36 @@ function ParentHome({ userId, firstName }: { userId: string; firstName: string }
             const childPacks = activePacks.filter((p) => p.child_id === child.id);
             const left = sessionsLeftOf(childPacks);
             const nextChild = upcoming.find((b) => b.child_id === child.id);
-            const subject = childPacks[0]?.teacher_offers?.subjects?.name;
             return (
               <li key={child.id}>
                 <Link to="/compte/enfants/$childId" params={{ childId: child.id }} className="block">
-                  <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
-                    <div className="flex items-center gap-3">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft font-display font-bold text-primary-soft-foreground">
-                        {child.first_name.charAt(0).toUpperCase()}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate font-display font-bold text-foreground">{child.first_name}</p>
-                        <p className="truncate text-xs text-muted-foreground">{child.school_level || "Niveau à préciser"}</p>
-                      </div>
-                    </div>
-                    {left > 0 ? (
-                      <p className="mt-3 text-sm text-foreground">
-                        {left} séance{left > 1 ? "s" : ""} restante{left > 1 ? "s" : ""}
-                        {subject ? ` · ${subject}` : ""}
-                      </p>
-                    ) : (
-                      <p className="mt-3 text-sm text-muted-foreground">Aucune séance programmée</p>
-                    )}
-                    {nextChild && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">Prochaine séance : {dayTime(nextChild.scheduled_at)}</p>
-                    )}
-                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
-                      {left > 0 || nextChild ? "Voir son parcours" : "Trouver un intervenant"}
-                      <ChevronRight className="size-3.5" aria-hidden />
+                  <RowCard className="transition-colors hover:bg-secondary">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft font-display font-bold text-primary-soft-foreground">
+                      {child.first_name.charAt(0).toUpperCase()}
                     </span>
-                  </div>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-display text-sm font-bold text-foreground">
+                        {child.first_name}
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {child.school_level || "Niveau à préciser"}
+                      </span>
+                      <span className="mt-1 block truncate text-xs font-semibold text-foreground">
+                        {left > 0 ? `${left} séance${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""}` : "Aucune formule active"}
+                      </span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {nextChild ? `Prochain cours : ${dayTime(nextChild.scheduled_at)}` : "Aucun cours programmé"}
+                      </span>
+                    </span>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  </RowCard>
                 </Link>
               </li>
             );
           })}
         </ul>
       </section>
+
 
       {assignments.length > 0 && (
         <section className="mt-6" aria-label="Travail à faire">
