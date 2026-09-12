@@ -329,6 +329,7 @@ export type Database = {
       children: {
         Row: {
           auth_user_id: string | null
+          avatar_path: string | null
           birth_year: number | null
           created_at: string
           first_name: string
@@ -340,6 +341,7 @@ export type Database = {
         }
         Insert: {
           auth_user_id?: string | null
+          avatar_path?: string | null
           birth_year?: number | null
           created_at?: string
           first_name: string
@@ -351,6 +353,7 @@ export type Database = {
         }
         Update: {
           auth_user_id?: string | null
+          avatar_path?: string | null
           birth_year?: number | null
           created_at?: string
           first_name?: string
@@ -1008,6 +1011,7 @@ export type Database = {
           city: string
           commune: string | null
           created_at: string
+          deleted_at: string | null
           display_name: string
           id: string
           onboarding_completed_at: string | null
@@ -1020,6 +1024,7 @@ export type Database = {
           city?: string
           commune?: string | null
           created_at?: string
+          deleted_at?: string | null
           display_name: string
           id?: string
           onboarding_completed_at?: string | null
@@ -1032,6 +1037,7 @@ export type Database = {
           city?: string
           commune?: string | null
           created_at?: string
+          deleted_at?: string | null
           display_name?: string
           id?: string
           onboarding_completed_at?: string | null
