@@ -939,9 +939,9 @@ function SessionReportEntry({
 }) {
   const attendanceLabel = ATTENDANCE_OPTIONS.find((o) => o.value === event.attendance)?.label ?? event.attendance;
   const progressLabel = PROGRESS_LEVELS.find((o) => o.value === event.progressLevel)?.label ?? event.progressLevel;
-  const homeworkLabel = event.homeworkDone
-    ? (HOMEWORK_DONE_OPTIONS.find((o) => o.value === event.homeworkDone)?.label ?? event.homeworkDone)
-    : null;
+  const homeworkLabel = event.homeworkDone;
+  const engagementLabel =
+    ENGAGEMENT_LEVELS.find((o) => o.value === event.engagementLevel)?.label ?? event.engagementLevel;
   const date = new Date(event.sortAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
 
   return (
