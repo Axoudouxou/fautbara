@@ -284,6 +284,9 @@ function LearnerHome({
   const thisWeek = pendingOrAccepted.filter(
     (b) => new Date(b.scheduled_at).getTime() <= thisWeekEnd && new Date(b.scheduled_at).getTime() > now,
   );
+  const thisWeekOrLater = pendingOrAccepted
+    .filter((b) => new Date(b.scheduled_at).getTime() > now)
+    .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at));
 
   if (bookingsQuery.isLoading) {
     return (
