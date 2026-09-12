@@ -146,19 +146,21 @@ function ChildrenPage() {
             children.map((child) => {
               const activePacks = (overviewQuery.data?.packs ?? []).filter((pack) => pack.child_id === child.id && pack.status === "active");
               const sessionsLeft = activePacks.reduce((sum, pack) => sum + Math.max(pack.sessions_total - pack.sessions_used, 0), 0);
+              const sessionsTotal = activePacks.reduce((sum, pack) => sum + pack.sessions_total, 0);
+              const sessionsUsed = activePacks.reduce((sum, pack) => sum + pack.sessions_used, 0);
               const nextBooking = (overviewQuery.data?.bookings ?? []).filter((booking) => booking.child_id === child.id && booking.status === "accepted").sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at))[0];
               return (
               <article
                 key={child.id}
-                className="flex h-full flex-col rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]"
+                className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]"
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft font-display font-bold text-primary-soft-foreground">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft font-display font-bold text-primary-soft-foreground">
                     {child.first_name.charAt(0).toUpperCase()}
                   </span>
-                  <div>
-                    <p className="font-semibold text-foreground">{child.first_name}</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-display font-bold text-foreground">{child.first_name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
                       {[
                         child.school_level,
                         child.birth_year ? `né(e) en ${child.birth_year}` : null,
@@ -167,13 +169,39 @@ function ChildrenPage() {
                         .join(" · ") || "Profil enfant"}
                     </p>
                   </div>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    aria-label={`Supprimer le profil de ${child.first_name}`}
+                    onClick={() => deleteMutation.mutate(child.id)}
+                    className="shrink-0 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" aria-hidden />
+                  </Button>
                 </div>
-                <dl className="mt-5 grid grid-cols-2 gap-3 border-y border-border py-4 text-sm">
-                  <div><dt className="text-xs text-muted-foreground">Séances restantes</dt><dd className="font-display text-xl font-bold text-foreground">{sessionsLeft}</dd></div>
-                  <div><dt className="text-xs text-muted-foreground">Formules actives</dt><dd className="font-display text-xl font-bold text-foreground">{activePacks.length}</dd></div>
-                </dl>
-                <p className="mt-3 text-xs text-muted-foreground">{nextBooking ? `Prochaine séance ${new Date(nextBooking.scheduled_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}` : "Aucune séance programmée"}</p>
-                <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+
+                {sessionsTotal > 0 && (
+                  <div className="mt-3">
+                    <ProgressBar
+                      value={(sessionsUsed / sessionsTotal) * 100}
+                      label={`${sessionsUsed} séance${sessionsUsed > 1 ? "s" : ""} effectuée${sessionsUsed > 1 ? "s" : ""} sur ${sessionsTotal}`}
+                    />
+                  </div>
+                )}
+
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {sessionsLeft > 0
+                    ? `${sessionsLeft} séance${sessionsLeft > 1 ? "s" : ""} restante${sessionsLeft > 1 ? "s" : ""} · ${activePacks.length} formule${activePacks.length > 1 ? "s" : ""} active${activePacks.length > 1 ? "s" : ""}`
+                    : "Aucune formule active"}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {nextBooking
+                    ? `Prochain cours ${new Date(nextBooking.scheduled_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })} à ${new Date(nextBooking.scheduled_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                    : "Aucun cours programmé"}
+                </p>
+
+                <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
                   <Link
                     to="/compte/enfants/$childId"
                     params={{ childId: child.id }}
@@ -181,16 +209,13 @@ function ChildrenPage() {
                   >
                     Voir son parcours <ArrowRight className="size-4" aria-hidden />
                   </Link>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    aria-label={`Supprimer le profil de ${child.first_name}`}
-                    onClick={() => deleteMutation.mutate(child.id)}
-                    className="rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  <Link
+                    to="/professeurs"
+                    search={{ enfant: child.id }}
+                    className="inline-flex text-sm font-semibold text-foreground hover:underline"
                   >
-                    <Trash2 className="size-4" aria-hidden />
-                  </Button>
+                    Trouver un intervenant
+                  </Link>
                 </div>
               </article>
               );
