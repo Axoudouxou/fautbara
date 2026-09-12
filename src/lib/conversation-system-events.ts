@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Attendance, HomeworkDone, ProgressLevel } from "@/lib/session-reports";
+import { engagementScore, type Attendance, type EngagementLevel, type ProgressLevel } from "@/lib/session-reports";
 
 export type ConversationTimelineEvent =
   | {
