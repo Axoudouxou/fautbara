@@ -41,14 +41,20 @@ export const LEARNING_STYLES: { value: LearningStyle; label: string }[] = [
   { value: "practical", label: "Par la pratique, exercices concrets" },
 ];
 
-export type LearningObjective = "exam" | "catchup" | "advance" | "confidence";
+export type LearningObjective = "catchup" | "improve_grades" | "exam" | "method" | "deepen" | "advance";
 
 export const LEARNING_OBJECTIVES: { value: LearningObjective; label: string }[] = [
-  { value: "exam", label: "Réussir un examen" },
   { value: "catchup", label: "Combler des lacunes" },
-  { value: "advance", label: "Aller plus loin" },
-  { value: "confidence", label: "Reprendre confiance" },
+  { value: "improve_grades", label: "Améliorer mes notes" },
+  { value: "exam", label: "Préparer un examen" },
+  { value: "method", label: "Gagner en méthode" },
+  { value: "deepen", label: "Approfondir le programme" },
+  { value: "advance", label: "Prendre de l’avance" },
 ];
+
+export function learningObjectiveLabel(value: string | null | undefined) {
+  return LEARNING_OBJECTIVES.find((objective) => objective.value === value)?.label ?? null;
+}
 
 export type PreferredFormat = "home" | "online" | "both";
 

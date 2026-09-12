@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -16,10 +17,23 @@ import {
   Search,
   ShieldCheck,
   Wallet,
+  Trash2,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { SectionTabs, accountTabs } from "@/components/section-tabs";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { closeMyAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/_authenticated/compte/")({
   head: () => ({
@@ -294,6 +308,7 @@ function AccountPage() {
           )}
 
           <AccountSecuritySection currentEmail={user.email ?? ""} />
+          <DeleteAccountSection />
         </div>
 
       </div>
@@ -442,6 +457,69 @@ function AccountSecuritySection({ currentEmail }: { currentEmail: string }) {
           Mettre à jour le mot de passe
         </button>
       </form>
+    </section>
+  );
+}
+
+function DeleteAccountSection() {
+  const navigate = useNavigate();
+  const closeAccount = useServerFn(closeMyAccount);
+  const [confirmation, setConfirmation] = useState("");
+
+  const mutation = useMutation({
+    mutationFn: () => closeAccount({ data: { confirmation: "SUPPRIMER" } }),
+    onSuccess: async () => {
+      await supabase.auth.signOut();
+      toast.success("Votre compte a été supprimé");
+      navigate({ to: "/" });
+    },
+    onError: () => toast.error("Suppression impossible", { description: "Veuillez réessayer ou contacter l’aide BARA." }),
+  });
+
+  return (
+    <section className="rounded-2xl border border-destructive/30 bg-card p-4 sm:p-6">
+      <h2 className="font-display text-base font-bold text-destructive sm:text-lg">Supprimer mon compte</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Votre accès et vos informations personnelles seront supprimés. Les historiques nécessaires aux paiements, cours et litiges seront conservés de façon anonymisée.
+      </p>
+      <AlertDialog onOpenChange={(open) => { if (!open) setConfirmation(""); }}>
+        <AlertDialogTrigger asChild>
+          <Button type="button" variant="outline" className="mt-4 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive">
+            <Trash2 className="size-4" aria-hidden /> Supprimer mon compte
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent className="w-[calc(100%-2rem)] rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression définitive</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Saisissez SUPPRIMER pour confirmer la fermeture de votre compte.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <label htmlFor="delete-account-confirmation" className="text-sm font-semibold text-foreground">
+            Confirmation
+          </label>
+          <input
+            id="delete-account-confirmation"
+            value={confirmation}
+            onChange={(event) => setConfirmation(event.target.value)}
+            autoComplete="off"
+            placeholder="SUPPRIMER"
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-destructive/30"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={confirmation !== "SUPPRIMER" || mutation.isPending}
+              onClick={() => mutation.mutate()}
+            >
+              {mutation.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+              Supprimer définitivement
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

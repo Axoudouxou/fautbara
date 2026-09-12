@@ -177,12 +177,16 @@ export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | nu
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       aria-label="Navigation de l'application"
     >
       <ul className="relative grid grid-cols-5 items-end">
         {tabs.map(renderTab)}
-        {hasPrimaryAction && <li className="pointer-events-none absolute inset-x-0 top-0 flex justify-center"><MobilePrimaryAction role={role} /></li>}
+        {hasPrimaryAction && (
+          <li className="pointer-events-none absolute left-1/2 top-0 z-10 size-0 -translate-x-1/2">
+            <MobilePrimaryAction role={role} />
+          </li>
+        )}
       </ul>
     </nav>
   );
@@ -196,7 +200,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
           <Button
             type="button"
             size="icon"
-            className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]"
+            className="pointer-events-auto absolute bottom-8 left-1/2 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)]"
             aria-label="Ajouter ou gérer mon activité"
           >
             <Plus className="size-5" aria-hidden />
@@ -216,7 +220,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
 
   if (role === "parent") {
     return (
-      <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
+      <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 left-1/2 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
         <Link to="/choisir-enfant" aria-label="Rechercher un intervenant pour un enfant">
           <Plus className="size-5" aria-hidden />
         </Link>
@@ -225,7 +229,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
   }
 
   return (
-    <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
+    <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 left-1/2 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
       <Link to="/professeurs" search={{}} aria-label="Rechercher un intervenant pour moi">
         <Plus className="size-5" aria-hidden />
       </Link>

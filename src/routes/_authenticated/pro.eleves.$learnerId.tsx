@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, ChevronLeft, FileText, Loader2, MessageSquare, Target } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { learningObjectiveLabel } from "@/lib/education";
 import { EmptyState, ProgressBar, SectionHeading, StatTile } from "@/components/product-ui";
 import { TeacherGate } from "@/components/teacher-gate";
 import { SESSION_STATUS_LABELS } from "@/lib/packs";
@@ -199,7 +200,7 @@ function TeacherStudentPage() {
               {profile.objective && (
                 <div>
                   <dt className="text-xs font-semibold text-muted-foreground">Objectif</dt>
-                  <dd className="text-foreground">{profile.objective}</dd>
+                  <dd className="text-foreground">{learningObjectiveLabel(profile.objective) ?? profile.objective}</dd>
                 </div>
               )}
               {profile.learning_style && (
