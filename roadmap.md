@@ -23,7 +23,7 @@
 ## Refonte mobile — 22 écrans Parent, Adulte et Intervenant
 - [x] Lot 1 : navigation mobile différenciée et bouton central selon le rôle
 - [x] Lot 2 : finaliser les 7 écrans Parent avec les données familiales réelles
-- [ ] Lot 3 : finaliser les 7 écrans Adulte avec objectifs et suivi personnel
+- [x] Lot 3 : finaliser les 7 écrans Adulte avec objectifs et suivi personnel (détail matière, compte-rendu, objectif libre)
 - [ ] Lot 4 : finaliser les 8 écrans Intervenant avec élèves, agenda, demandes, rémunérations et progression de grade
 - [ ] Lot 5 : vérifier comptes-rendus, permissions, paiements, formules, routes historiques et données
 - [ ] Lot 6 : valider les trois parcours sur mobile et ordinateur
@@ -33,6 +33,6 @@
 - [ ] Uniformiser les 22 écrans sur la densité et la hiérarchie mobile de la référence
 - [x] Aligner les écrans Parent accueil, enfants et choix d’enfant (densité maquette)
 - [ ] Aligner les écrans Parent recherche, détail intervenant et programmation
-- [ ] Aligner les 7 écrans Adulte et compléter les vues matière/compte-rendu
+- [x] Aligner les 7 écrans Adulte et compléter les vues matière/compte-rendu
 - [ ] Aligner les 8 écrans Intervenant et compléter élève/rémunérations/progression
 - [ ] Vérifier les trois rôles sur mobile et ordinateur
