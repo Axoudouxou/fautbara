@@ -137,29 +137,6 @@ function BookingsPage() {
   const children = childrenQuery.data ?? [];
   const visiblePacks = childParam ? packs.filter((pack) => pack.child_id === childParam) : packs;
   const visibleBookings = childParam ? bookings.filter((booking) => booking.child_id === childParam) : bookings;
-  const displayedChildren = childParam ? children.filter((child) => child.id === childParam) : children;
-  const packRows = isParent
-    ? displayedChildren.flatMap((child) => {
-        const childPacks = visiblePacks.filter((pack) => pack.child_id === child.id);
-        return childPacks.length > 0
-          ? [
-              { kind: "child" as const, child },
-              ...childPacks.map((pack) => ({ kind: "pack" as const, pack })),
-            ]
-          : [];
-      })
-    : visiblePacks.map((pack) => ({ kind: "pack" as const, pack }));
-  const bookingRows = isParent
-    ? displayedChildren.flatMap((child) => {
-        const childBookings = visibleBookings.filter((booking) => booking.child_id === child.id);
-        return childBookings.length > 0
-          ? [
-              { kind: "child" as const, child },
-              ...childBookings.map((booking) => ({ kind: "booking" as const, booking })),
-            ]
-          : [];
-      })
-    : visibleBookings.map((booking) => ({ kind: "booking" as const, booking }));
   const teacherIds = [
     ...new Set([
       ...packs.map((p) => p.teacher_id),
@@ -206,6 +183,78 @@ function BookingsPage() {
     document.getElementById(anchor)?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [loading, packParam, bookingParam]);
 
+  const renderSession = (booking: (typeof bookings)[number]) => {
+    const status = SESSION_STATUS_LABELS[booking.status] ?? {
+      label: booking.status,
+      className: "bg-muted text-muted-foreground",
+    };
+    const canCancel = booking.status === "accepted";
+    return (
+      <li
+        key={booking.id}
+        id={`seance-${booking.id}`}
+        className={`relative pb-5 pl-7 last:pb-0 before:absolute before:left-[5px] before:top-3 before:h-full before:w-px before:bg-border last:before:hidden ${
+          bookingParam === booking.id ? "rounded-xl bg-primary-soft/40 pr-2 pt-2" : ""
+        }`}
+      >
+        <span className="absolute left-0 top-2.5 size-3 rounded-full border-2 border-primary bg-card" />
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold capitalize text-foreground">
+              {formatDay(booking.scheduled_at)}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {formatTimeRange(booking.scheduled_at, booking.duration_minutes)} · {booking.duration_minutes} min
+            </p>
+          </div>
+          <span className={`h-fit shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${status.className}`}>
+            {status.label}
+          </span>
+        </div>
+        <p className="mt-1.5 inline-flex items-center gap-1 text-xs text-muted-foreground">
+          {booking.format === "online" ? <Laptop className="size-3.5" aria-hidden /> : <Home className="size-3.5" aria-hidden />}
+          {booking.format === "online" ? "En ligne" : `À domicile${booking.commune ? ` · ${booking.commune}` : ""}`}
+          {booking.is_free_session ? " · offerte" : ""}
+        </p>
+        {booking.status_reason && (
+          <p className="mt-2 rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">{booking.status_reason}</p>
+        )}
+        <BookingLifecycleControls
+          booking={{
+            id: booking.id,
+            status: booking.status,
+            scheduled_at: booking.scheduled_at,
+            reschedule_used: booking.reschedule_used,
+          }}
+          role="learner"
+          invalidateKeys={[["my-bookings", user.id], ["my-packs", user.id]]}
+        />
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {canCancel && (
+            <button
+              type="button"
+              onClick={() => setCancelTarget({ id: booking.id, scheduledAt: booking.scheduled_at, rescheduleUsed: booking.reschedule_used })}
+              className="rounded-full border border-border px-3 py-1.5 text-[11px] font-semibold text-destructive hover:bg-destructive/10"
+            >
+              Annuler
+            </button>
+          )}
+          {booking.status === "completed" && (
+            <Link to="/compte-rendu/$bookingId" params={{ bookingId: booking.id }} className="rounded-full border border-border px-3 py-1.5 text-[11px] font-semibold text-foreground hover:bg-secondary">
+              Compte-rendu
+            </Link>
+          )}
+          {booking.status === "completed" && (
+            <LeaveReviewDialog bookingId={booking.id} teacherId={booking.teacher_id} authorId={user.id} invalidateKeys={[["my-bookings", user.id]]} />
+          )}
+          {(booking.status === "completed" || booking.status === "cancelled" || booking.status === "lost" || booking.status === "no_show_teacher" || booking.status === "no_show_parent") && (
+            <OpenDisputeDialog bookingId={booking.id} againstId={booking.teacher_id} openedBy={user.id} />
+          )}
+        </div>
+      </li>
+    );
+  };
+
 
   return (
     <div className="container-page py-5 pb-24 sm:py-14">
@@ -215,59 +264,55 @@ function BookingsPage() {
         Vos formules payées et les séances que vous programmez au fil des semaines dans
         l&apos;agenda de l&apos;intervenant.
       </p>
-      {isParent && !loading && children.length > 0 && (
+      {isParent && !loading && !childParam && children.length > 0 && (
         <section className="mt-5" aria-labelledby="children-courses-title">
           <h2 id="children-courses-title" className="font-display text-base font-bold text-foreground">
-            Cours par enfant
+            Pour quel enfant ?
           </h2>
-          <div className="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
             {children.map((child) => {
               const childPacks = packs.filter((pack) => pack.child_id === child.id);
               const childBookings = bookings.filter((booking) => booking.child_id === child.id);
               const hasCourses = childPacks.length > 0 || childBookings.length > 0;
               return (
-                <div key={child.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-                    <Baby className="size-5" aria-hidden />
+                <Link
+                  key={child.id}
+                  to={hasCourses ? "/compte/reservations" : "/professeurs"}
+                  search={{ enfant: child.id }}
+                  aria-label={hasCourses ? `Voir les cours de ${child.first_name}` : `Trouver un intervenant pour ${child.first_name}`}
+                  className="group grid min-h-36 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition hover:border-primary/40 hover:-translate-y-0.5"
+                >
+                  <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
+                    <Baby className="size-7" aria-hidden />
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-display text-sm font-bold text-foreground">{child.first_name}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {child.school_level ?? "Niveau non renseigné"}
-                    </p>
-                    <p className="mt-1 text-xs font-semibold text-primary">
-                      {childPacks.length} formule{childPacks.length > 1 ? "s" : ""} · {childBookings.length} séance{childBookings.length > 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  {hasCourses ? (
-                    <Link
-                      to="/compte/reservations"
-                      search={{ enfant: child.id }}
-                      aria-label={`Voir uniquement les cours de ${child.first_name}`}
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full text-primary hover:bg-primary-soft"
-                    >
-                      <ChevronRight className="size-4" aria-hidden />
-                    </Link>
-                  ) : (
-                    <Link
-                      to="/professeurs"
-                      search={{ enfant: child.id }}
-                      aria-label={`Trouver un intervenant pour ${child.first_name}`}
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full text-primary hover:bg-primary-soft"
-                    >
-                      <ChevronRight className="size-4" aria-hidden />
-                    </Link>
-                  )}
-                </div>
+                  <span className="min-w-0">
+                    <span className="block truncate font-display text-lg font-bold text-foreground">{child.first_name}</span>
+                    <span className="mt-0.5 block truncate text-sm text-muted-foreground">{child.school_level ?? "Niveau non renseigné"}</span>
+                    <span className="mt-3 block text-xs font-semibold text-primary">
+                      {hasCourses ? `${childPacks.length} formule${childPacks.length > 1 ? "s" : ""} · ${childBookings.length} séance${childBookings.length > 1 ? "s" : ""}` : "Trouver un professeur"}
+                    </span>
+                  </span>
+                  <ChevronRight className="size-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden />
+                </Link>
               );
             })}
           </div>
-          {childParam && (
-            <Link to="/compte/reservations" search={{}} className="mt-3 inline-flex text-xs font-semibold text-primary">
-              Voir tous les enfants
-            </Link>
-          )}
         </section>
+      )}
+
+      {isParent && selectedChild && (
+        <div className="mt-5">
+          <Link to="/compte/reservations" search={{}} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+            <ArrowLeft className="size-3.5" aria-hidden /> Changer d&apos;enfant
+          </Link>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground"><Baby className="size-5" aria-hidden /></span>
+            <div className="min-w-0">
+              <h2 className="truncate font-display text-lg font-bold text-foreground">Les cours de {selectedChild.first_name}</h2>
+              <p className="truncate text-xs text-muted-foreground">{selectedChild.school_level ?? "Niveau non renseigné"}</p>
+            </div>
+          </div>
+        </div>
       )}
 
 
@@ -303,269 +348,75 @@ function BookingsPage() {
         </div>
       )}
 
-      {visiblePacks.length > 0 && (
-        <section className="mt-6">
-          <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Mes formules</h2>
-          <ul className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-4">
-            {packRows.map((row) => {
-              if (row.kind === "child") {
-                return (
-                  <li key={`pack-child-${row.child.id}`} id={`cours-${row.child.id}`} className="pt-3 first:pt-0">
-                    <p className="font-display text-base font-bold text-foreground">{row.child.first_name}</p>
-                    <p className="text-xs text-muted-foreground">{row.child.school_level ?? "Niveau non renseigné"}</p>
-                  </li>
-                );
-              }
-              const p = row.pack;
-              const status = PACK_STATUS_LABELS[p.status] ?? {
-                label: p.status,
-                className: "bg-muted text-muted-foreground",
-              };
-              const teacher = teachers.get(p.teacher_id);
-              const left = Math.max(p.sessions_total - p.sessions_used, 0);
-              const expired = Boolean(p.expires_at && new Date(p.expires_at) <= new Date());
+      {!loading && (!isParent || childParam) && visibleTeacherIds.length > 0 && (
+        <section className="mt-6" aria-labelledby="teachers-courses-title">
+          <h2 id="teachers-courses-title" className="font-display text-base font-bold text-foreground">Mes professeurs</h2>
+          <Accordion type="multiple" defaultValue={visibleTeacherIds.slice(0, 1)} className="mt-3 space-y-3">
+            {visibleTeacherIds.map((teacherId) => {
+              const teacher = teachers.get(teacherId);
+              const teacherPacks = visiblePacks.filter((pack) => pack.teacher_id === teacherId);
+              const teacherBookings = visibleBookings.filter((booking) => booking.teacher_id === teacherId);
+              const subject = teacherPacks[0]?.teacher_offers?.subjects?.name ?? teacherBookings[0]?.teacher_offers?.subjects?.name ?? "Cours";
               return (
-                <li
-                  key={p.id}
-                  id={`pack-${p.id}`}
-                  className={`rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6 ${
-                    packParam === p.id ? "border-primary ring-2 ring-primary/30" : "border-border"
-                  }`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wide text-primary">
-                        {p.teacher_offers?.subjects?.name}
-                      </p>
-                      <h3 className="mt-0.5 font-display text-base font-bold text-foreground sm:text-lg">
-                        Formule {p.pack_types?.name}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Pour {p.children?.first_name ?? "moi"} · {p.teacher_offers?.title}
-                      </p>
-                      {teacher && (
-                        <Link
-                          to="/professeurs/$id"
-                          params={{ id: p.teacher_id }}
-                          className="mt-2 inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 hover:bg-secondary"
-                        >
-                          <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-xs font-bold text-primary-soft-foreground">
-                            {teacher.avatar_url ? (
-                              <img
-                                src={teacher.avatar_url}
-                                alt={`Photo de ${teacher.display_name}`}
-                                className="size-full object-cover"
-                              />
-                            ) : (
-                              teacher.display_name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .slice(0, 2)
-                                .join("")
-                                .toUpperCase()
-                            )}
-                          </span>
-                          <span className="text-sm font-semibold text-foreground">
-                            {teacher.display_name}
-                          </span>
-                        </Link>
+                <AccordionItem key={teacherId} value={teacherId} className="overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-card)]">
+                  <AccordionTrigger className="px-4 py-4 hover:no-underline sm:px-5">
+                    <span className="flex min-w-0 items-center gap-3 text-left">
+                      <UserAvatar name={teacher?.display_name ?? "Professeur"} src={teacher?.avatar_url} className="size-12 shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block truncate font-display text-sm font-bold text-foreground">{teacher?.display_name ?? "Professeur"}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{subject}</span>
+                        <span className="mt-1 block text-[11px] font-semibold text-primary">{teacherPacks.length} formule{teacherPacks.length > 1 ? "s" : ""} · {teacherBookings.length} séance{teacherBookings.length > 1 ? "s" : ""}</span>
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4 sm:px-5 sm:pb-5">
+                    <Link to="/professeurs/$id" params={{ id: teacherId }} className="mb-4 inline-flex text-xs font-semibold text-primary">Voir le profil du professeur</Link>
+                    <div className="space-y-4">
+                      {teacherPacks.map((pack) => {
+                        const status = PACK_STATUS_LABELS[pack.status] ?? { label: pack.status, className: "bg-muted text-muted-foreground" };
+                        const left = Math.max(pack.sessions_total - pack.sessions_used, 0);
+                        const expired = Boolean(pack.expires_at && new Date(pack.expires_at) <= new Date());
+                        const packBookings = teacherBookings.filter((booking) => booking.pack_id === pack.id).sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+                        return (
+                          <article key={pack.id} id={`pack-${pack.id}`} className={`rounded-2xl border p-4 ${packParam === pack.id ? "border-primary ring-2 ring-primary/30" : "border-border"}`}>
+                            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                              <div className="min-w-0"><h3 className="truncate font-display text-sm font-bold text-foreground">Formule {pack.pack_types?.name}</h3><p className="mt-0.5 truncate text-xs text-muted-foreground">{pack.teacher_offers?.title}</p></div>
+                              <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${status.className}`}>{status.label}</span>
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground"><span><strong className="text-foreground">{left}</strong> séance{left > 1 ? "s" : ""} restante{left > 1 ? "s" : ""}</span><span>Valable jusqu&apos;au {formatDate(pack.expires_at)}</span></div>
+                            {pack.free_sessions > 0 && <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary"><Sparkles className="size-3" aria-hidden /> {pack.free_sessions} séance offerte par BARA</p>}
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {pack.status === "pending_payment" && <Link to="/paiement/$packId" params={{ packId: pack.id }} className="rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground">Régler</Link>}
+                              {pack.status === "active" && !expired && <Link to="/compte/programmer/$packId" params={{ packId: pack.id }} className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"><CalendarClock className="size-3.5" aria-hidden /> Programmer</Link>}
+                            </div>
+                            {pack.status === "active" && expired && <p className="mt-3 rounded-xl bg-muted/60 px-3 py-2 text-xs text-muted-foreground">La formule est arrivée à expiration. Les séances déjà programmées restent valables.</p>}
+                            <div className="mt-5 border-t border-border pt-4">
+                              <h4 className="text-xs font-bold text-foreground">Séances programmées</h4>
+                              {packBookings.length > 0 ? <ul className="mt-3">{packBookings.map(renderSession)}</ul> : <p className="mt-2 text-xs text-muted-foreground">Aucune séance programmée pour cette formule.</p>}
+                            </div>
+                          </article>
+                        );
+                      })}
+                      {teacherBookings.some((booking) => !booking.pack_id) && (
+                        <article className="rounded-2xl border border-border p-4">
+                          <h3 className="font-display text-sm font-bold text-foreground">Autres séances</h3>
+                          <ul className="mt-3">{teacherBookings.filter((booking) => !booking.pack_id).sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()).map(renderSession)}</ul>
+                        </article>
                       )}
                     </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>
-                      {status.label}
-                    </span>
-                  </div>
-
-                  <dl className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Séances restantes</dt>
-                      <dd className="font-semibold text-foreground">
-                        {left} séance{left > 1 ? "s" : ""}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                      <dt className="text-muted-foreground">Validité de la formule</dt>
-                      <dd className="text-foreground">Jusqu&apos;au {formatDate(p.expires_at)}</dd>
-                    </div>
-                  </dl>
-
-                  {p.free_sessions > 0 && (
-                    <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary-soft/60 px-3 py-1 text-xs font-semibold text-primary-soft-foreground">
-                      <Sparkles className="size-3.5" aria-hidden /> {p.free_sessions} séance offerte
-                      par BARA, une seule fois par famille
-                    </p>
-                  )}
-
-                  {p.status === "pending_payment" && (
-                    <Link
-                      to="/paiement/$packId"
-                      params={{ packId: p.id }}
-                      className="mt-3 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
-                    >
-                      Régler cette formule
-                    </Link>
-                  )}
-
-                  {p.status === "active" && !expired && (
-                    <Link to="/compte/programmer/$packId" params={{ packId: p.id }} className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"><CalendarClock className="size-3.5" /> Programmer une séance</Link>
-                  )}
-
-                  {p.status === "active" && expired && (
-                    <p className="mt-3 rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-                      La validité est écoulée : les séances déjà programmées restent valables, mais
-                      aucune nouvelle séance ne peut être ajoutée.
-                    </p>
-                  )}
-                </li>
+                  </AccordionContent>
+                </AccordionItem>
               );
             })}
-          </ul>
+          </Accordion>
         </section>
       )}
 
-      {visibleBookings.length > 0 && (
-        <section className="mt-8">
-          <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Mes séances</h2>
-          <ul className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-4">
-            {bookingRows.map((row) => {
-              if (row.kind === "child") {
-                return (
-                  <li key={`booking-child-${row.child.id}`} className="pt-3 first:pt-0">
-                    <p className="font-display text-base font-bold text-foreground">{row.child.first_name}</p>
-                    <p className="text-xs text-muted-foreground">{row.child.school_level ?? "Niveau non renseigné"}</p>
-                  </li>
-                );
-              }
-              const b = row.booking;
-              const status = SESSION_STATUS_LABELS[b.status] ?? {
-                label: b.status,
-                className: "bg-muted text-muted-foreground",
-              };
-              const canCancel = b.status === "accepted";
-              return (
-                <li
-                  key={b.id}
-                  id={`seance-${b.id}`}
-                  className={`rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6 ${
-                    bookingParam === b.id ? "border-primary ring-2 ring-primary/30" : "border-border"
-                  }`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wide text-primary">
-                        {b.teacher_offers?.subjects?.name}
-                      </p>
-                      <h3 className="mt-0.5 font-display text-base font-bold text-foreground sm:text-lg">
-                        {b.teacher_offers?.title ?? "Cours"}
-                        {b.session_index ? ` · séance ${b.session_index}` : ""}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Pour {b.children?.first_name ?? "moi"}
-                        {b.is_free_session ? " · séance offerte" : ""}
-                      </p>
-                    </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>
-                      {status.label}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
-                    <span className="inline-flex items-center gap-1.5">
-                      <CalendarClock className="size-4" aria-hidden />
-                      {formatDay(b.scheduled_at)} ·{" "}
-                      {formatTimeRange(b.scheduled_at, b.duration_minutes)} ({b.duration_minutes} min)
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      {b.format === "online" ? (
-                        <>
-                          <Laptop className="size-4" aria-hidden /> En ligne
-                        </>
-                      ) : (
-                        <>
-                          <Home className="size-4" aria-hidden /> À domicile
-                          {b.commune ? ` · ${b.commune}` : ""}
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  {b.status_reason && (
-                    <p className="mt-3 rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-                      {b.status_reason}
-                    </p>
-                  )}
-
-                  <BookingLifecycleControls
-                    booking={{
-                      id: b.id,
-                      status: b.status,
-                      scheduled_at: b.scheduled_at,
-                      reschedule_used: b.reschedule_used,
-                    }}
-                    role="learner"
-                    invalidateKeys={[
-                      ["my-bookings", user.id],
-                      ["my-packs", user.id],
-                    ]}
-                  />
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Link
-                      to="/professeurs/$id"
-                      params={{ id: b.teacher_id }}
-                      className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
-                    >
-                      Voir l&apos;intervenant
-                    </Link>
-                    {canCancel && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setCancelTarget({
-                            id: b.id,
-                            scheduledAt: b.scheduled_at,
-                            rescheduleUsed: b.reschedule_used,
-                          })
-                        }
-                        className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10"
-                      >
-                        Annuler la séance
-                      </button>
-                    )}
-                    {b.status === "completed" && (
-                      <Link
-                        to="/compte-rendu/$bookingId"
-                        params={{ bookingId: b.id }}
-                        className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
-                      >
-                        Voir le compte-rendu
-                      </Link>
-                    )}
-                    {b.status === "completed" && (
-                      <LeaveReviewDialog
-                        bookingId={b.id}
-                        teacherId={b.teacher_id}
-                        authorId={user.id}
-                        invalidateKeys={[["my-bookings", user.id]]}
-                      />
-                    )}
-                    {(b.status === "completed" ||
-                      b.status === "cancelled" ||
-                      b.status === "lost" ||
-                      b.status === "no_show_teacher" ||
-                      b.status === "no_show_parent") && (
-                      <OpenDisputeDialog
-                        bookingId={b.id}
-                        againstId={b.teacher_id}
-                        openedBy={user.id}
-                      />
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+      {!loading && isParent && childParam && visibleTeacherIds.length === 0 && (
+        <div className="mt-6 rounded-3xl border border-border bg-card p-7 text-center shadow-[var(--shadow-card)]">
+          <p className="font-display text-base font-bold text-foreground">Aucun cours pour {selectedChild?.first_name}</p>
+          <Link to="/professeurs" search={{ enfant: childParam }} className="mt-4 inline-flex rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground">Trouver un professeur</Link>
+        </div>
       )}
 
       {cancelTarget && (
