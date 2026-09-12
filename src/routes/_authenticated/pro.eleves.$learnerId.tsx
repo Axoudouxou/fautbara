@@ -9,7 +9,7 @@ import { TeacherGate } from "@/components/teacher-gate";
 import { SESSION_STATUS_LABELS } from "@/lib/packs";
 import {
   ATTENDANCE_OPTIONS,
-  HOMEWORK_DONE_OPTIONS,
+  ENGAGEMENT_LEVELS,
   PROGRESS_LEVELS,
   labelFor,
 } from "@/lib/session-reports";
