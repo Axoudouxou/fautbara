@@ -61,6 +61,7 @@ import { Route as AuthenticatedCompteProgrammerPackIdRouteImport } from './route
 import { Route as AuthenticatedProElevesIndexRouteImport } from './routes/_authenticated/pro.eleves.index'
 import { Route as AuthenticatedProElevesLearnerIdRouteImport } from './routes/_authenticated/pro.eleves.$learnerId'
 import { Route as AuthenticatedProSeancesIndexRouteImport } from './routes/_authenticated/pro.seances.index'
+import { Route as AuthenticatedProSeancesBookingIdRouteImport } from './routes/_authenticated/pro.seances.$bookingId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -350,6 +351,12 @@ const AuthenticatedProSeancesIndexRoute =
     path: '/pro/seances/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProSeancesBookingIdRoute =
+  AuthenticatedProSeancesBookingIdRouteImport.update({
+    id: '/pro/seances/$bookingId',
+    path: '/pro/seances/$bookingId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -400,6 +407,7 @@ export interface FileRoutesByFullPath {
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
   '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
+  '/pro/seances/$bookingId': typeof AuthenticatedProSeancesBookingIdRoute
   '/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
   '/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
   '/pro/seances/': typeof AuthenticatedProSeancesIndexRoute
@@ -453,6 +461,7 @@ export interface FileRoutesByTo {
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
   '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
+  '/pro/seances/$bookingId': typeof AuthenticatedProSeancesBookingIdRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsIndexRoute
   '/pro/eleves': typeof AuthenticatedProElevesIndexRoute
   '/pro/seances': typeof AuthenticatedProSeancesIndexRoute
@@ -508,6 +517,7 @@ export interface FileRoutesById {
   '/_authenticated/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/_authenticated/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
   '/_authenticated/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
+  '/_authenticated/pro/seances/$bookingId': typeof AuthenticatedProSeancesBookingIdRoute
   '/_authenticated/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
   '/_authenticated/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
   '/_authenticated/pro/seances/': typeof AuthenticatedProSeancesIndexRoute
@@ -563,6 +573,7 @@ export interface FileRouteTypes {
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
     | '/pro/eleves/$learnerId'
+    | '/pro/seances/$bookingId'
     | '/compte/enfants/'
     | '/pro/eleves/'
     | '/pro/seances/'
@@ -616,6 +627,7 @@ export interface FileRouteTypes {
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
     | '/pro/eleves/$learnerId'
+    | '/pro/seances/$bookingId'
     | '/compte/enfants'
     | '/pro/eleves'
     | '/pro/seances'
@@ -670,6 +682,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compte/enfants/$childId'
     | '/_authenticated/compte/programmer/$packId'
     | '/_authenticated/pro/eleves/$learnerId'
+    | '/_authenticated/pro/seances/$bookingId'
     | '/_authenticated/compte/enfants/'
     | '/_authenticated/pro/eleves/'
     | '/_authenticated/pro/seances/'
@@ -1056,6 +1069,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProSeancesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/seances/$bookingId': {
+      id: '/_authenticated/pro/seances/$bookingId'
+      path: '/pro/seances/$bookingId'
+      fullPath: '/pro/seances/$bookingId'
+      preLoaderRoute: typeof AuthenticatedProSeancesBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -1097,6 +1117,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteEnfantsChildIdRoute: typeof AuthenticatedCompteEnfantsChildIdRoute
   AuthenticatedCompteProgrammerPackIdRoute: typeof AuthenticatedCompteProgrammerPackIdRoute
   AuthenticatedProElevesLearnerIdRoute: typeof AuthenticatedProElevesLearnerIdRoute
+  AuthenticatedProSeancesBookingIdRoute: typeof AuthenticatedProSeancesBookingIdRoute
   AuthenticatedCompteEnfantsIndexRoute: typeof AuthenticatedCompteEnfantsIndexRoute
   AuthenticatedProElevesIndexRoute: typeof AuthenticatedProElevesIndexRoute
   AuthenticatedProSeancesIndexRoute: typeof AuthenticatedProSeancesIndexRoute
@@ -1143,6 +1164,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteProgrammerPackIdRoute:
     AuthenticatedCompteProgrammerPackIdRoute,
   AuthenticatedProElevesLearnerIdRoute: AuthenticatedProElevesLearnerIdRoute,
+  AuthenticatedProSeancesBookingIdRoute: AuthenticatedProSeancesBookingIdRoute,
   AuthenticatedCompteEnfantsIndexRoute: AuthenticatedCompteEnfantsIndexRoute,
   AuthenticatedProElevesIndexRoute: AuthenticatedProElevesIndexRoute,
   AuthenticatedProSeancesIndexRoute: AuthenticatedProSeancesIndexRoute,
