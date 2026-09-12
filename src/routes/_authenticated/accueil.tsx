@@ -3,16 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Baby,
   BadgeCheck,
-  BookOpen,
+  Bell,
   CalendarClock,
-
   ChevronRight,
   Home,
   Inbox,
   Laptop,
   Loader2,
-  Sparkles,
-  Route as RouteIcon,
   Wallet,
   UserPlus,
 } from "lucide-react";
@@ -22,10 +19,9 @@ import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
 import { NotificationsFeed } from "@/components/notifications-feed";
-import { AdminAlertsSection, LearnerTasksSection, TeacherTasksSection } from "@/components/home-role-sections";
+import { AdminAlertsSection, TeacherTasksSection } from "@/components/home-role-sections";
 import { useConversations } from "@/lib/messaging";
 import { useMessagingPanel } from "@/lib/messaging-panel-context";
-import { searchTeachers, type TeacherCard } from "@/lib/catalog.functions";
 import { budgetRangeToPriceArgs, type BudgetRange } from "@/lib/education";
 
 export const Route = createFileRoute("/_authenticated/accueil")({
