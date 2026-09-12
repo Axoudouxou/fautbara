@@ -277,6 +277,7 @@ function TeacherDashboard() {
         {setupSteps.length > 0 && (
           <section className="mt-5">
             <SectionHeading title="À faire" />
+            <ul className="mt-3 space-y-2">
               {setupSteps.map((s) => (
                 <li key={s.label}>
                   <Link
