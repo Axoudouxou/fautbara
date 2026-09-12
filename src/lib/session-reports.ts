@@ -129,7 +129,7 @@ export async function submitSessionReport(input: {
   const { data: conversation, error: convError } = await supabase.rpc("ensure_conversation", {
     p_teacher_id: input.teacherId,
     p_learner_id: input.learnerId,
-    p_child_id: input.childId ?? undefined,
+    ...(input.childId ? { p_child_id: input.childId } : {}),
   });
   if (convError) throw convError;
   const conversationId = (conversation as { id: string } | null)?.id;
