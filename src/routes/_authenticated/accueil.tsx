@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Baby,
   BadgeCheck,
+  BookOpen,
   CalendarClock,
+
   ChevronRight,
   Home,
   Inbox,
@@ -287,6 +289,14 @@ function LearnerHome({
   const thisWeekOrLater = pendingOrAccepted
     .filter((b) => new Date(b.scheduled_at).getTime() > now)
     .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at));
+  // Formules de l'apprenant adulte : uniquement celles qui ne visent aucun enfant.
+  const ownActivePacks = packs.filter((pack) => pack.status === "active" && !pack.child_id);
+  const ownSessionsLeft = ownActivePacks.reduce(
+    (sum, pack) => sum + Math.max(pack.sessions_total - pack.sessions_used, 0),
+    0,
+  );
+  const showCockpit = isParent ? children.length > 0 : bookings.length > 0 || ownActivePacks.length > 0;
+
 
   if (bookingsQuery.isLoading) {
     return (
@@ -329,10 +339,18 @@ function LearnerHome({
         </div>
       )}
 
-      {isParent && children.length > 0 && (
-        <section className="mt-5" aria-label="Cockpit familial">
+      {showCockpit && (
+        <section className="mt-5" aria-label={isParent ? "Cockpit familial" : "Mon activité"}>
           <div className="grid grid-cols-3 gap-2.5">
-            <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
+            {isParent ? (
+              <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
+            ) : (
+              <StatTile
+                icon={BookOpen}
+                value={ownSessionsLeft}
+                label={ownSessionsLeft > 1 ? "séances restantes" : "séance restante"}
+              />
+            )}
             <StatTile
               icon={CalendarClock}
               value={thisWeek.length}
@@ -344,6 +362,7 @@ function LearnerHome({
               label="demande(s) en attente"
             />
           </div>
+
 
           <div className="mt-5">
             <SectionHeading
