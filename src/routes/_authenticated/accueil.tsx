@@ -182,6 +182,7 @@ function LearnerHome({
       const { data, error } = await supabase
         .from("children")
         .select("id, first_name, school_level")
+        .eq("parent_id", userId)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data;
@@ -402,8 +403,8 @@ function LearnerHome({
             </p>
             <div className="mt-5">
               <Link
-                to="/professeurs"
-                search={{
+                to={isParent ? "/choisir-enfant" : "/professeurs"}
+                search={isParent ? undefined : {
                   matiere: prefs?.subject_slugs?.[0],
                   niveau: prefs?.level_slugs?.[0],
                   commune: prefs?.preferred_communes?.[0],
@@ -411,7 +412,7 @@ function LearnerHome({
                 }}
                 className={CTA}
               >
-                Trouver un professeur
+                {isParent ? "Choisir un enfant" : "Trouver un intervenant"}
               </Link>
             </div>
 
@@ -473,7 +474,7 @@ function LearnerHome({
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 text-sm"><div><p className="font-display text-xl font-bold text-foreground">{sessionsLeft}</p><p className="text-xs text-muted-foreground">séance{sessionsLeft > 1 ? "s" : ""} restante{sessionsLeft > 1 ? "s" : ""}</p></div><div><p className="font-display text-xl font-bold text-foreground">{childPacks.length}</p><p className="text-xs text-muted-foreground">formule{childPacks.length > 1 ? "s" : ""} active{childPacks.length > 1 ? "s" : ""}</p></div></div>
                   <p className="mt-3 text-xs text-muted-foreground">{nextChildBooking ? `Prochaine séance ${new Date(nextChildBooking.scheduled_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}` : "Aucune séance programmée"}</p>
-                  <Link to="/compte/enfants/$childId" params={{ childId: child.id }} className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline">Voir son parcours</Link>
+                  <div className="mt-4 flex flex-wrap gap-3"><Link to="/compte/enfants/$childId" params={{ childId: child.id }} className="inline-flex text-sm font-semibold text-primary hover:underline">Voir son parcours</Link><Link to="/professeurs" search={{ enfant: child.id }} className="inline-flex text-sm font-semibold text-foreground hover:underline">Trouver un intervenant</Link></div>
                 </li>
               );
             })}

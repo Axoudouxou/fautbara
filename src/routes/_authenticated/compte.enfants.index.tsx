@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowRight, Loader2, Plus, Trash2 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionRoles } from "@/hooks/use-session-roles";
 
@@ -47,6 +48,20 @@ function ChildrenPage() {
     },
   });
 
+  const overviewQuery = useQuery({
+    queryKey: ["children-overview", user.id],
+    enabled: children.length > 0,
+    queryFn: async () => {
+      const [packs, bookings] = await Promise.all([
+        supabase.from("packs").select("child_id, status, sessions_total, sessions_used").eq("buyer_id", user.id),
+        supabase.from("bookings").select("child_id, status, scheduled_at").eq("requester_id", user.id).gte("scheduled_at", new Date().toISOString()),
+      ]);
+      if (packs.error) throw packs.error;
+      if (bookings.error) throw bookings.error;
+      return { packs: packs.data ?? [], bookings: bookings.data ?? [] };
+    },
+  });
+
   const addMutation = useMutation({
     mutationFn: async () => {
       const year = birthYear ? Number(birthYear) : null;
@@ -76,7 +91,7 @@ function ChildrenPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("children").delete().eq("id", id);
+      const { error } = await supabase.from("children").delete().eq("id", id).eq("parent_id", user.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -111,10 +126,10 @@ function ChildrenPage() {
         réservez les cours — ils n'ont pas besoin de compte.
       </p>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
         <section
           aria-label="Liste des enfants"
-          className="space-y-3"
+          className="grid content-start gap-4 sm:grid-cols-2 xl:grid-cols-3"
         >
           {childrenQuery.isLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -128,10 +143,14 @@ function ChildrenPage() {
               </p>
             </div>
           ) : (
-            children.map((child) => (
+            children.map((child) => {
+              const activePacks = (overviewQuery.data?.packs ?? []).filter((pack) => pack.child_id === child.id && pack.status === "active");
+              const sessionsLeft = activePacks.reduce((sum, pack) => sum + Math.max(pack.sessions_total - pack.sessions_used, 0), 0);
+              const nextBooking = (overviewQuery.data?.bookings ?? []).filter((booking) => booking.child_id === child.id && booking.status === "accepted").sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at))[0];
+              return (
               <article
                 key={child.id}
-                className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]"
+                className="flex h-full flex-col rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]"
               >
                 <div className="flex items-center gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft font-display font-bold text-primary-soft-foreground">
@@ -149,7 +168,12 @@ function ChildrenPage() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3">
+                <dl className="mt-5 grid grid-cols-2 gap-3 border-y border-border py-4 text-sm">
+                  <div><dt className="text-xs text-muted-foreground">Séances restantes</dt><dd className="font-display text-xl font-bold text-foreground">{sessionsLeft}</dd></div>
+                  <div><dt className="text-xs text-muted-foreground">Formules actives</dt><dd className="font-display text-xl font-bold text-foreground">{activePacks.length}</dd></div>
+                </dl>
+                <p className="mt-3 text-xs text-muted-foreground">{nextBooking ? `Prochaine séance ${new Date(nextBooking.scheduled_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}` : "Aucune séance programmée"}</p>
+                <div className="mt-auto flex items-center justify-between gap-3 pt-4">
                   <Link
                     to="/compte/enfants/$childId"
                     params={{ childId: child.id }}
@@ -157,17 +181,20 @@ function ChildrenPage() {
                   >
                     Voir son parcours <ArrowRight className="size-4" aria-hidden />
                   </Link>
-                  <button
+                  <Button
                     type="button"
+                    size="icon"
+                    variant="ghost"
                     aria-label={`Supprimer le profil de ${child.first_name}`}
                     onClick={() => deleteMutation.mutate(child.id)}
-                    className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    className="rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
                     <Trash2 className="size-4" aria-hidden />
-                  </button>
+                  </Button>
                 </div>
               </article>
-            ))
+              );
+            })
           )}
         </section>
 
@@ -224,10 +251,10 @@ function ChildrenPage() {
                 />
               </div>
             </div>
-            <button
+            <Button
               type="submit"
               disabled={addMutation.isPending}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+              className="rounded-xl"
             >
               {addMutation.isPending ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -235,7 +262,7 @@ function ChildrenPage() {
                 <Plus className="size-4" aria-hidden />
               )}
               Ajouter
-            </button>
+            </Button>
           </form>
         </section>
       </div>

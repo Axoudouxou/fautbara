@@ -16,7 +16,7 @@ import {
   formatDate,
 } from "@/lib/packs";
 
-type ReservationsSearch = { pack?: string; booking?: string; agenda?: boolean };
+type ReservationsSearch = { pack?: string; booking?: string; agenda?: boolean; enfant?: string };
 
 export const Route = createFileRoute("/_authenticated/compte/reservations")({
   validateSearch: (search: Record<string, unknown>): ReservationsSearch => {
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/compte/reservations")({
     if (typeof search["pack"] === "string") out.pack = search["pack"];
     if (typeof search["booking"] === "string") out.booking = search["booking"];
     if (search["agenda"] === true || search["agenda"] === "1") out.agenda = true;
+    if (typeof search["enfant"] === "string") out.enfant = search["enfant"];
     return out;
   },
   head: () => ({
@@ -73,7 +74,8 @@ export function formatTimeRange(iso: string, durationMinutes: number) {
 
 function BookingsPage() {
   const { user } = Route.useRouteContext();
-  const { pack: packParam, booking: bookingParam, agenda: agendaParam } = Route.useSearch();
+  const { pack: packParam, booking: bookingParam, agenda: agendaParam, enfant: childParam } = Route.useSearch();
+  const [childFilter, setChildFilter] = useState(childParam ?? "all");
   const [cancelTarget, setCancelTarget] = useState<
     { id: string; scheduledAt: string; rescheduleUsed: boolean } | null
   >(null);
@@ -84,7 +86,7 @@ function BookingsPage() {
       const { data, error } = await supabase
         .from("packs")
         .select(
-          "id, teacher_id, pack_slug, status, teacher_rate_fcfa, duration_minutes, sessions_total, free_sessions, paid_sessions, sessions_used, teacher_amount_fcfa, platform_fee_fcfa, total_fcfa, purchased_at, expires_at, children(first_name), pack_types(name), teacher_offers(title, subjects(name))",
+          "id, child_id, teacher_id, pack_slug, status, teacher_rate_fcfa, duration_minutes, sessions_total, free_sessions, paid_sessions, sessions_used, teacher_amount_fcfa, platform_fee_fcfa, total_fcfa, purchased_at, expires_at, children(first_name), pack_types(name), teacher_offers(title, subjects(name))",
         )
         .eq("buyer_id", user.id)
         .order("created_at", { ascending: false });
@@ -99,7 +101,7 @@ function BookingsPage() {
       const { data, error } = await supabase
         .from("bookings")
         .select(
-          "id, pack_id, scheduled_at, duration_minutes, price_fcfa, format, commune, status, status_reason, message, teacher_id, reschedule_used, is_free_session, session_index, children(first_name), teacher_offers(title, subjects(name))",
+          "id, child_id, pack_id, scheduled_at, duration_minutes, price_fcfa, format, commune, status, status_reason, message, teacher_id, reschedule_used, is_free_session, session_index, children(first_name), teacher_offers(title, subjects(name))",
         )
         .eq("requester_id", user.id)
         .order("scheduled_at", { ascending: false });
@@ -110,6 +112,9 @@ function BookingsPage() {
 
   const packs = packsQuery.data ?? [];
   const bookings = bookingsQuery.data ?? [];
+  const children = Array.from(new Map([...packs, ...bookings].filter((item) => item.child_id && item.children?.first_name).map((item) => [item.child_id as string, item.children?.first_name as string])).entries());
+  const visiblePacks = childFilter === "all" ? packs : packs.filter((pack) => pack.child_id === childFilter);
+  const visibleBookings = childFilter === "all" ? bookings : bookings.filter((booking) => booking.child_id === childFilter);
   const teacherIds = [
     ...new Set([
       ...packs.map((p) => p.teacher_id),
@@ -148,6 +153,7 @@ function BookingsPage() {
         Vos formules payées et les séances que vous programmez au fil des semaines dans
         l&apos;agenda de l&apos;intervenant.
       </p>
+      {children.length > 1 && <label className="mt-5 block max-w-xs text-sm font-semibold text-foreground">Afficher les cours de<select value={childFilter} onChange={(event) => setChildFilter(event.target.value)} className="mt-1.5 w-full rounded-xl border border-input bg-card px-4 py-3 text-sm"><option value="all">Tous les enfants</option>{children.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>}
 
       {loading && (
         <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
@@ -171,11 +177,11 @@ function BookingsPage() {
         </div>
       )}
 
-      {packs.length > 0 && (
+      {visiblePacks.length > 0 && (
         <section className="mt-8">
           <h2 className="font-display text-lg font-bold text-foreground">Mes formules</h2>
           <ul className="mt-4 space-y-4">
-            {packs.map((p) => {
+            {visiblePacks.map((p) => {
               const status = PACK_STATUS_LABELS[p.status] ?? {
                 label: p.status,
                 className: "bg-muted text-muted-foreground",
@@ -266,18 +272,7 @@ function BookingsPage() {
                   )}
 
                   {p.status === "active" && !expired && (
-                    <PackSessionScheduler
-                      packId={p.id}
-                      teacherId={p.teacher_id}
-                      teacherName={teacher?.display_name}
-                      durationMinutes={p.duration_minutes}
-                      defaultOpen={packParam === p.id && agendaParam === true}
-                      sessionsLeft={left}
-                      invalidateKeys={[
-                        ["my-packs", user.id],
-                        ["my-bookings", user.id],
-                      ]}
-                    />
+                    <Link to="/compte/programmer/$packId" params={{ packId: p.id }} className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"><CalendarClock className="size-3.5" /> Programmer une séance</Link>
                   )}
 
                   {p.status === "active" && expired && (
@@ -293,11 +288,11 @@ function BookingsPage() {
         </section>
       )}
 
-      {bookings.length > 0 && (
+      {visibleBookings.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-lg font-bold text-foreground">Mes séances</h2>
           <ul className="mt-4 space-y-4">
-            {bookings.map((b) => {
+            {visibleBookings.map((b) => {
               const status = SESSION_STATUS_LABELS[b.status] ?? {
                 label: b.status,
                 className: "bg-muted text-muted-foreground",
