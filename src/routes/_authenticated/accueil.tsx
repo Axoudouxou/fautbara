@@ -3,16 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Baby,
   BadgeCheck,
-  BookOpen,
+  Bell,
   CalendarClock,
-
   ChevronRight,
   Home,
   Inbox,
   Laptop,
   Loader2,
-  Sparkles,
-  Route as RouteIcon,
   Wallet,
   UserPlus,
 } from "lucide-react";
@@ -22,10 +19,9 @@ import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
 import { NotificationsFeed } from "@/components/notifications-feed";
-import { AdminAlertsSection, LearnerTasksSection, TeacherTasksSection } from "@/components/home-role-sections";
+import { AdminAlertsSection, TeacherTasksSection } from "@/components/home-role-sections";
 import { useConversations } from "@/lib/messaging";
 import { useMessagingPanel } from "@/lib/messaging-panel-context";
-import { searchTeachers, type TeacherCard } from "@/lib/catalog.functions";
 import { budgetRangeToPriceArgs, type BudgetRange } from "@/lib/education";
 
 export const Route = createFileRoute("/_authenticated/accueil")({
@@ -153,514 +149,487 @@ function HomeScreen() {
   if (roles.includes("admin")) return <AdminHome userId={user.id} />;
   if (roles.includes("teacher")) return <TeacherHome userId={user.id} firstName={firstName} />;
 
-  return <LearnerHome userId={user.id} firstName={firstName} isParent={roles.includes("parent")} />;
+  if (roles.includes("parent")) return <ParentHome userId={user.id} firstName={firstName} />;
+  return <AdultHome userId={user.id} firstName={firstName} />;
+
 }
 
-/* ---------------- Parent / Étudiant ---------------- */
+/* ---------------- Données communes Parent / Adulte ---------------- */
 
-function useTeacherCard(teacherId?: string | null) {
+type PackRow = {
+  id: string;
+  child_id: string | null;
+  status: string;
+  sessions_total: number;
+  sessions_used: number;
+  teacher_offers: { subjects: { name: string } | null } | null;
+};
+
+function useLearnerHomeData(userId: string, withChildren: boolean) {
   return useQuery({
-    queryKey: ["teacher-public", teacherId],
-    enabled: Boolean(teacherId),
+    queryKey: ["home-learner", userId, withChildren],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_teacher_public", {
-        p_teacher_id: teacherId!,
-      });
-      if (error) throw error;
-      return data?.[0] ?? null;
+      const [children, bookings, packs, assignments] = await Promise.all([
+        withChildren
+          ? supabase
+              .from("children")
+              .select("id, first_name, school_level")
+              .eq("parent_id", userId)
+              .order("created_at", { ascending: true })
+          : Promise.resolve({ data: [], error: null }),
+        supabase
+          .from("bookings")
+          .select(
+            "id, scheduled_at, duration_minutes, format, status, created_at, teacher_id, child_id, children(first_name), teacher_offers(title, subjects(name))",
+          )
+          .eq("requester_id", userId)
+          .order("scheduled_at", { ascending: true }),
+        supabase
+          .from("packs")
+          .select("id, child_id, status, sessions_total, sessions_used, teacher_offers(subjects(name))")
+          .eq("buyer_id", userId)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("assignments")
+          .select("id, title, status, due_date")
+          .neq("status", "done")
+          .order("created_at", { ascending: false })
+          .limit(5),
+      ]);
+      for (const result of [children, bookings, packs, assignments]) {
+        if (result.error) throw result.error;
+      }
+
+      const rows = (bookings.data ?? []) as unknown as BookingRow[];
+      const teacherIds = Array.from(new Set(rows.map((b) => b.teacher_id))).slice(0, 20);
+      const teacherNames = new Map<string, string>();
+      if (teacherIds.length > 0) {
+        const { data: profiles, error } = await supabase
+          .from("profiles")
+          .select("user_id, display_name")
+          .in("user_id", teacherIds);
+        if (error) throw error;
+        for (const p of profiles ?? []) teacherNames.set(p.user_id, p.display_name);
+      }
+
+      return {
+        children: (children.data ?? []) as { id: string; first_name: string; school_level: string | null }[],
+        bookings: rows,
+        packs: (packs.data ?? []) as unknown as PackRow[],
+        assignments: assignments.data ?? [],
+        teacherNames,
+      };
     },
   });
 }
 
-function LearnerHome({
-  userId,
-  firstName,
-  isParent,
-}: {
-  userId: string;
-  firstName: string;
-  isParent: boolean;
-}) {
-  const childrenQuery = useQuery({
-    queryKey: ["children", userId],
-    enabled: isParent,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("children")
-        .select("id, first_name, school_level")
-        .eq("parent_id", userId)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-  });
+function sessionsLeftOf(packs: PackRow[]) {
+  return packs.reduce((sum, p) => sum + Math.max(p.sessions_total - p.sessions_used, 0), 0);
+}
 
-  const bookingsQuery = useQuery({
-    queryKey: ["home-bookings", userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(
-          "id, scheduled_at, duration_minutes, format, status, created_at, teacher_id, child_id, children(first_name), teacher_offers(title, subject_id, subjects(name, category_id))",
-        )
-        .eq("requester_id", userId)
-        .order("scheduled_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as BookingRow[];
-    },
-  });
+function dayTime(iso: string) {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })} · ${d.toLocaleTimeString(
+    "fr-FR",
+    { hour: "2-digit", minute: "2-digit" },
+  )}`;
+}
 
-  const bookings = bookingsQuery.data ?? [];
-  const packsQuery = useQuery({
-    queryKey: ["home-packs", userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("packs")
-        .select("id, child_id, status, sessions_total, sessions_used, expires_at, teacher_offers(subjects(name))")
-        .eq("buyer_id", userId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-  const packs = packsQuery.data ?? [];
+const SOFT_CARD = "rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]";
+
+function Greeting({ firstName, subtitle }: { firstName: string; subtitle: string }) {
+  return (
+    <header>
+      <h1 className="font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+        {firstName ? `Bonjour ${firstName} 👋` : "Bonjour 👋"}
+      </h1>
+      <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+    </header>
+  );
+}
+
+function NotificationsLink() {
+  return (
+    <div className="mt-6">
+      <Link
+        to="/notifications"
+        className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+      >
+        <span className="inline-flex items-center gap-2">
+          <Bell className="size-4 text-primary" aria-hidden /> Mes notifications
+        </span>
+        <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+      </Link>
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="container-page flex items-center gap-2 py-16 text-sm text-muted-foreground">
+      <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
+    </div>
+  );
+}
+
+/* ---------------- Accueil Parent ---------------- */
+
+function ParentHome({ userId, firstName }: { userId: string; firstName: string }) {
+  const dataQuery = useLearnerHomeData(userId, true);
+  if (dataQuery.isLoading) return <LoadingScreen />;
+
+  const data = dataQuery.data;
+  const children = data?.children ?? [];
+  const bookings = data?.bookings ?? [];
+  const packs = data?.packs ?? [];
+  const assignments = data?.assignments ?? [];
   const now = Date.now();
-  const upcoming = [...bookings]
-    .filter(
-      (b) =>
-        new Date(b.scheduled_at).getTime() > now &&
-        (b.status === "accepted" || b.status === "pending"),
-    )
-    .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at))[0];
-  const last = bookings[0];
 
-  const children = childrenQuery.data ?? [];
-  const childName = upcoming?.children?.first_name ?? children[0]?.first_name ?? "";
-  const teacherCard = useTeacherCard(upcoming?.teacher_id ?? last?.teacher_id ?? null);
-  const teacher = teacherCard.data;
-
-  const isNew = !upcoming && !last;
-
-  const prefsQuery = useQuery({
-    queryKey: ["learning-preferences", userId],
-    enabled: isNew && !bookingsQuery.isLoading,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("learning_preferences")
-        .select("subject_slugs, level_slugs, budget_range, preferred_communes")
-        .eq("user_id", userId)
-        .eq("role_context", "learner")
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const prefs = prefsQuery.data;
-  const suggestedTeachersQuery = useQuery({
-    queryKey: ["suggested-teachers", userId, prefs],
-    enabled: isNew && Boolean(prefs),
-    queryFn: async () => {
-      const priceArgs = budgetRangeToPriceArgs((prefs?.budget_range as BudgetRange | null) ?? null);
-      const cards = await searchTeachers({
-        data: {
-          matiere: prefs?.subject_slugs?.[0],
-          niveau: prefs?.level_slugs?.[0],
-          commune: prefs?.preferred_communes?.[0],
-          ...priceArgs,
-        },
-      });
-      return cards.slice(0, 3);
-    },
-  });
-  const suggestedTeachers = suggestedTeachersQuery.data ?? [];
-  const conversationsQuery = useConversations(userId, "learner");
-  const conversations = conversationsQuery.data ?? [];
-  const recentSubjectId = last?.teacher_offers?.subject_id ?? null;
-  const recentCategoryId = last?.teacher_offers?.subjects?.category_id ?? null;
-
-  const pendingOrAccepted = bookings.filter(
-    (b) => b.status === "pending" || b.status === "accepted",
-  );
-  const thisWeekEnd = now + 7 * 24 * 3600_000;
-  const thisWeek = pendingOrAccepted.filter(
-    (b) => new Date(b.scheduled_at).getTime() <= thisWeekEnd && new Date(b.scheduled_at).getTime() > now,
-  );
-  const thisWeekOrLater = pendingOrAccepted
-    .filter((b) => new Date(b.scheduled_at).getTime() > now)
+  const upcoming = bookings
+    .filter((b) => new Date(b.scheduled_at).getTime() > now && (b.status === "accepted" || b.status === "pending"))
     .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at));
-  // Formules de l'apprenant adulte : uniquement celles qui ne visent aucun enfant.
-  const ownActivePacks = packs.filter((pack) => pack.status === "active" && !pack.child_id);
-  const ownSessionsLeft = ownActivePacks.reduce(
-    (sum, pack) => sum + Math.max(pack.sessions_total - pack.sessions_used, 0),
-    0,
+  const activePacks = packs.filter((p) => p.status === "active");
+  const packsToSchedule = activePacks.filter(
+    (p) => p.sessions_total - p.sessions_used > 0 && !upcoming.some((b) => b.child_id === p.child_id),
   );
-  const showCockpit = isParent ? children.length > 0 : bookings.length > 0 || ownActivePacks.length > 0;
+  const todo = [
+    ...packsToSchedule.slice(0, 2).map((p) => ({
+      key: `pack-${p.id}`,
+      label: `Programmer une séance${
+        p.child_id ? ` pour ${children.find((c) => c.id === p.child_id)?.first_name ?? "votre enfant"}` : ""
+      }`,
+      to: "/compte/programmer/$packId" as const,
+      params: { packId: p.id },
+    })),
+  ];
 
-
-  if (bookingsQuery.isLoading) {
+  if (children.length === 0) {
     return (
-      <div className="container-page flex items-center gap-2 py-16 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
-      </div>
+      <main className="container-page py-6 sm:py-12">
+        <Greeting firstName={firstName} subtitle="Ajoutez le profil de votre enfant pour commencer." />
+        <div className={`mt-5 ${SOFT_CARD}`}>
+          <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+            <UserPlus className="size-5" aria-hidden />
+          </span>
+          <p className="mt-3 font-display text-lg font-bold text-foreground">Ajouter un enfant</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Le profil de votre enfant permet de choisir un intervenant et une formule adaptés.
+          </p>
+          <Link to="/compte/enfants" className={`mt-4 ${CTA}`}>
+            Ajouter un enfant
+          </Link>
+        </div>
+        <NotificationsLink />
+      </main>
     );
   }
 
-  let title: string;
-  if (upcoming) {
-    title = isParent ? "La prochaine séance de la famille" : "Votre prochaine séance";
-  } else if (last) {
-    title = isParent
-      ? "Suivez les parcours de vos enfants"
-      : "Continuez à avancer vers votre objectif";
-  } else {
-    title = isParent
-      ? "Organisez le premier accompagnement de votre enfant"
-      : "Commencez votre parcours d’apprentissage";
-  }
-
   return (
-    <div className="container-page py-8 sm:py-12">
-      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-        {firstName ? `Bonjour ${firstName}` : "Bonjour"}
-      </p>
-      <h1 className="mt-1 font-display text-3xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-4xl">
-        {title}
-      </h1>
+    <main className="container-page py-6 sm:py-12">
+      <Greeting firstName={firstName} subtitle="Voici ce qui se passe pour vos enfants." />
 
-      {isParent && !childrenQuery.isLoading && children.length === 0 && (
-        <div className="mt-5 flex flex-col gap-3 rounded-3xl border border-primary/30 bg-primary-soft/50 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-foreground">
-            Ajoutez d&apos;abord le profil de votre enfant pour réserver un cours.
-          </p>
-          <Link to="/compte/enfants" className={CTA}>
-            <UserPlus className="size-4" aria-hidden /> Ajouter un enfant
-          </Link>
+      <section className="mt-5" aria-label="Cette semaine">
+        <SectionHeading title="Cette semaine" />
+        <div className="mt-3 grid grid-cols-3 gap-2.5">
+          <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
+          <StatTile
+            icon={CalendarClock}
+            value={upcoming.length}
+            label={upcoming.length > 1 ? "séances à venir" : "séance à venir"}
+          />
+          <StatTile icon={Inbox} value={todo.length} label={todo.length > 1 ? "actions à faire" : "action à faire"} />
         </div>
-      )}
+      </section>
 
-      {showCockpit && (
-        <section className="mt-5" aria-label={isParent ? "Cockpit familial" : "Mon activité"}>
-          <div className="grid grid-cols-3 gap-2.5">
-            {isParent ? (
-              <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
-            ) : (
-              <StatTile
-                icon={BookOpen}
-                value={ownSessionsLeft}
-                label={ownSessionsLeft > 1 ? "séances restantes" : "séance restante"}
-              />
-            )}
-            <StatTile
-              icon={CalendarClock}
-              value={thisWeek.length}
-              label={thisWeek.length > 1 ? "cours cette semaine" : "cours cette semaine"}
-            />
-            <StatTile
-              icon={Inbox}
-              value={bookings.filter((b) => b.status === "pending").length}
-              label="demande(s) en attente"
-            />
-          </div>
-
-
-          <div className="mt-5">
-            <SectionHeading
-              title="Prochains cours"
-              action={
-                <Link to="/compte/calendrier" className="text-xs font-semibold text-primary hover:underline">
-                  Voir le calendrier
+      {todo.length > 0 && (
+        <section className="mt-6" aria-label="À faire">
+          <SectionHeading title="À faire" />
+          <ul className="mt-3 space-y-2.5">
+            {todo.map((item) => (
+              <li key={item.key}>
+                <Link to={item.to} params={item.params} className="block">
+                  <RowCard className="border-primary/40 bg-primary-soft/30 transition-colors hover:bg-primary-soft/50">
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{item.label}</span>
+                    <span className="shrink-0 text-xs font-bold text-primary">Programmer</span>
+                  </RowCard>
                 </Link>
-              }
-            />
-            {thisWeekOrLater.length > 0 ? (
-              <ul className="mt-3 space-y-2.5">
-                {thisWeekOrLater.slice(0, 3).map((b) => (
-                  <li key={b.id}>
-                    <Link to="/compte/reservations" className="block">
-                      <RowCard className="transition-colors hover:bg-secondary">
-                        <span className="flex w-14 shrink-0 flex-col items-center rounded-xl bg-primary-soft/60 px-2 py-1.5 text-primary-soft-foreground">
-                          <span className="text-[10px] font-bold uppercase leading-none">
-                            {new Date(b.scheduled_at).toLocaleDateString("fr-FR", { weekday: "short" })}
-                          </span>
-                          <span className="mt-1 font-display text-sm font-bold leading-none">
-                            {new Date(b.scheduled_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold text-foreground">
-                            {b.teacher_offers?.subjects?.name ?? "Cours particulier"}
-                          </span>
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {[b.children?.first_name, formatLabel(b.format)].filter(Boolean).join(" · ")}
-                          </span>
-                        </span>
-                        <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                      </RowCard>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
-                Aucune séance programmée pour l’instant.
-              </p>
-            )}
-          </div>
-        </section>
-      )}
-
-      <div className={`mt-6 ${CARD}`}>
-        {upcoming ? (
-          <>
-            <div className="flex items-start gap-4">
-              <Avatar name={teacher?.display_name ?? "Professeur"} url={teacher?.avatar_url} />
-              <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary">
-                  {upcoming.teacher_offers?.subjects?.name ?? "Cours particulier"}
-                </p>
-                <p className="mt-0.5 font-display text-lg font-bold text-foreground">
-                  {teacher?.display_name ?? "Votre professeur"}
-                </p>
-                <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarClock className="size-4" aria-hidden />
-                    {formatSlot(upcoming.scheduled_at, upcoming.duration_minutes)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    {upcoming.format === "online" ? (
-                      <Laptop className="size-4" aria-hidden />
-                    ) : (
-                      <Home className="size-4" aria-hidden />
-                    )}
-                    {formatLabel(upcoming.format)}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <Link to="/compte/calendrier" className={CTA}>
-                Voir les détails
-              </Link>
-              <Link to="/messages" className={CTA2}>
-                Contacter le professeur
-              </Link>
-
-            </div>
-          </>
-        ) : last ? (
-          <>
-            <div className="flex items-start gap-4">
-              <Avatar name={teacher?.display_name ?? "Professeur"} url={teacher?.avatar_url} />
-              <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary">
-                  Dernier professeur
-                </p>
-                <p className="mt-0.5 font-display text-lg font-bold text-foreground">
-                  {teacher?.display_name ?? "Votre professeur"}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {teacher?.headline ?? last.teacher_offers?.title ?? "Cours particulier"}
-                </p>
-              </div>
-            </div>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              <Link
-                to="/professeurs/$id"
-                params={{ id: last.teacher_id }}
-                className={CTA}
-              >
-                Réserver à nouveau
-              </Link>
-              <Link to="/professeurs" search={{}} className={CTA2}>
-                Trouver un autre professeur
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
-              <Sparkles className="size-5" aria-hidden />
-            </span>
-            <p className="mt-3 font-display text-lg font-bold text-foreground">
-              Trouvez l&apos;intervenant adapté
-            </p>
-            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Comparez les profils, les méthodes et les disponibilités, puis choisissez une formule
-              Découverte ou une séance individuelle.
-            </p>
-            <div className="mt-5">
-              {isParent ? (
-                <Link to="/choisir-enfant" className={CTA}>Choisir un enfant</Link>
-              ) : (
-                <Link
-                  to="/professeurs"
-                  search={{
-                    matiere: prefs?.subject_slugs?.[0],
-                    niveau: prefs?.level_slugs?.[0],
-                    commune: prefs?.preferred_communes?.[0],
-                    ...budgetRangeToPriceArgs((prefs?.budget_range as BudgetRange | null) ?? null),
-                  }}
-                  className={CTA}
-                >
-                  Trouver un intervenant
-                </Link>
-              )}
-            </div>
-
-            {suggestedTeachers.length > 0 && (
-              <div className="mt-6 border-t border-border pt-5">
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Suggestions pour vous
-                </p>
-                <ul className="mt-3 grid gap-3 sm:grid-cols-3">
-                  {suggestedTeachers.map((t: TeacherCard) => (
-                    <li key={t.teacher_id}>
-                      <Link
-                        to="/professeurs/$id"
-                        params={{ id: t.teacher_id }}
-                        className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3 transition-colors hover:bg-secondary sm:flex-col sm:items-start"
-                      >
-                        <Avatar name={t.display_name} url={t.avatar_url} />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {t.display_name}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {t.subjects.slice(0, 2).join(", ")}
-                          </p>
-                          <p className="mt-0.5 text-xs font-semibold text-primary">
-                            {t.min_price_fcfa.toLocaleString("fr-FR")} FCFA
-                          </p>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {isParent && children.length > 0 && (
-        <section className="mt-8">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Suivi familial</p>
-              <h2 className="mt-1 font-display text-xl font-bold text-foreground">Mes enfants</h2>
-            </div>
-            <Link to="/compte/enfants" className="text-sm font-semibold text-primary hover:underline">Voir tous les profils</Link>
-          </div>
-          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {children.map((child) => {
-              const childPacks = packs.filter((pack) => pack.child_id === child.id && pack.status === "active");
-              const childBookings = bookings.filter((booking) => booking.child_id === child.id && booking.status === "accepted" && new Date(booking.scheduled_at) > new Date());
-              const nextChildBooking = childBookings.sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at))[0];
-              const sessionsLeft = childPacks.reduce((sum, pack) => sum + Math.max(pack.sessions_total - pack.sessions_used, 0), 0);
-              return (
-                <li key={child.id} className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-11 items-center justify-center rounded-2xl bg-primary-soft font-display font-bold text-primary-soft-foreground">{child.first_name.charAt(0).toUpperCase()}</span>
-                    <div><h3 className="font-display font-bold text-foreground">{child.first_name}</h3><p className="text-xs text-muted-foreground">{child.school_level || "Niveau à préciser"}</p></div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 text-sm"><div><p className="font-display text-xl font-bold text-foreground">{sessionsLeft}</p><p className="text-xs text-muted-foreground">séance{sessionsLeft > 1 ? "s" : ""} restante{sessionsLeft > 1 ? "s" : ""}</p></div><div><p className="font-display text-xl font-bold text-foreground">{childPacks.length}</p><p className="text-xs text-muted-foreground">formule{childPacks.length > 1 ? "s" : ""} active{childPacks.length > 1 ? "s" : ""}</p></div></div>
-                  <p className="mt-3 text-xs text-muted-foreground">{nextChildBooking ? `Prochaine séance ${new Date(nextChildBooking.scheduled_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}` : "Aucune séance programmée"}</p>
-                  <div className="mt-4 flex flex-wrap gap-3"><Link to="/compte/enfants/$childId" params={{ childId: child.id }} className="inline-flex text-sm font-semibold text-primary hover:underline">Voir son parcours</Link><Link to="/professeurs" search={{ enfant: child.id }} className="inline-flex text-sm font-semibold text-foreground hover:underline">Trouver un intervenant</Link></div>
-                </li>
-              );
-            })}
+              </li>
+            ))}
           </ul>
         </section>
       )}
 
-      {!isParent && (
-        <section className="mt-8 flex flex-col gap-4 rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4"><span className="flex size-11 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground"><RouteIcon className="size-5" aria-hidden /></span><div><h2 className="font-display text-lg font-bold text-foreground">Mon parcours</h2><p className="text-sm text-muted-foreground">Objectifs, formules, comptes-rendus et travail à faire.</p></div></div>
-          <Link to="/parcours" className={CTA}>Voir mon parcours</Link>
+      <section className="mt-6" aria-label="Prochains cours">
+        <SectionHeading
+          title="Prochains cours"
+          action={
+            <Link to="/compte/reservations" className="text-xs font-semibold text-primary hover:underline">
+              Tout voir
+            </Link>
+          }
+        />
+        {upcoming.length > 0 ? (
+          <ul className="mt-3 space-y-2.5">
+            {upcoming.slice(0, 3).map((b) => (
+              <li key={b.id}>
+                <Link to="/compte/reservations" className="block">
+                  <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
+                    <p className="text-sm font-bold text-foreground">
+                      {b.children?.first_name ?? "Séance"}
+                      <span className="font-semibold text-muted-foreground">
+                        {" · "}
+                        {b.teacher_offers?.subjects?.name ?? "Cours particulier"}
+                      </span>
+                    </p>
+                    <p className="mt-1 text-sm text-foreground">{dayTime(b.scheduled_at)}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Avec {data?.teacherNames.get(b.teacher_id) ?? "votre intervenant"} · {formatLabel(b.format)}
+                    </p>
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
+                      Voir la séance <ChevronRight className="size-3.5" aria-hidden />
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
+            Aucune séance programmée.
+          </p>
+        )}
+      </section>
+
+      <section className="mt-6" aria-label="Mes enfants">
+        <SectionHeading
+          title="Mes enfants"
+          action={
+            <Link to="/compte/enfants" className="text-xs font-semibold text-primary hover:underline">
+              Gérer
+            </Link>
+          }
+        />
+        <ul className="mt-3 space-y-2.5 sm:grid sm:grid-cols-2 sm:gap-2.5 sm:space-y-0">
+          {children.map((child) => {
+            const childPacks = activePacks.filter((p) => p.child_id === child.id);
+            const left = sessionsLeftOf(childPacks);
+            const nextChild = upcoming.find((b) => b.child_id === child.id);
+            const subject = childPacks[0]?.teacher_offers?.subjects?.name;
+            return (
+              <li key={child.id}>
+                <Link to="/compte/enfants/$childId" params={{ childId: child.id }} className="block">
+                  <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft font-display font-bold text-primary-soft-foreground">
+                        {child.first_name.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-display font-bold text-foreground">{child.first_name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{child.school_level || "Niveau à préciser"}</p>
+                      </div>
+                    </div>
+                    {left > 0 ? (
+                      <p className="mt-3 text-sm text-foreground">
+                        {left} séance{left > 1 ? "s" : ""} restante{left > 1 ? "s" : ""}
+                        {subject ? ` · ${subject}` : ""}
+                      </p>
+                    ) : (
+                      <p className="mt-3 text-sm text-muted-foreground">Aucune séance programmée</p>
+                    )}
+                    {nextChild && (
+                      <p className="mt-0.5 text-xs text-muted-foreground">Prochaine séance : {dayTime(nextChild.scheduled_at)}</p>
+                    )}
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
+                      {left > 0 || nextChild ? "Voir son parcours" : "Trouver un intervenant"}
+                      <ChevronRight className="size-3.5" aria-hidden />
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      {assignments.length > 0 && (
+        <section className="mt-6" aria-label="Travail à faire">
+          <SectionHeading title="Travail à faire" />
+          <Link to="/devoirs" className="mt-3 block">
+            <RowCard className="transition-colors hover:bg-secondary">
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                {assignments.length} devoir{assignments.length > 1 ? "s" : ""} en attente
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            </RowCard>
+          </Link>
         </section>
       )}
 
-      <HomeShortcutTabs
-        tabs={[
-          {
-            key: "reservations",
-            label: "Réservations",
-            to: "/compte/reservations",
-            preview:
-              pendingOrAccepted.length > 0 ? (
-                <ul className="space-y-1.5 text-sm text-foreground">
-                  {pendingOrAccepted.slice(0, 3).map((b) => (
-                    <li key={b.id} className="truncate">
-                      {b.teacher_offers?.subjects?.name ?? "Cours"}
-                      {b.children?.first_name ? ` · ${b.children.first_name}` : ""} —{" "}
-                      {new Date(b.scheduled_at).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">Aucune réservation en cours.</p>
-              ),
-          },
-          {
-            key: "agenda",
-            label: "Agenda",
-            to: "/compte/calendrier",
-            preview:
-              thisWeek.length > 0 ? (
-                <p className="text-sm text-foreground">
-                  {thisWeek.length} séance{thisWeek.length > 1 ? "s" : ""} prévue
-                  {thisWeek.length > 1 ? "s" : ""} cette semaine, à commencer par le{" "}
-                  {new Date(thisWeek[0]!.scheduled_at).toLocaleDateString("fr-FR", {
-                    weekday: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                  .
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">Rien de prévu cette semaine.</p>
-              ),
-          },
-          {
-            key: "teachers",
-            label: "Mes professeurs",
-            to: "/messages",
-            preview:
-              conversations.length > 0 ? (
-                <ul className="space-y-1.5 text-sm text-foreground">
-                  {conversations.slice(0, 3).map((c) => (
-                    <li key={c.id} className="truncate">
-                      {c.otherName}
-                      {c.children?.first_name ? ` · ${c.children.first_name}` : ""}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">Aucun professeur contacté pour l'instant.</p>
-              ),
-          },
-        ]}
-      />
-
-      <div className="mt-8">
-        <NotificationsFeed userId={userId} />
-      </div>
-
-      <LearnerTasksSection
-        userId={userId}
-        isParent={isParent}
-        childName={childName}
-        recentSubjectId={recentSubjectId}
-        recentCategoryId={recentCategoryId}
-      />
-    </div>
+      <NotificationsLink />
+    </main>
   );
 }
+
+/* ---------------- Accueil Adulte apprenant ---------------- */
+
+function AdultHome({ userId, firstName }: { userId: string; firstName: string }) {
+  const dataQuery = useLearnerHomeData(userId, false);
+
+  const journeyQuery = useQuery({
+    queryKey: ["home-adult-journey", userId],
+    queryFn: async () => {
+      const [prefs, report] = await Promise.all([
+        supabase
+          .from("learning_preferences")
+          .select("objective, subject_slugs, level_slugs, budget_range, preferred_communes")
+          .eq("user_id", userId)
+          .eq("role_context", "learner")
+          .maybeSingle(),
+        supabase
+          .from("session_reports")
+          .select("id, content_note, next_steps, created_at")
+          .eq("learner_id", userId)
+          .is("child_id", null)
+          .order("created_at", { ascending: false })
+          .limit(1),
+      ]);
+      if (prefs.error) throw prefs.error;
+      if (report.error) throw report.error;
+      return { prefs: prefs.data, report: report.data?.[0] ?? null };
+    },
+  });
+
+  if (dataQuery.isLoading) return <LoadingScreen />;
+
+  const data = dataQuery.data;
+  const bookings = data?.bookings ?? [];
+  const packs = (data?.packs ?? []).filter((p) => !p.child_id);
+  const assignments = data?.assignments ?? [];
+  const now = Date.now();
+
+  const upcoming = bookings
+    .filter(
+      (b) =>
+        !b.child_id &&
+        new Date(b.scheduled_at).getTime() > now &&
+        (b.status === "accepted" || b.status === "pending"),
+    )
+    .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at));
+  const next = upcoming[0];
+  const activePacks = packs.filter((p) => p.status === "active");
+  const left = sessionsLeftOf(activePacks);
+  const objective = journeyQuery.data?.prefs?.objective;
+  const objectiveLabels: Record<string, string> = {
+    exam: "Réussir un examen",
+    catchup: "Combler mes lacunes",
+    advance: "Aller plus loin",
+    confidence: "Reprendre confiance",
+  };
+  const prefs = journeyQuery.data?.prefs;
+  const report = journeyQuery.data?.report;
+
+  return (
+    <main className="container-page py-6 sm:py-12">
+      <Greeting firstName={firstName} subtitle="Voici où vous en êtes dans votre apprentissage." />
+
+      <section className="mt-5" aria-label="Votre prochaine séance">
+        <SectionHeading title="Votre prochaine séance" />
+        {next ? (
+          <Link to="/compte/reservations" className="mt-3 block">
+            <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
+              <p className="text-sm font-bold text-foreground">
+                {next.teacher_offers?.subjects?.name ?? "Cours particulier"}
+              </p>
+              <p className="mt-1 text-sm text-foreground">{dayTime(next.scheduled_at)}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Avec {data?.teacherNames.get(next.teacher_id) ?? "votre intervenant"} · {formatLabel(next.format)}
+              </p>
+              <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
+                Voir la séance <ChevronRight className="size-3.5" aria-hidden />
+              </span>
+            </div>
+          </Link>
+        ) : (
+          <div className={`mt-3 ${SOFT_CARD}`}>
+            <p className="text-sm text-muted-foreground">Aucune séance programmée.</p>
+            <Link
+              to="/professeurs"
+              search={{
+                matiere: prefs?.subject_slugs?.[0],
+                niveau: prefs?.level_slugs?.[0],
+                commune: prefs?.preferred_communes?.[0],
+                ...budgetRangeToPriceArgs((prefs?.budget_range as BudgetRange | null) ?? null),
+              }}
+              className={`mt-3 ${CTA}`}
+            >
+              Trouver un intervenant
+            </Link>
+          </div>
+        )}
+      </section>
+
+      <section className="mt-6" aria-label="Mon parcours">
+        <SectionHeading
+          title="Mon parcours"
+          action={
+            <Link to="/parcours" className="text-xs font-semibold text-primary hover:underline">
+              Tout voir
+            </Link>
+          }
+        />
+        <Link to="/parcours" className="mt-3 block">
+          <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
+            <p className="text-sm font-bold text-foreground">
+              {activePacks[0]?.teacher_offers?.subjects?.name ?? "Aucune formule active"}
+            </p>
+            <p className="mt-1 text-sm text-foreground">
+              {left > 0 ? `${left} séance${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""}` : "Aucune séance restante"}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Objectif : {objective ? objectiveLabels[objective] ?? objective : "à préciser"}
+            </p>
+            <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
+              Voir mon parcours <ChevronRight className="size-3.5" aria-hidden />
+            </span>
+          </div>
+        </Link>
+      </section>
+
+      {assignments.length > 0 && (
+        <section className="mt-6" aria-label="À faire">
+          <SectionHeading title="À faire" />
+          <Link to="/devoirs" className="mt-3 block">
+            <RowCard className="border-primary/40 bg-primary-soft/30 transition-colors hover:bg-primary-soft/50">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold text-foreground">{assignments[0]!.title}</span>
+                <span className="block text-xs text-muted-foreground">Devoir à rendre</span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            </RowCard>
+          </Link>
+        </section>
+      )}
+
+      {report && (
+        <section className="mt-6" aria-label="Dernière séance">
+          <SectionHeading title="Dernière séance" />
+          <div className={`mt-3 ${SOFT_CARD}`}>
+            <p className="text-sm text-foreground">{report.content_note}</p>
+            {report.next_steps && (
+              <p className="mt-1 text-xs text-muted-foreground">Prochaine étape : {report.next_steps}</p>
+            )}
+            <Link to="/parcours" className="mt-3 inline-flex text-xs font-bold text-primary hover:underline">
+              Voir mes comptes-rendus
+            </Link>
+          </div>
+        </section>
+      )}
+
+      <NotificationsLink />
+    </main>
+  );
+}
+
 
 /* ---------------- Professeur ---------------- */
 
