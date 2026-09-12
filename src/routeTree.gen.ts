@@ -54,6 +54,7 @@ import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/
 import { Route as AuthenticatedCompteEnfantsIndexRouteImport } from './routes/_authenticated/compte.enfants.index'
 import { Route as AuthenticatedCompteEnfantsChildIdRouteImport } from './routes/_authenticated/compte.enfants.$childId'
 import { Route as AuthenticatedCompteProgrammerPackIdRouteImport } from './routes/_authenticated/compte.programmer.$packId'
+import { Route as AuthenticatedProElevesIndexRouteImport } from './routes/_authenticated/pro.eleves.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -302,6 +303,12 @@ const AuthenticatedCompteProgrammerPackIdRoute =
     path: '/compte/programmer/$packId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProElevesIndexRoute =
+  AuthenticatedProElevesIndexRouteImport.update({
+    id: '/pro/eleves/',
+    path: '/pro/eleves/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -348,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
   '/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
+  '/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -394,6 +402,7 @@ export interface FileRoutesByTo {
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsIndexRoute
+  '/pro/eleves': typeof AuthenticatedProElevesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -442,6 +451,7 @@ export interface FileRoutesById {
   '/_authenticated/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/_authenticated/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
   '/_authenticated/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
+  '/_authenticated/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -490,6 +500,7 @@ export interface FileRouteTypes {
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
     | '/compte/enfants/'
+    | '/pro/eleves/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -536,6 +547,7 @@ export interface FileRouteTypes {
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
     | '/compte/enfants'
+    | '/pro/eleves'
   id:
     | '__root__'
     | '/'
@@ -583,6 +595,7 @@ export interface FileRouteTypes {
     | '/_authenticated/compte/enfants/$childId'
     | '/_authenticated/compte/programmer/$packId'
     | '/_authenticated/compte/enfants/'
+    | '/_authenticated/pro/eleves/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -917,6 +930,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompteProgrammerPackIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/eleves/': {
+      id: '/_authenticated/pro/eleves/'
+      path: '/pro/eleves'
+      fullPath: '/pro/eleves/'
+      preLoaderRoute: typeof AuthenticatedProElevesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -954,6 +974,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompteEnfantsChildIdRoute: typeof AuthenticatedCompteEnfantsChildIdRoute
   AuthenticatedCompteProgrammerPackIdRoute: typeof AuthenticatedCompteProgrammerPackIdRoute
   AuthenticatedCompteEnfantsIndexRoute: typeof AuthenticatedCompteEnfantsIndexRoute
+  AuthenticatedProElevesIndexRoute: typeof AuthenticatedProElevesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -993,6 +1014,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompteProgrammerPackIdRoute:
     AuthenticatedCompteProgrammerPackIdRoute,
   AuthenticatedCompteEnfantsIndexRoute: AuthenticatedCompteEnfantsIndexRoute,
+  AuthenticatedProElevesIndexRoute: AuthenticatedProElevesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
