@@ -655,7 +655,7 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
           </ul>
         ) : (
           <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
-            Aucune formule active. {left > 0 ? "" : ""}Choisissez un intervenant pour démarrer.
+            Aucune formule active. Choisissez un intervenant pour démarrer.
           </p>
         )}
         <p className="mt-2 text-xs text-muted-foreground">
