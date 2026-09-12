@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, CalendarClock, ClipboardList, FileText, Loader2, T
 
 import { EmptyState, ProgressBar, SectionHeading } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
+import { learningObjectiveLabel } from "@/lib/education";
 import { formatDate, SESSION_STATUS_LABELS } from "@/lib/packs";
 
 export const Route = createFileRoute("/_authenticated/matiere/$packId")({
@@ -166,7 +167,7 @@ function SubjectDetailPage() {
 
       <section className={`mt-3 ${CARD}`}>
         <SectionHeading title="Objectif" />
-        <p className="mt-1 text-sm text-foreground">{data.objective || "Objectif à préciser dans Mon parcours."}</p>
+        <p className="mt-1 text-sm text-foreground">{learningObjectiveLabel(data.objective) || "Objectif à préciser dans Mon parcours."}</p>
       </section>
 
       <section className="mt-3">

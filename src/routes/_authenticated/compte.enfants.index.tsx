@@ -156,12 +156,9 @@ function ChildrenPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const child = children.find((item) => item.id === id);
-      if (child?.avatar_path) {
-        const removal = await supabase.storage.from("child-photos").remove([child.avatar_path]);
-        if (removal.error) throw removal.error;
-      }
       const { error } = await supabase.from("children").delete().eq("id", id).eq("parent_id", user.id);
       if (error) throw error;
+      if (child?.avatar_path) await supabase.storage.from("child-photos").remove([child.avatar_path]);
     },
     onSuccess: () => {
       toast.success("Profil supprimé");
@@ -299,7 +296,7 @@ function ChildrenPage() {
                   >
                     <span className="block truncate font-display font-bold text-foreground">{child.first_name}</span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {[child.school_level, child.birth_year ? `né(e) en ${child.birth_year}` : null]
+                      {[catalogQuery.data?.levels.find((level) => level.slug === child.school_level)?.name ?? child.school_level, child.birth_year ? `né(e) en ${child.birth_year}` : null]
                         .filter(Boolean)
                         .join(" · ") || "Profil enfant"}
                     </span>
