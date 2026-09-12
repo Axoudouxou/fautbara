@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Home, Laptop, Loader2, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { STATUS_LABELS, formatSlot, formatTimeRange } from "./compte.reservations";
@@ -57,6 +57,10 @@ function TeacherCoursesPage() {
   const { booking: bookingParam, view: viewParam } = Route.useSearch();
   const [view, setView] = useState<View>(viewParam ?? "sessions");
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+
+  useEffect(() => {
+    setView(viewParam ?? "sessions");
+  }, [viewParam]);
 
   const rolesQuery = useQuery({
     queryKey: ["roles", user.id],
