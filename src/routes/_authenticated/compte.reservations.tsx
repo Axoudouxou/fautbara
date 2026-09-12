@@ -145,14 +145,15 @@ function BookingsPage() {
 
 
   return (
-    <div className="container-page py-10 sm:py-14">
-      <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Mes cours</h1>
+    <div className="container-page py-5 pb-24 sm:py-14">
+      <h1 className="font-display text-xl font-bold text-foreground sm:text-3xl">Mes cours</h1>
       <SectionTabs items={learnerCoursesTabs} />
-      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+      <p className="mt-3 hidden max-w-2xl text-sm text-muted-foreground sm:block">
         Vos formules payées et les séances que vous programmez au fil des semaines dans
         l&apos;agenda de l&apos;intervenant.
       </p>
-      {children.length > 1 && <label className="mt-5 block max-w-xs text-sm font-semibold text-foreground">Afficher les cours de<select value={childFilter} onChange={(event) => setChildFilter(event.target.value)} className="mt-1.5 w-full rounded-xl border border-input bg-card px-4 py-3 text-sm"><option value="all">Tous les enfants</option>{children.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>}
+      {children.length > 1 && <label className="mt-4 block max-w-xs text-sm font-semibold text-foreground">Afficher les cours de<select value={childFilter} onChange={(event) => setChildFilter(event.target.value)} className="mt-1.5 w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm"><option value="all">Tous les enfants</option>{children.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>}
+
 
       {loading && (
         <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
@@ -177,9 +178,9 @@ function BookingsPage() {
       )}
 
       {visiblePacks.length > 0 && (
-        <section className="mt-8">
-          <h2 className="font-display text-lg font-bold text-foreground">Mes formules</h2>
-          <ul className="mt-4 space-y-4">
+        <section className="mt-6">
+          <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Mes formules</h2>
+          <ul className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-4">
             {visiblePacks.map((p) => {
               const status = PACK_STATUS_LABELS[p.status] ?? {
                 label: p.status,
@@ -192,7 +193,7 @@ function BookingsPage() {
                 <li
                   key={p.id}
                   id={`pack-${p.id}`}
-                  className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+                  className={`rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6 ${
                     packParam === p.id ? "border-primary ring-2 ring-primary/30" : "border-border"
                   }`}
                 >
@@ -201,7 +202,7 @@ function BookingsPage() {
                       <p className="text-xs font-bold uppercase tracking-wide text-primary">
                         {p.teacher_offers?.subjects?.name}
                       </p>
-                      <h3 className="mt-1 font-display text-lg font-bold text-foreground">
+                      <h3 className="mt-0.5 font-display text-base font-bold text-foreground sm:text-lg">
                         Formule {p.pack_types?.name}
                       </h3>
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -240,7 +241,7 @@ function BookingsPage() {
                     </span>
                   </div>
 
-                  <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+                  <dl className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
                     <div className="flex justify-between gap-3">
                       <dt className="text-muted-foreground">Séances restantes</dt>
                       <dd className="font-semibold text-foreground">
@@ -288,9 +289,9 @@ function BookingsPage() {
       )}
 
       {visibleBookings.length > 0 && (
-        <section className="mt-10">
-          <h2 className="font-display text-lg font-bold text-foreground">Mes séances</h2>
-          <ul className="mt-4 space-y-4">
+        <section className="mt-8">
+          <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Mes séances</h2>
+          <ul className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-4">
             {visibleBookings.map((b) => {
               const status = SESSION_STATUS_LABELS[b.status] ?? {
                 label: b.status,
@@ -301,7 +302,7 @@ function BookingsPage() {
                 <li
                   key={b.id}
                   id={`seance-${b.id}`}
-                  className={`rounded-3xl border bg-card p-6 shadow-[var(--shadow-card)] ${
+                  className={`rounded-2xl border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6 ${
                     bookingParam === b.id ? "border-primary ring-2 ring-primary/30" : "border-border"
                   }`}
                 >
@@ -310,7 +311,7 @@ function BookingsPage() {
                       <p className="text-xs font-bold uppercase tracking-wide text-primary">
                         {b.teacher_offers?.subjects?.name}
                       </p>
-                      <h3 className="mt-1 font-display text-lg font-bold text-foreground">
+                      <h3 className="mt-0.5 font-display text-base font-bold text-foreground sm:text-lg">
                         {b.teacher_offers?.title ?? "Cours"}
                         {b.session_index ? ` · séance ${b.session_index}` : ""}
                       </h3>
@@ -324,7 +325,7 @@ function BookingsPage() {
                     </span>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarClock className="size-4" aria-hidden />
                       {formatDay(b.scheduled_at)} ·{" "}

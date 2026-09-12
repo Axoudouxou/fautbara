@@ -4,8 +4,10 @@ import {
   Baby,
   BadgeCheck,
   Bell,
+  BookOpen,
   CalendarClock,
   ChevronRight,
+  ClipboardList,
   Home,
   Inbox,
   Laptop,
@@ -13,6 +15,7 @@ import {
   Wallet,
   UserPlus,
 } from "lucide-react";
+
 
 import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 
@@ -543,27 +546,58 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
   const prefs = journeyQuery.data?.prefs;
   const report = journeyQuery.data?.report;
 
+  const weekEnd = now + 7 * 24 * 60 * 60 * 1000;
+  const weekCount = upcoming.filter((b) => new Date(b.scheduled_at).getTime() <= weekEnd).length;
+
   return (
     <main className="container-page py-6 sm:py-12">
       <Greeting firstName={firstName} subtitle="Voici où vous en êtes dans votre apprentissage." />
 
-      <section className="mt-5" aria-label="Votre prochaine séance">
-        <SectionHeading title="Votre prochaine séance" />
+      <section className="mt-4" aria-label="Cette semaine">
+        <div className="grid grid-cols-3 gap-2.5">
+          <StatTile
+            icon={BookOpen}
+            value={activePacks.length}
+            label={activePacks.length > 1 ? "matières suivies" : "matière suivie"}
+          />
+          <StatTile icon={CalendarClock} value={weekCount} label="cours cette semaine" />
+          <StatTile
+            icon={ClipboardList}
+            value={assignments.length}
+            label={assignments.length > 1 ? "travaux à faire" : "travail à faire"}
+          />
+        </div>
+      </section>
+
+      <section className="mt-6" aria-label="Ma prochaine séance">
+        <SectionHeading title="Ma prochaine séance" />
         {next ? (
-          <Link to="/compte/reservations" className="mt-3 block">
-            <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
-              <p className="text-sm font-bold text-foreground">
-                {next.teacher_offers?.subjects?.name ?? "Cours particulier"}
-              </p>
-              <p className="mt-1 text-sm text-foreground">{dayTime(next.scheduled_at)}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Avec {data?.teacherNames.get(next.teacher_id) ?? "votre intervenant"} · {formatLabel(next.format)}
-              </p>
-              <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
-                Voir la séance <ChevronRight className="size-3.5" aria-hidden />
-              </span>
-            </div>
-          </Link>
+          <>
+            <Link to="/compte/reservations" className="mt-3 block">
+              <RowCard className="transition-colors hover:bg-secondary">
+                <span className="w-[72px] shrink-0">
+                  <span className="block text-[11px] font-semibold text-muted-foreground">
+                    {relDay(next.scheduled_at)}
+                  </span>
+                  <span className="block font-display text-base font-bold leading-tight text-foreground">
+                    {hourOf(next.scheduled_at)}
+                  </span>
+                </span>
+                <span className="min-w-0 flex-1 border-l border-border pl-3">
+                  <span className="block truncate text-sm font-bold text-foreground">
+                    {next.teacher_offers?.subjects?.name ?? "Cours particulier"}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {data?.teacherNames.get(next.teacher_id) ?? "Votre intervenant"} · {formatLabel(next.format)}
+                  </span>
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              </RowCard>
+            </Link>
+            <Link to="/compte/calendrier" className={`mt-3 w-full ${CTA}`}>
+              Voir le calendrier
+            </Link>
+          </>
         ) : (
           <div className={`mt-3 ${SOFT_CARD}`}>
             <p className="text-sm text-muted-foreground">Aucune séance programmée.</p>
@@ -583,32 +617,54 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
         )}
       </section>
 
-      <section className="mt-6" aria-label="Mon parcours">
+      <section className="mt-6" aria-label="Mes matières">
         <SectionHeading
-          title="Mon parcours"
+          title="Mes matières"
           action={
             <Link to="/parcours" className="text-xs font-semibold text-primary hover:underline">
-              Tout voir
+              Mon parcours
             </Link>
           }
         />
-        <Link to="/parcours" className="mt-3 block">
-          <div className={`${SOFT_CARD} transition-colors hover:bg-secondary`}>
-            <p className="text-sm font-bold text-foreground">
-              {activePacks[0]?.teacher_offers?.subjects?.name ?? "Aucune formule active"}
-            </p>
-            <p className="mt-1 text-sm text-foreground">
-              {left > 0 ? `${left} séance${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""}` : "Aucune séance restante"}
-            </p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Objectif : {objective ? objectiveLabels[objective] ?? objective : "à préciser"}
-            </p>
-            <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary">
-              Voir mon parcours <ChevronRight className="size-3.5" aria-hidden />
-            </span>
-          </div>
-        </Link>
+        {activePacks.length > 0 ? (
+          <ul className="mt-3 space-y-2.5">
+            {activePacks.slice(0, 3).map((p) => {
+              const packLeft = Math.max(p.sessions_total - p.sessions_used, 0);
+              return (
+                <li key={p.id}>
+                  <Link to="/matiere/$packId" params={{ packId: p.id }} className="block">
+                    <RowCard className="transition-colors hover:bg-secondary">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                        <BookOpen className="size-4" aria-hidden />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-bold text-foreground">
+                          {p.teacher_offers?.subjects?.name ?? "Matière"}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {packLeft} séance{packLeft > 1 ? "s" : ""} restante{packLeft > 1 ? "s" : ""} sur{" "}
+                          {p.sessions_total}
+                        </span>
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </RowCard>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
+            Aucune formule active. Choisissez un intervenant pour démarrer.
+          </p>
+        )}
+        <p className="mt-2 text-xs text-muted-foreground">
+          {left > 0 ? `${left} séance${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""} au total · ` : ""}
+          Objectif : {objective ? objectiveLabels[objective] ?? objective : "à préciser dans Mon parcours"}
+        </p>
+
       </section>
+
 
       {assignments.length > 0 && (
         <section className="mt-6" aria-label="À faire">
