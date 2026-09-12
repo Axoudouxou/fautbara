@@ -153,12 +153,23 @@ function HomeworkPage() {
                         })}
                       </p>
                     )}
-                    <Link
-                      to="/messages"
-                      className="mt-4 inline-flex rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
-                    >
-                      Ouvrir la conversation
-                    </Link>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Link
+                        to="/messages"
+                        className="inline-flex rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
+                      >
+                        Ouvrir la conversation
+                      </Link>
+                      {h.reportBookingId && (
+                        <Link
+                          to="/compte-rendu/$bookingId"
+                          params={{ bookingId: h.reportBookingId }}
+                          className="inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                        >
+                          Voir le compte-rendu
+                        </Link>
+                      )}
+                    </div>
                   </li>
                 );
               })}
