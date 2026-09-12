@@ -27,3 +27,10 @@
 - [ ] Lot 4 : finaliser les 8 écrans Intervenant avec élèves, agenda, demandes, rémunérations et progression de grade
 - [ ] Lot 5 : vérifier comptes-rendus, permissions, paiements, formules, routes historiques et données
 - [ ] Lot 6 : valider les trois parcours sur mobile et ordinateur
+
+## Alignement UX sur la maquette validée
+- [ ] Uniformiser les 22 écrans sur la densité et la hiérarchie mobile de la référence
+- [ ] Aligner les 7 écrans Parent sans modifier les données ni les achats
+- [ ] Aligner les 7 écrans Adulte et compléter les vues matière/compte-rendu
+- [ ] Aligner les 8 écrans Intervenant et compléter élève/rémunérations/progression
+- [ ] Vérifier les trois rôles sur mobile et ordinateur
