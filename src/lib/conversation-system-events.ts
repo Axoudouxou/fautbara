@@ -66,7 +66,7 @@ export function useConversationSystemContext(
           ? await supabase
               .from("session_reports")
               .select(
-                "id, created_at, attendance, content_note, progress_level, homework_done, engagement_rating, next_steps",
+                "id, created_at, attendance, content_note, progress_level, homework_done, engagement_level, next_steps",
               )
               .in("booking_id", ids)
               .order("created_at", { ascending: true })
