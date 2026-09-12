@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
+  Baby,
   BadgeCheck,
   CalendarClock,
+  ChevronRight,
   Home,
   Inbox,
   Laptop,
@@ -12,6 +14,8 @@ import {
   Wallet,
   UserPlus,
 } from "lucide-react";
+
+import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 
 import { supabase } from "@/integrations/supabase/client";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
@@ -320,6 +324,68 @@ function LearnerHome({
             <UserPlus className="size-4" aria-hidden /> Ajouter un enfant
           </Link>
         </div>
+      )}
+
+      {isParent && children.length > 0 && (
+        <section className="mt-5" aria-label="Cockpit familial">
+          <div className="grid grid-cols-3 gap-2.5">
+            <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
+            <StatTile
+              icon={CalendarClock}
+              value={thisWeek.length}
+              label={thisWeek.length > 1 ? "cours cette semaine" : "cours cette semaine"}
+            />
+            <StatTile
+              icon={Inbox}
+              value={bookings.filter((b) => b.status === "pending").length}
+              label="demande(s) en attente"
+            />
+          </div>
+
+          <div className="mt-5">
+            <SectionHeading
+              title="Prochains cours"
+              action={
+                <Link to="/compte/calendrier" className="text-xs font-semibold text-primary hover:underline">
+                  Voir le calendrier
+                </Link>
+              }
+            />
+            {thisWeekOrLater.length > 0 ? (
+              <ul className="mt-3 space-y-2.5">
+                {thisWeekOrLater.slice(0, 3).map((b) => (
+                  <li key={b.id}>
+                    <Link to="/compte/reservations" className="block">
+                      <RowCard className="transition-colors hover:bg-secondary">
+                        <span className="flex w-14 shrink-0 flex-col items-center rounded-xl bg-primary-soft/60 px-2 py-1.5 text-primary-soft-foreground">
+                          <span className="text-[10px] font-bold uppercase leading-none">
+                            {new Date(b.scheduled_at).toLocaleDateString("fr-FR", { weekday: "short" })}
+                          </span>
+                          <span className="mt-1 font-display text-sm font-bold leading-none">
+                            {new Date(b.scheduled_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-foreground">
+                            {b.teacher_offers?.subjects?.name ?? "Cours particulier"}
+                          </span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {[b.children?.first_name, formatLabel(b.format)].filter(Boolean).join(" · ")}
+                          </span>
+                        </span>
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      </RowCard>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
+                Aucune séance programmée pour l’instant.
+              </p>
+            )}
+          </div>
+        </section>
       )}
 
       <div className={`mt-6 ${CARD}`}>
