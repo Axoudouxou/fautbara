@@ -65,7 +65,7 @@ function TeacherStudentPage() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("teacher_student_profile", {
         p_learner_id: learnerId,
-        p_child_id: childId,
+        ...(childId ? { p_child_id: childId } : {}),
       });
       if (error) throw error;
       return data as unknown as StudentProfile;
