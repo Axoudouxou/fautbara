@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { MessageSquare } from "lucide-react";
+import { Bell, MessageSquare } from "lucide-react";
 import logoBaraAsset from "../assets/logo-bara.jpg.asset.json";
 
 const LOGO_URL = logoBaraAsset.url;
@@ -23,6 +23,7 @@ import { MessagingDrawer } from "@/components/messaging-drawer";
 import { SupportChatWidget } from "@/components/support-chat-widget";
 import { useMessagingSide } from "@/hooks/use-messaging-side";
 import { useConversations } from "@/lib/messaging";
+import { useNotifications } from "@/components/notifications-feed";
 
 const SITE_NAME = "BARA";
 const SITE_DESCRIPTION =
@@ -158,8 +159,28 @@ function MessagingHeaderTrigger() {
   );
 }
 
+function NotificationsHeaderTrigger({ userId }: { userId: string }) {
+  const notificationsQuery = useNotifications(userId);
+  const unread = (notificationsQuery.data ?? []).filter((notification) => !notification.read_at).length;
+
+  return (
+    <Link
+      to="/notifications"
+      aria-label={unread > 0 ? `Notifications, ${unread} non lue${unread > 1 ? "s" : ""}` : "Notifications"}
+      className="relative flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-secondary"
+    >
+      <Bell className="size-5" aria-hidden />
+      {unread > 0 ? (
+        <span className="absolute -right-0.5 -top-0.5 flex min-w-[1.1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
 function SiteHeader() {
-  const { signedIn, primaryRole, isChild } = useAppNav();
+  const { signedIn, userId, primaryRole, isChild } = useAppNav();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -177,6 +198,7 @@ function SiteHeader() {
         {signedIn ? (
           <div className="flex items-center gap-2">
             <AppTabsBar role={primaryRole} isChild={isChild} />
+            {userId ? <NotificationsHeaderTrigger userId={userId} /> : null}
             <MessagingHeaderTrigger />
             <button
               type="button"

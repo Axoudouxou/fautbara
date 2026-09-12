@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Baby,
   BadgeCheck,
-  Bell,
   BookOpen,
   CalendarClock,
   ChevronRight,
@@ -22,7 +21,6 @@ import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { learningObjectiveLabel } from "@/lib/education";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
-import { NotificationsFeed } from "@/components/notifications-feed";
 import { AdminAlertsSection, TeacherTasksSection } from "@/components/home-role-sections";
 import { useConversations } from "@/lib/messaging";
 import { useMessagingPanel } from "@/lib/messaging-panel-context";
@@ -275,22 +273,6 @@ function Greeting({ firstName, subtitle }: { firstName: string; subtitle: string
   );
 }
 
-function NotificationsLink() {
-  return (
-    <div className="mt-6">
-      <Link
-        to="/notifications"
-        className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-      >
-        <span className="inline-flex items-center gap-2">
-          <Bell className="size-4 text-primary" aria-hidden /> Mes notifications
-        </span>
-        <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
-      </Link>
-    </div>
-  );
-}
-
 function LoadingScreen() {
   return (
     <div className="container-page flex items-center gap-2 py-16 text-sm text-muted-foreground">
@@ -346,7 +328,6 @@ function ParentHome({ userId, firstName }: { userId: string; firstName: string }
             Ajouter un enfant
           </Link>
         </div>
-        <NotificationsLink />
       </main>
     );
   }
@@ -484,7 +465,6 @@ function ParentHome({ userId, firstName }: { userId: string; firstName: string }
         </section>
       )}
 
-      <NotificationsLink />
     </main>
   );
 }
@@ -691,7 +671,6 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
         </section>
       )}
 
-      <NotificationsLink />
     </main>
   );
 }
@@ -1112,10 +1091,6 @@ function TeacherHome({ userId, firstName }: { userId: string; firstName: string 
         ]}
       />
 
-      <div className="mt-8">
-        <NotificationsFeed userId={userId} />
-      </div>
-
       <TeacherTasksSection
         userId={userId}
         missingProfileItems={missing as string[]}
@@ -1216,10 +1191,6 @@ function AdminHome({ userId }: { userId: string }) {
         <Link to="/admin/offres" className={`${CARD} font-display font-bold text-foreground`}>
           Modération des offres
         </Link>
-      </div>
-
-      <div className="mt-8">
-        <NotificationsFeed userId={userId} />
       </div>
 
       <AdminAlertsSection />

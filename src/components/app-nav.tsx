@@ -176,19 +176,15 @@ export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | nu
   };
 
   return (
-    <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
-      aria-label="Navigation de l'application"
-    >
-      <ul className="relative grid grid-cols-5 items-end">
-        {tabs.map(renderTab)}
-        {hasPrimaryAction && (
-          <li className="pointer-events-none absolute left-1/2 top-0 z-10 size-0 -translate-x-1/2">
-            <MobilePrimaryAction role={role} />
-          </li>
-        )}
-      </ul>
-    </nav>
+    <>
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+        aria-label="Navigation de l'application"
+      >
+        <ul className="grid grid-cols-5 items-end">{tabs.map(renderTab)}</ul>
+      </nav>
+      {hasPrimaryAction ? <MobilePrimaryAction role={role} /> : null}
+    </>
   );
 }
 
@@ -200,7 +196,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
           <Button
             type="button"
             size="icon"
-            className="pointer-events-auto absolute bottom-8 left-1/2 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)]"
+            className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)] md:hidden"
             aria-label="Ajouter ou gérer mon activité"
           >
             <Plus className="size-5" aria-hidden />
@@ -220,7 +216,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
 
   if (role === "parent") {
     return (
-      <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 left-1/2 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
+      <Button asChild size="icon" className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)] md:hidden">
         <Link to="/choisir-enfant" aria-label="Rechercher un intervenant pour un enfant">
           <Plus className="size-5" aria-hidden />
         </Link>
@@ -229,7 +225,7 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
   }
 
   return (
-    <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 left-1/2 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
+    <Button asChild size="icon" className="fixed bottom-[calc(2.75rem+env(safe-area-inset-bottom))] left-1/2 z-50 size-12 -translate-x-1/2 rounded-full border-4 border-background shadow-[var(--shadow-raised)] md:hidden">
       <Link to="/professeurs" search={{}} aria-label="Rechercher un intervenant pour moi">
         <Plus className="size-5" aria-hidden />
       </Link>
@@ -239,6 +235,6 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
 
 /** Header + bottom bar applicatifs, ou null si l'utilisateur n'est pas connecté. */
 export function useAppNav() {
-  const { ready, signedIn, primaryRole, isChild, rolesLoading } = useSessionRoles();
-  return { ready, signedIn, primaryRole, isChild, rolesLoading };
+  const { ready, signedIn, userId, primaryRole, isChild, rolesLoading } = useSessionRoles();
+  return { ready, signedIn, userId, primaryRole, isChild, rolesLoading };
 }
