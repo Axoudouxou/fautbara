@@ -167,7 +167,7 @@ function TeacherPublicPage() {
   }, [educations, experiences]);
 
   return (
-    <div className="container-page pt-10 pb-44 sm:pt-14 md:pb-24 lg:pb-14">
+    <div className="container-page pt-6 pb-44 sm:pt-14 md:pb-24 lg:pb-14">
       <ParentChildContext childId={childId} />
       <Link
         to="/professeurs"

@@ -55,19 +55,20 @@ function ScheduleSessionPage() {
   const canSchedule = pack.status === "active" && !expired && sessionsLeft > 0;
 
   return (
-    <main className="container-page py-8 sm:py-12">
+    <main className="container-page py-6 sm:py-12">
       <Link to="/compte/reservations" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Mes cours</Link>
-      <div className="mx-auto mt-5 max-w-3xl">
+      <div className="mx-auto mt-4 max-w-3xl">
         <p className="text-xs font-bold uppercase text-muted-foreground">Formule {pack.pack_types?.name}</p>
-        <h1 className="mt-1 font-display text-3xl font-bold text-foreground">Programmer une séance</h1>
-        <div className="mt-5 flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
-          <UserAvatar name={teacher?.display_name ?? "Intervenant"} src={teacher?.avatar_url} />
-          <div className="min-w-0"><p className="font-display font-bold text-foreground">{pack.teacher_offers?.subjects?.name ?? pack.teacher_offers?.title}</p><p className="text-sm text-muted-foreground">{pack.children?.first_name ? `Pour ${pack.children.first_name}` : "Pour moi"} · avec {teacher?.display_name ?? "l’intervenant"}</p></div>
+        <h1 className="mt-1 font-display text-2xl font-bold text-foreground sm:text-3xl">Programmer une séance</h1>
+        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 shadow-[var(--shadow-card)]">
+          <UserAvatar name={teacher?.display_name ?? "Intervenant"} className="size-10" src={teacher?.avatar_url} />
+          <div className="min-w-0"><p className="truncate font-display text-sm font-bold text-foreground">{pack.teacher_offers?.subjects?.name ?? pack.teacher_offers?.title}</p><p className="truncate text-xs text-muted-foreground">{pack.children?.first_name ? `Pour ${pack.children.first_name}` : "Pour moi"} · avec {teacher?.display_name ?? "l’intervenant"}</p></div>
         </div>
-        <div className="mt-4 grid gap-3 rounded-2xl bg-secondary/50 p-4 text-sm sm:grid-cols-2">
-          <p><span className="text-muted-foreground">Séances restantes</span><strong className="block text-foreground">{sessionsLeft}</strong></p>
-          <p><span className="text-muted-foreground">Validité</span><strong className="block text-foreground">Jusqu’au {formatDate(pack.expires_at)}</strong></p>
+        <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <p className="rounded-2xl border border-border bg-card p-3.5 shadow-[var(--shadow-card)]"><span className="text-xs text-muted-foreground">Séances restantes</span><strong className="mt-0.5 block font-display text-lg text-foreground">{sessionsLeft}</strong></p>
+          <p className="rounded-2xl border border-border bg-card p-3.5 shadow-[var(--shadow-card)]"><span className="text-xs text-muted-foreground">Validité</span><strong className="mt-0.5 block text-sm text-foreground">Jusqu’au {formatDate(pack.expires_at)}</strong></p>
         </div>
+
         {canSchedule ? (
           <PackSessionScheduler packId={pack.id} teacherId={pack.teacher_id} teacherName={teacher?.display_name} durationMinutes={pack.duration_minutes} sessionsLeft={sessionsLeft} defaultOpen invalidateKeys={[["schedule-pack", user.id, packId], ["my-packs", user.id], ["my-bookings", user.id], ["child-journey"]]} />
         ) : (
