@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Baby, CalendarClock, ChevronRight, Home, Laptop, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Baby, CalendarClock, ChevronRight, Home, Laptop, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,13 @@ import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 import { LeaveReviewDialog } from "@/components/leave-review-dialog";
 import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
 import { SectionTabs, learnerCoursesTabs } from "@/components/section-tabs";
+import { UserAvatar } from "@/components/product-ui";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useSessionRoles } from "@/hooks/use-session-roles";
 import {
   PACK_STATUS_LABELS,
@@ -168,11 +175,28 @@ function BookingsPage() {
         .select("user_id, display_name, avatar_url")
         .in("user_id", teacherIds);
       if (error) throw error;
+      const paths = data.map((teacher) => teacher.avatar_url).filter((path): path is string => Boolean(path));
+      if (paths.length > 0) {
+        const { data: signed } = await supabase.storage.from("teacher-photos").createSignedUrls(paths, 3600);
+        const signedByPath = new Map(
+          (signed ?? []).map((entry, index) => [paths[index], entry.signedUrl]),
+        );
+        for (const teacher of data) {
+          if (teacher.avatar_url) teacher.avatar_url = signedByPath.get(teacher.avatar_url) ?? null;
+        }
+      }
       return new Map(data.map((t) => [t.user_id, t]));
     },
   });
   const teachers = teachersQuery.data ?? new Map<string, { display_name: string; avatar_url: string | null }>();
   const loading = packsQuery.isLoading || bookingsQuery.isLoading || (isParent && childrenQuery.isLoading);
+  const selectedChild = childParam ? children.find((child) => child.id === childParam) : null;
+  const visibleTeacherIds = [
+    ...new Set([
+      ...visiblePacks.map((pack) => pack.teacher_id),
+      ...visibleBookings.map((booking) => booking.teacher_id),
+    ]),
+  ];
 
   // Arrivée depuis une notification : on amène l'élément concerné à l'écran.
   useEffect(() => {
