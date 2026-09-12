@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { EmptyState, ProgressBar, SectionHeading, StatTile } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/packs";
+import { LEARNING_OBJECTIVES, learningObjectiveLabel, type LearningObjective } from "@/lib/education";
 
 export const Route = createFileRoute("/_authenticated/parcours")({
   head: () => ({
@@ -29,7 +30,7 @@ function LearningJourneyPage() {
   const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<"subjects" | "goals">("subjects");
-  const [goalDraft, setGoalDraft] = useState<string | null>(null);
+  const [goalDraft, setGoalDraft] = useState<LearningObjective | null>(null);
 
   const dataQuery = useQuery({
     queryKey: ["adult-learning-journey", user.id],
@@ -77,7 +78,7 @@ function LearningJourneyPage() {
   });
 
   const saveGoal = useMutation({
-    mutationFn: async (objective: string) => {
+    mutationFn: async (objective: LearningObjective) => {
       const prefs = dataQuery.data?.prefs;
       if (prefs?.id) {
         const { error } = await supabase.from("learning_preferences").update({ objective }).eq("id", prefs.id);
@@ -129,7 +130,8 @@ function LearningJourneyPage() {
   const nextByPack = new Map<string, string>();
   for (const booking of upcoming) if (booking.pack_id && !nextByPack.has(booking.pack_id)) nextByPack.set(booking.pack_id, booking.scheduled_at);
 
-  const objective = data.prefs?.objective ?? "";
+  const objective = data.prefs?.objective ?? null;
+  const selectedGoal = goalDraft ?? (objective as LearningObjective | null);
 
   return (
     <main className="container-page py-5 pb-24 sm:py-10">
@@ -222,18 +224,33 @@ function LearningJourneyPage() {
       ) : (
         <section className={`mt-4 ${CARD}`}>
           <SectionHeading title="Mon objectif" />
-          <p className="mt-1 text-xs text-muted-foreground">Décrivez librement ce que vous voulez atteindre.</p>
-          <textarea
-            value={goalDraft ?? objective}
-            onChange={(event) => setGoalDraft(event.target.value)}
-            rows={4}
-            placeholder="Ex. Améliorer mon anglais professionnel et gagner en fluidité à l’oral."
-            className="mt-3 w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground outline-none focus:border-primary"
-          />
+          <p className="mt-1 text-xs text-muted-foreground">Choisissez votre priorité actuelle. Vous pourrez la modifier à tout moment.</p>
+          {objective && (
+            <p className="mt-3 rounded-xl bg-primary-soft px-3 py-2 text-sm font-semibold text-primary-soft-foreground">
+              Objectif actuel : {learningObjectiveLabel(objective) ?? objective}
+            </p>
+          )}
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {LEARNING_OBJECTIVES.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                aria-pressed={selectedGoal === item.value}
+                onClick={() => setGoalDraft(item.value)}
+                className={`rounded-xl border px-3 py-3 text-left text-sm font-semibold transition-colors ${
+                  selectedGoal === item.value
+                    ? "border-primary bg-primary-soft text-primary-soft-foreground"
+                    : "border-border bg-background text-foreground hover:bg-secondary"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
-            disabled={saveGoal.isPending || (goalDraft ?? objective).trim() === objective.trim()}
-            onClick={() => saveGoal.mutate((goalDraft ?? objective).trim())}
+            disabled={saveGoal.isPending || !goalDraft || goalDraft === objective}
+            onClick={() => goalDraft && saveGoal.mutate(goalDraft)}
             className="mt-3 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
             {saveGoal.isPending && <Loader2 className="size-4 animate-spin" />} Enregistrer
