@@ -402,18 +402,22 @@ function LearnerHome({
               Découverte ou une séance individuelle.
             </p>
             <div className="mt-5">
-              <Link
-                to={isParent ? "/choisir-enfant" : "/professeurs"}
-                search={isParent ? undefined : {
-                  matiere: prefs?.subject_slugs?.[0],
-                  niveau: prefs?.level_slugs?.[0],
-                  commune: prefs?.preferred_communes?.[0],
-                  ...budgetRangeToPriceArgs((prefs?.budget_range as BudgetRange | null) ?? null),
-                }}
-                className={CTA}
-              >
-                {isParent ? "Choisir un enfant" : "Trouver un intervenant"}
-              </Link>
+              {isParent ? (
+                <Link to="/choisir-enfant" className={CTA}>Choisir un enfant</Link>
+              ) : (
+                <Link
+                  to="/professeurs"
+                  search={{
+                    matiere: prefs?.subject_slugs?.[0],
+                    niveau: prefs?.level_slugs?.[0],
+                    commune: prefs?.preferred_communes?.[0],
+                    ...budgetRangeToPriceArgs((prefs?.budget_range as BudgetRange | null) ?? null),
+                  }}
+                  className={CTA}
+                >
+                  Trouver un intervenant
+                </Link>
+              )}
             </div>
 
             {suggestedTeachers.length > 0 && (
