@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarClock, Home, Laptop, Loader2, Sparkles } from "lucide-react";
+import { Baby, CalendarClock, ChevronRight, Home, Laptop, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { OpenDisputeDialog } from "@/components/open-dispute-dialog";
 import { LeaveReviewDialog } from "@/components/leave-review-dialog";
 import { BookingLifecycleControls } from "@/components/booking-lifecycle-controls";
 import { SectionTabs, learnerCoursesTabs } from "@/components/section-tabs";
+import { useSessionRoles } from "@/hooks/use-session-roles";
 import {
   PACK_STATUS_LABELS,
   SESSION_STATUS_LABELS,
@@ -73,8 +74,9 @@ export function formatTimeRange(iso: string, durationMinutes: number) {
 
 function BookingsPage() {
   const { user } = Route.useRouteContext();
+  const { primaryRole } = useSessionRoles();
+  const isParent = primaryRole === "parent";
   const { pack: packParam, booking: bookingParam, enfant: childParam } = Route.useSearch();
-  const [childFilter, setChildFilter] = useState(childParam ?? "all");
   const [cancelTarget, setCancelTarget] = useState<
     { id: string; scheduledAt: string; rescheduleUsed: boolean } | null
   >(null);
@@ -109,11 +111,48 @@ function BookingsPage() {
     },
   });
 
+  const childrenQuery = useQuery({
+    queryKey: ["my-course-children", user.id],
+    enabled: isParent,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("children")
+        .select("id, first_name, school_level")
+        .eq("parent_id", user.id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const packs = packsQuery.data ?? [];
   const bookings = bookingsQuery.data ?? [];
-  const children = Array.from(new Map([...packs, ...bookings].filter((item) => item.child_id && item.children?.first_name).map((item) => [item.child_id as string, item.children?.first_name as string])).entries());
-  const visiblePacks = childFilter === "all" ? packs : packs.filter((pack) => pack.child_id === childFilter);
-  const visibleBookings = childFilter === "all" ? bookings : bookings.filter((booking) => booking.child_id === childFilter);
+  const children = childrenQuery.data ?? [];
+  const visiblePacks = childParam ? packs.filter((pack) => pack.child_id === childParam) : packs;
+  const visibleBookings = childParam ? bookings.filter((booking) => booking.child_id === childParam) : bookings;
+  const displayedChildren = childParam ? children.filter((child) => child.id === childParam) : children;
+  const packRows = isParent
+    ? displayedChildren.flatMap((child) => {
+        const childPacks = visiblePacks.filter((pack) => pack.child_id === child.id);
+        return childPacks.length > 0
+          ? [
+              { kind: "child" as const, child },
+              ...childPacks.map((pack) => ({ kind: "pack" as const, pack })),
+            ]
+          : [];
+      })
+    : visiblePacks.map((pack) => ({ kind: "pack" as const, pack }));
+  const bookingRows = isParent
+    ? displayedChildren.flatMap((child) => {
+        const childBookings = visibleBookings.filter((booking) => booking.child_id === child.id);
+        return childBookings.length > 0
+          ? [
+              { kind: "child" as const, child },
+              ...childBookings.map((booking) => ({ kind: "booking" as const, booking })),
+            ]
+          : [];
+      })
+    : visibleBookings.map((booking) => ({ kind: "booking" as const, booking }));
   const teacherIds = [
     ...new Set([
       ...packs.map((p) => p.teacher_id),
@@ -133,7 +172,7 @@ function BookingsPage() {
     },
   });
   const teachers = teachersQuery.data ?? new Map<string, { display_name: string; avatar_url: string | null }>();
-  const loading = packsQuery.isLoading || bookingsQuery.isLoading;
+  const loading = packsQuery.isLoading || bookingsQuery.isLoading || (isParent && childrenQuery.isLoading);
 
   // Arrivée depuis une notification : on amène l'élément concerné à l'écran.
   useEffect(() => {
@@ -152,7 +191,60 @@ function BookingsPage() {
         Vos formules payées et les séances que vous programmez au fil des semaines dans
         l&apos;agenda de l&apos;intervenant.
       </p>
-      {children.length > 1 && <label className="mt-4 block max-w-xs text-sm font-semibold text-foreground">Afficher les cours de<select value={childFilter} onChange={(event) => setChildFilter(event.target.value)} className="mt-1.5 w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm"><option value="all">Tous les enfants</option>{children.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></label>}
+      {isParent && !loading && children.length > 0 && (
+        <section className="mt-5" aria-labelledby="children-courses-title">
+          <h2 id="children-courses-title" className="font-display text-base font-bold text-foreground">
+            Cours par enfant
+          </h2>
+          <div className="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {children.map((child) => {
+              const childPacks = packs.filter((pack) => pack.child_id === child.id);
+              const childBookings = bookings.filter((booking) => booking.child_id === child.id);
+              const hasCourses = childPacks.length > 0 || childBookings.length > 0;
+              return (
+                <div key={child.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                    <Baby className="size-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-display text-sm font-bold text-foreground">{child.first_name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {child.school_level ?? "Niveau non renseigné"}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-primary">
+                      {childPacks.length} formule{childPacks.length > 1 ? "s" : ""} · {childBookings.length} séance{childBookings.length > 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  {hasCourses ? (
+                    <Link
+                      to="/compte/reservations"
+                      search={{ enfant: child.id }}
+                      aria-label={`Voir uniquement les cours de ${child.first_name}`}
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full text-primary hover:bg-primary-soft"
+                    >
+                      <ChevronRight className="size-4" aria-hidden />
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/professeurs"
+                      search={{ enfant: child.id }}
+                      aria-label={`Trouver un intervenant pour ${child.first_name}`}
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full text-primary hover:bg-primary-soft"
+                    >
+                      <ChevronRight className="size-4" aria-hidden />
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {childParam && (
+            <Link to="/compte/reservations" search={{}} className="mt-3 inline-flex text-xs font-semibold text-primary">
+              Voir tous les enfants
+            </Link>
+          )}
+        </section>
+      )}
 
 
       {loading && (
@@ -161,7 +253,7 @@ function BookingsPage() {
         </div>
       )}
 
-      {!loading && packs.length === 0 && (
+      {!loading && packs.length === 0 && !isParent && (
         <div className="mt-8 rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)]">
           <p className="font-display text-lg font-bold text-foreground">Aucune formule pour le moment</p>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -177,11 +269,30 @@ function BookingsPage() {
         </div>
       )}
 
+      {!loading && isParent && children.length === 0 && (
+        <div className="mt-8 rounded-3xl border border-border bg-card p-8 text-center shadow-[var(--shadow-card)]">
+          <p className="font-display text-lg font-bold text-foreground">Aucun enfant enregistré</p>
+          <p className="mt-2 text-sm text-muted-foreground">Ajoutez d’abord un enfant pour rechercher et organiser ses cours.</p>
+          <Link to="/compte/enfants" className="mt-6 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+            Ajouter un enfant
+          </Link>
+        </div>
+      )}
+
       {visiblePacks.length > 0 && (
         <section className="mt-6">
           <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Mes formules</h2>
           <ul className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-4">
-            {visiblePacks.map((p) => {
+            {packRows.map((row) => {
+              if (row.kind === "child") {
+                return (
+                  <li key={`pack-child-${row.child.id}`} id={`cours-${row.child.id}`} className="pt-3 first:pt-0">
+                    <p className="font-display text-base font-bold text-foreground">{row.child.first_name}</p>
+                    <p className="text-xs text-muted-foreground">{row.child.school_level ?? "Niveau non renseigné"}</p>
+                  </li>
+                );
+              }
+              const p = row.pack;
               const status = PACK_STATUS_LABELS[p.status] ?? {
                 label: p.status,
                 className: "bg-muted text-muted-foreground",
@@ -292,7 +403,16 @@ function BookingsPage() {
         <section className="mt-8">
           <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Mes séances</h2>
           <ul className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-4">
-            {visibleBookings.map((b) => {
+            {bookingRows.map((row) => {
+              if (row.kind === "child") {
+                return (
+                  <li key={`booking-child-${row.child.id}`} className="pt-3 first:pt-0">
+                    <p className="font-display text-base font-bold text-foreground">{row.child.first_name}</p>
+                    <p className="text-xs text-muted-foreground">{row.child.school_level ?? "Niveau non renseigné"}</p>
+                  </li>
+                );
+              }
+              const b = row.booking;
               const status = SESSION_STATUS_LABELS[b.status] ?? {
                 label: b.status,
                 className: "bg-muted text-muted-foreground",
