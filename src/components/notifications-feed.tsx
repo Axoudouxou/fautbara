@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Bell, Check, ChevronRight } from "lucide-react";
+import { Bell, Check, ChevronRight, CircleAlert, Info, Sparkles } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { notificationTarget } from "@/lib/notification-links";
 
@@ -38,13 +39,27 @@ export function NotificationsFeed({ userId }: { userId: string }) {
   const items = query.data ?? [];
   if (items.length === 0) return null;
 
+  const groups = [
+    { key: "action", label: "À faire", icon: CircleAlert, items: items.filter((item) => notificationCategory(item.kind) === "action") },
+    { key: "new", label: "Nouveau", icon: Sparkles, items: items.filter((item) => notificationCategory(item.kind) === "new") },
+    { key: "information", label: "Information", icon: Info, items: items.filter((item) => notificationCategory(item.kind) === "information") },
+  ].filter((group) => group.items.length > 0);
+
   return (
     <section className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
       <h2 className="flex items-center gap-2 font-display text-base font-bold text-foreground">
         <Bell className="size-4 text-primary" aria-hidden /> Notifications
       </h2>
-      <ul className="mt-3 space-y-2">
-        {items.map((n) => {
+      <div className="mt-4 space-y-5">
+        {groups.map((group) => {
+          const CategoryIcon = group.icon;
+          return (
+          <section key={group.key} aria-labelledby={`notifications-${group.key}`}>
+            <h3 id={`notifications-${group.key}`} className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground">
+              <CategoryIcon className="size-3.5" aria-hidden /> {group.label}
+            </h3>
+            <ul className="space-y-2">
+        {group.items.map((n) => {
           const target = notificationTarget(n);
           const body = (
             <>
@@ -64,13 +79,15 @@ export function NotificationsFeed({ userId }: { userId: string }) {
                 <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
               ) : (
                 !n.read_at && (
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
+                    variant="outline"
                     onClick={() => markRead.mutate(n.id)}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-secondary"
+                    className="h-7 shrink-0 rounded-full px-3 text-[11px] text-muted-foreground"
                   >
                     <Check className="size-3" aria-hidden /> Lu
-                  </button>
+                  </Button>
                 )
               )}
             </>
@@ -100,7 +117,23 @@ export function NotificationsFeed({ userId }: { userId: string }) {
             </li>
           );
         })}
-      </ul>
+            </ul>
+          </section>
+          );
+        })}
+      </div>
     </section>
   );
+}
+
+type NotificationCategory = "action" | "new" | "information";
+
+function notificationCategory(kind: string): NotificationCategory {
+  if (["booking_payment_expired", "reschedule_proposed", "withdrawal_error", "verification_document"].includes(kind)) {
+    return "action";
+  }
+  if (["new_message", "session_report", "booking_confirmed", "session_scheduled", "pack_activated", "grade_upgraded", "wallet_credited", "withdrawal_approved"].includes(kind)) {
+    return "new";
+  }
+  return "information";
 }

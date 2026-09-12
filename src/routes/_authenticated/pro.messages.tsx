@@ -199,7 +199,7 @@ function TeacherMessages() {
                       )}
                     </span>
                     <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                      {subjects.length > 0 ? subjects.join(", ") : "Cours particuliers"}
+                      {c.contextLabel || (subjects.length > 0 ? subjects.join(", ") : "Cours particuliers")}
                     </span>
                     {c.children?.first_name && (
                       <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
@@ -236,10 +236,7 @@ function TeacherMessages() {
               learnerId={active.learner_id}
               childId={active.child_id}
               title={active.children?.first_name ?? active.otherName}
-              subtitle={
-                subjectsFor(active.learner_id, active.child_id).join(", ") ||
-                `Responsable : ${active.otherName}`
-              }
+              subtitle={active.contextLabel || `Responsable : ${active.otherName}`}
               learnerLabel={active.children?.first_name ?? active.otherName}
               childAuthUserId={active.children?.auth_user_id ?? null}
             />

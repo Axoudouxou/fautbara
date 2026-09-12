@@ -236,8 +236,7 @@ function MessagesPage() {
                     )}
                   </span>
                   <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                    {c.children?.first_name ? `${c.children.first_name} · ` : ""}
-                    {c.lastBody ?? "Nouvelle conversation"}
+                    {c.contextLabel || c.lastBody || "Nouvelle conversation"}
                   </span>
                 </span>
               </button>
@@ -270,11 +269,7 @@ function MessagesPage() {
               learnerId={active.learner_id}
               childId={active.child_id}
               title={active.otherName}
-              subtitle={
-                active.children?.first_name
-                  ? `Suivi de ${active.children.first_name}`
-                  : "Votre suivi pédagogique"
-              }
+              subtitle={active.contextLabel || "Votre suivi pédagogique"}
               learnerLabel={active.children?.first_name ?? "vous"}
               childAuthUserId={active.children?.auth_user_id ?? null}
             />

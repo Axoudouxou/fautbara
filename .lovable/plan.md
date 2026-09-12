@@ -1,11 +1,11 @@
-# 21 écrans mobiles BARA — trois parcours distincts
+# 22 écrans mobiles BARA — trois parcours distincts
 
 ## Objectif
-Mettre en œuvre les 21 écrans de la maquette comme une évolution de BARA, sans reconstruction. Le design crème, brun nude, Sora/Manrope et les cartes arrondies restent inchangés. Les interfaces Parent, Adulte et Intervenant utilisent les mêmes composants visuels, mais conservent des priorités, contenus, actions et droits strictement distincts.
+Mettre en œuvre les 22 écrans de la maquette comme une évolution de BARA, sans reconstruction. Le design crème, brun nude, Sora/Manrope et les cartes arrondies restent inchangés. Les interfaces Parent, Adulte et Intervenant utilisent les mêmes composants visuels, mais conservent des priorités, contenus, actions et droits strictement distincts.
 
 Les URL, l’authentification, les permissions, les paiements Jèko, les formules, grades, reports, statuts, messagerie, devoirs, comptes-rendus, notifications, calendrier et portefeuille existants restent opérationnels.
 
-## Correspondance des 21 écrans
+## Correspondance des 22 écrans
 
 ### Parent — 7 écrans
 1. **Accueil parent** : semaine familiale, prochaines séances et actions réelles.
@@ -25,14 +25,15 @@ Les URL, l’authentification, les permissions, les paiements Jèko, les formule
 6. **Compte-rendu** : lecture des six champs existants, sans nouveau champ ni renommage métier.
 7. **Mon compte** : profil, objectifs, paiements, notifications, sécurité et aide.
 
-### Intervenant — 7 écrans
+### Intervenant — 8 écrans
 1. **Accueil intervenant** : aujourd’hui, prochaine séance, demandes, comptes-rendus à remplir et revenus réels.
 2. **Mes élèves** : apprenants actifs dérivés des réservations existantes.
 3. **Fiche élève** : objectif, formule, prochaine séance, historique, comptes-rendus, devoirs et conversation.
 4. **Agenda** : séances, disponibilités et exceptions dans une vue mobile/ordinateur lisible.
 5. **Demandes** : nouvelles demandes séparées des séances acceptées, sans changer le cycle de vie.
 6. **Rémunérations** : montants et historique selon les statuts existants du portefeuille.
-7. **Mon compte** : profil public, informations professionnelles, offres, vérification, documents, sécurité et aide.
+7. **Ma progression** : grade actuel, progression vers le grade suivant, critères réellement utilisés et conséquences métier existantes.
+8. **Mon compte** : profil public, informations professionnelles, offres, vérification, documents, sécurité et aide.
 
 ## Navigation mobile
 - Conserver cinq zones stables et différenciées par rôle.
@@ -77,9 +78,10 @@ Les URL, l’authentification, les permissions, les paiements Jèko, les formule
 - Transformer les vues cours/disponibilités existantes en agenda cohérent.
 - Séparer visuellement demandes, séances actives et historique.
 - Présenter le détail des rémunérations avec les statuts existants, sans nouveau calcul financier.
+- Créer la page « Ma progression » à partir des règles de grades et plafonds déjà appliquées côté serveur, sans XP ni critère parallèle.
 
 ### Lot 5 — Validation complète
-- Vérifier les 21 écrans avec des données réelles sur petit mobile, grand mobile et ordinateur.
+- Vérifier les 22 écrans avec des données réelles sur petit mobile, grand mobile et ordinateur.
 - Tester les trois rôles séparément : navigation, recherche, réservation, paiement, programmation, messagerie, devoirs, compte-rendu, clôture et portefeuille.
 - Contrôler les permissions, liens de notifications, URL historiques, absence de données fictives et absence de régression métier.
 - Corriger chaque lot avant de commencer le suivant et consigner les blocages externes séparément.

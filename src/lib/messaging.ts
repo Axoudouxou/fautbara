@@ -21,6 +21,8 @@ export type ConversationListItem = ConversationRow & {
   lastAt: string | null;
   unread: number;
   archived: boolean;
+  subjectName: string | null;
+  contextLabel: string;
 };
 
 export type MessagingSide = "learner" | "teacher" | "child";
@@ -53,7 +55,7 @@ export function useConversations(userId: string, side: MessagingSide, enabled = 
           conversations.map((c) => (side === "teacher" ? c.learner_id : c.teacher_id)),
         ),
       );
-      const [{ data: profiles }, { data: reads }, { data: msgs }] = await Promise.all([
+      const [{ data: profiles }, { data: reads }, { data: msgs }, bookingsResult] = await Promise.all([
         supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", otherIds),
         supabase.from("conversation_reads").select("conversation_id, last_read_at"),
         side === "child"
@@ -63,12 +65,24 @@ export function useConversations(userId: string, side: MessagingSide, enabled = 
               .select("conversation_id, created_at, sender_id, body")
               .order("created_at", { ascending: false })
               .limit(500),
+        side === "child"
+          ? Promise.resolve({ data: [], error: null })
+          : supabase
+              .from("bookings")
+              .select("requester_id, teacher_id, child_id, teacher_offers(subjects(name))")
+              .in("status", ["accepted", "completed"]),
       ]);
+      if (bookingsResult.error) throw bookingsResult.error;
 
       const nameById = new Map(
         (profiles ?? []).map((p) => [p.user_id, { name: p.display_name, avatar: p.avatar_url }]),
       );
       const readAt = new Map((reads ?? []).map((r) => [r.conversation_id, r.last_read_at]));
+      const subjectByPair = new Map<string, string>();
+      for (const booking of bookingsResult.data ?? []) {
+        const subject = (booking.teacher_offers as { subjects: { name: string } | null } | null)?.subjects?.name;
+        if (subject) subjectByPair.set(`${booking.teacher_id}:${booking.requester_id}:${booking.child_id ?? ""}`, subject);
+      }
 
       return conversations
         .map((c) => {
@@ -79,6 +93,8 @@ export function useConversations(userId: string, side: MessagingSide, enabled = 
             (m) => m.sender_id !== userId && (!since || new Date(m.created_at) > new Date(since)),
           ).length;
           const other = nameById.get(side === "teacher" ? c.learner_id : c.teacher_id);
+          const subjectName = subjectByPair.get(`${c.teacher_id}:${c.learner_id}:${c.child_id ?? ""}`) ?? null;
+          const learnerName = c.children?.first_name ?? other?.name ?? "Apprenant";
           return {
             ...c,
             otherName:
@@ -89,6 +105,11 @@ export function useConversations(userId: string, side: MessagingSide, enabled = 
             lastAt: last?.created_at ?? c.last_message_at ?? null,
             unread,
             archived: side === "teacher" ? c.archived_by_teacher : c.archived_by_learner,
+            subjectName,
+            contextLabel:
+              side === "teacher"
+                ? [learnerName, subjectName].filter(Boolean).join(" · ")
+                : [subjectName, c.child_id ? c.children?.first_name : "Votre parcours"].filter(Boolean).join(" · "),
           };
         })
         .sort((a, b) => (b.lastAt ?? "").localeCompare(a.lastAt ?? ""));

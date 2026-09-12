@@ -124,7 +124,7 @@ export function MessagingDrawer() {
                 learnerId={active.learner_id}
                 childId={active.child_id}
                 title={active.otherName}
-                subtitle={active.children?.first_name ? `Suivi de ${active.children.first_name}` : null}
+                subtitle={active.contextLabel || null}
                 learnerLabel={active.children?.first_name ?? active.otherName}
                 childAuthUserId={active.children?.auth_user_id ?? null}
                 initialTab={initialTab}
@@ -224,8 +224,7 @@ export function MessagingDrawer() {
                             )}
                           </span>
                           <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                            {c.children?.first_name ? `${c.children.first_name} · ` : ""}
-                            {c.lastBody ?? "Nouvelle conversation"}
+                            {c.contextLabel || c.lastBody || "Nouvelle conversation"}
                           </span>
                         </span>
                       </button>
