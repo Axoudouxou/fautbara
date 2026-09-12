@@ -387,7 +387,7 @@ function ParentHome({ userId, firstName }: { userId: string; firstName: string }
             <ul className="mt-3 space-y-2.5">
               {upcoming.slice(0, 3).map((b) => (
                 <li key={b.id}>
-                  <Link to="/compte/reservations" className="block">
+                  <Link to="/seance/$bookingId" params={{ bookingId: b.id }} className="block">
                     <RowCard className="transition-colors hover:bg-secondary">
                       <span className="w-[72px] shrink-0">
                         <span className="block text-[11px] font-semibold text-muted-foreground">{relDay(b.scheduled_at)}</span>

@@ -64,3 +64,8 @@
 - [x] Remplacer les listes séparées par un détail enfant regroupé par professeur et formule
 - [x] Afficher les séances de chaque professeur dans une frise verticale repliable
 - [x] Vérifier le nouveau parcours repliable sur mobile (le compte réel contient actuellement un seul professeur)
+
+## Détail de séance parent
+- [ ] Ouvrir directement la séance choisie depuis « Prochains cours »
+- [ ] Afficher ses données réelles et uniquement les actions autorisées
+- [ ] Vérifier le parcours Parent sur mobile et ordinateur
