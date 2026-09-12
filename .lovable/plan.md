@@ -1,133 +1,92 @@
-# Refonte UX/UI progressive de BARA
+# 21 écrans mobiles BARA — trois parcours distincts
 
 ## Objectif
-Faire évoluer BARA vers une EdTech d’accompagnement, avec une identité commune mais trois expériences nettement distinctes :
+Mettre en œuvre les 21 écrans de la maquette comme une évolution de BARA, sans reconstruction. Le design crème, brun nude, Sora/Manrope et les cartes arrondies restent inchangés. Les interfaces Parent, Adulte et Intervenant utilisent les mêmes composants visuels, mais conservent des priorités, contenus, actions et droits strictement distincts.
 
-- **Parent** : piloter la progression de plusieurs enfants.
-- **Adulte apprenant** : suivre son propre parcours.
-- **Intervenant** : organiser ses élèves, ses séances et ses rémunérations.
+Les URL, l’authentification, les permissions, les paiements Jèko, les formules, grades, reports, statuts, messagerie, devoirs, comptes-rendus, notifications, calendrier et portefeuille existants restent opérationnels.
 
-La refonte conserve les règles métier, les données, l’authentification, les paiements Jèko, les formules, la messagerie, les comptes-rendus, les devoirs, les notifications et les URL déjà utilisées.
+## Correspondance des 21 écrans
 
-## Constat sur l’existant
+### Parent — 7 écrans
+1. **Accueil parent** : semaine familiale, prochaines séances et actions réelles.
+2. **Mes enfants** : profils, niveaux, formules et accès au suivi de chaque enfant.
+3. **Parcours enfant** : intervenants, séances restantes, prochaine séance, devoirs et comptes-rendus.
+4. **Choix de l’enfant** : étape contextuelle avant une recherche ou une réservation.
+5. **Liste des intervenants** : recherche et filtres existants contextualisés pour l’enfant choisi.
+6. **Détail intervenant** : profil, avis, disponibilités et formules existantes.
+7. **Programmer une séance** : agenda réel, format, lieu et message, puis paiement/programming existant.
 
-### Fondations à conserver
-- Design BARA déjà cohérent : crème, brun nude, Sora + Manrope, bordures fines, ombres discrètes et composants mobiles.
-- Navigation conditionnelle par rôle déjà centralisée pour ordinateur et mobile.
-- Données réelles disponibles pour enfants, formules, séances, disponibilités, devoirs, comptes-rendus, conversations, notifications et rémunérations.
-- Logique financière et métier majoritairement sécurisée côté serveur : grades, plafonds, formules, reports, clôture, validation par compte-rendu et états de rémunération.
-- Composants réutilisables : agenda de disponibilités, programmation d’une séance, cycle de vie d’une réservation, compte-rendu, conversations, notifications et onglets secondaires.
+### Adulte apprenant — 7 écrans
+1. **Accueil adulte** : prochaine séance, progression réelle et actions personnelles.
+2. **Mon parcours** : matières, formules, objectifs, comptes-rendus et devoirs.
+3. **Détail matière** : intervenant, séances restantes, prochaine séance et objectif.
+4. **Recherche adulte** : matière, objectif, niveau, format, zone et disponibilité pour soi.
+5. **Mes cours** : à venir, passés et calendrier sans vocabulaire familial.
+6. **Compte-rendu** : lecture des six champs existants, sans nouveau champ ni renommage métier.
+7. **Mon compte** : profil, objectifs, paiements, notifications, sécurité et aide.
 
-### Problèmes principaux
-- Parent et adulte partagent encore presque entièrement le même accueil et les mêmes formulations.
-- Le parent n’a pas de vue synthétique par enfant ni de page de parcours enfant.
-- L’adulte n’a pas encore de véritable espace « Mon parcours ».
-- L’espace intervenant est fonctionnel mais fragmenté : cours, semaine, élèves et actions de séance sont répartis entre plusieurs écrans.
-- L’agenda intervenant est une grille sommaire et non un véritable outil quotidien.
-- Les notifications, conversations et listes de cours manquent de contexte pédagogique visible.
-- Certaines formulations héritées sont incohérentes avec le modèle actuel, notamment « cours d’essai », les fractions de séances et « Programmable jusqu’au ».
-- Aucun contenu fictif n’est codé dans l’interface. La suppression de données de démonstration en base devra donc être précédée d’une identification certaine, sans toucher aux comptes ou paiements réels.
+### Intervenant — 7 écrans
+1. **Accueil intervenant** : aujourd’hui, prochaine séance, demandes, comptes-rendus à remplir et revenus réels.
+2. **Mes élèves** : apprenants actifs dérivés des réservations existantes.
+3. **Fiche élève** : objectif, formule, prochaine séance, historique, comptes-rendus, devoirs et conversation.
+4. **Agenda** : séances, disponibilités et exceptions dans une vue mobile/ordinateur lisible.
+5. **Demandes** : nouvelles demandes séparées des séances acceptées, sans changer le cycle de vie.
+6. **Rémunérations** : montants et historique selon les statuts existants du portefeuille.
+7. **Mon compte** : profil public, informations professionnelles, offres, vérification, documents, sécurité et aide.
 
-## Architecture cible
+## Navigation mobile
+- Conserver cinq zones stables et différenciées par rôle.
+- Ajouter un bouton central « + » contextuel :
+  - Parent : chercher un intervenant pour un enfant.
+  - Adulte : chercher un intervenant pour soi.
+  - Intervenant : gérer ses disponibilités ou créer une offre, selon le contexte.
+- Réutiliser les URL historiques derrière les nouvelles entrées afin de ne casser aucun lien.
+- Garder la navigation ordinateur actuelle, adaptée aux mêmes regroupements.
 
-### Parent
-Navigation principale : **Accueil · Mes enfants · Mes cours · Rechercher · Mon compte**
-
-- **Accueil** : salutation, semaine familiale, prochaine séance prioritaire, formules actives par enfant, actions à faire, aperçu des enfants.
-- **Mes enfants** : liste enrichie et accès à une page dédiée par enfant.
-- **Parcours enfant** : matières, intervenants, formules, séances restantes, prochaine séance, dernier compte-rendu et travail à faire.
-- **Mes cours** : formules, séances, calendrier et historique, avec filtre par enfant lorsque plusieurs profils existent.
-- **Rechercher** : choix préalable de l’enfant puis matière, niveau, objectif, format, zone et disponibilité.
-- **Mon compte** : profil, sécurité, famille, paiements, portefeuille et aide.
-
-### Adulte apprenant
-Navigation principale : **Accueil · Mon parcours · Mes cours · Rechercher · Mon compte**
-
-- **Accueil** : prochaine séance, formule active, action prioritaire, dernier compte-rendu et objectifs.
-- **Mon parcours** : objectifs, matières, intervenants, formules, progression, comptes-rendus et devoirs, sans vocabulaire familial.
-- **Mes cours** : séances, calendrier et historique personnels.
-- **Rechercher** : recherche explicitement « pour vous », avec objectif et disponibilité.
-- **Mon compte** : profil, sécurité, objectifs, paiements et aide.
-
-### Intervenant
-Navigation principale : **Accueil · Mes élèves · Agenda · Demandes · Mon compte**
-
-- **Accueil** : activité du jour, prochaine séance, demandes à traiter, comptes-rendus manquants, prochains cours et rémunération mensuelle.
-- **Mes élèves** : fiches par apprenant avec niveau, matière, responsable, séances, objectif, prochaine séance et dernier compte-rendu.
-- **Parcours élève** : historique pédagogique et accès contextualisé à la conversation.
-- **Agenda** : vraie vue semaine, disponibilités, indisponibilités et séances, avec détail et actions rapides.
-- **Demandes** : uniquement les demandes à décider, avec contexte complet et actions accepter/refuser clairement hiérarchisées.
-- **Mon compte** : profil public, informations professionnelles, offres, disponibilités, vérification, rémunérations, sécurité et aide.
-
-Les anciennes URL restent actives. Les nouvelles pages complètent l’architecture sans supprimer les écrans opérationnels.
-
-## Composants communs à extraire
-
-- En-tête de page et bloc d’action principale.
-- Carte de prochaine séance, avec variantes parent/adulte/intervenant.
-- Carte de formule avec barre de progression et libellé « N séances restantes ».
-- Carte d’apprenant/enfant.
-- Carte de tâche et état vide contextualisé.
-- Avatar unifié avec photo ou initiales.
-- Badge de statut de séance/formule/rémunération.
-- Sélecteur d’apprenant pour recherche, cours et calendrier.
-- Carte de compte-rendu en lecture.
-- Structure de calendrier hebdomadaire réutilisable.
-
-Ces composants utilisent uniquement les tokens visuels BARA existants. Aucun changement d’identité graphique n’est prévu.
+## Données et règles
+- Utiliser uniquement les profils, enfants, préférences, matières, intervenants, offres, formules, séances, devoirs, comptes-rendus, conversations et rémunérations réels.
+- « Mes objectifs » réutilise `learning_preferences.objective`, déjà disponible. Aucun changement de base n’est requis pour l’adulte.
+- Pour un enfant, ne pas inventer d’objectif : afficher seulement les informations réellement enregistrées tant qu’aucun champ enfant dédié n’existe.
+- Les comptes-rendus affichent les champs existants : Présence, Contenu travaillé, Niveau d’avancement, Travail fait depuis la dernière fois, Engagement, Note pour la prochaine fois.
+- Les calculs de prix, frais, séances restantes, reports, grades et revenus restent issus des règles serveur existantes.
+- Les accès financiers restent invisibles et inaccessibles aux comptes enfants.
 
 ## Mise en œuvre progressive
 
-### Phase 1 — Fondations UX communes
-- Extraire les composants partagés sans modifier les requêtes ni les actions métier.
-- Harmoniser les titres, espacements, actions principales, états de chargement et états vides.
-- Remplacer les formulations héritées :
-  - « 1 / 4 » → « 3 séances restantes » ;
-  - « Programmable jusqu’au » → « Votre formule est valable jusqu’au… » ;
-  - « cours d’essai » → formule Découverte ou séance individuelle selon le contexte.
-- Contextualiser les notifications en **À faire / Nouveau / Information**.
-- Enrichir les conversations avec apprenant, matière et contexte du cours à partir des relations existantes.
+### Lot 1 — Fondations et navigation
+- Faire évoluer les cartes, en-têtes, filtres, états vides et badges partagés sans modifier la logique métier.
+- Mettre en place la barre mobile différenciée et le bouton central contextuel.
+- Préserver le panneau de messages, le service client et les liens actuels.
+- Vérifier mobile/ordinateur, authentification, rôle et liens historiques.
 
-### Phase 2 — Parent et parcours enfant
-- Transformer l’accueil parent en vue familiale actionnable.
-- Enrichir « Mes enfants » et ajouter une page de parcours par enfant.
-- Ajouter les filtres par enfant aux cours et au calendrier.
-- Contextualiser la recherche et l’achat pour l’enfant sélectionné.
-- Afficher les comptes-rendus et devoirs au bon endroit dans le parcours.
+### Lot 2 — Parcours Parent
+- Finaliser les sept écrans Parent en réutilisant les pages déjà livrées.
+- Ajouter le choix d’enfant aux recherches et cours lorsqu’il est nécessaire.
+- Conserver le tunnel profil → formule → paiement → programmation existant.
+- Vérifier qu’aucune information d’un autre parent n’est visible.
 
-### Phase 3 — Adulte apprenant
-- Créer un accueil réellement distinct du parent.
-- Ajouter « Mon parcours » en regroupant objectifs, formule active, séances, comptes-rendus et devoirs.
-- Supprimer tout vocabulaire enfant/famille du parcours adulte.
-- Contextualiser recherche, réservation, paiement et calendrier pour soi-même.
+### Lot 3 — Parcours Adulte
+- Finaliser les sept écrans Adulte avec un vocabulaire entièrement personnel.
+- Ajouter les vues matière et compte-rendu à partir des données existantes.
+- Utiliser l’objectif déjà enregistré et permettre sa mise à jour sans complexifier le modèle.
+- Vérifier qu’aucune donnée enfant/famille ne remonte dans ce parcours.
 
-### Phase 4 — Intervenant orienté action
-- Refaire l’accueil autour d’« Aujourd’hui », « À faire », prochains cours et activité réelle.
-- Créer « Mes élèves » et la fiche de parcours d’un apprenant à partir des données existantes.
-- Séparer clairement les nouvelles demandes des séances déjà acceptées.
-- Rapprocher fiche séance, clôture et compte-rendu dans un workflow continu.
-- Présenter les rémunérations avec les seuls états existants : **En attente · Validé · Payé**.
+### Lot 4 — Parcours Intervenant
+- Recomposer l’accueil autour des actions du jour.
+- Ajouter la liste et la fiche élève en réutilisant les réservations, comptes-rendus, devoirs et conversations autorisés.
+- Transformer les vues cours/disponibilités existantes en agenda cohérent.
+- Séparer visuellement demandes, séances actives et historique.
+- Présenter le détail des rémunérations avec les statuts existants, sans nouveau calcul financier.
 
-### Phase 5 — Agenda et parcours critiques
-- Transformer l’agenda intervenant en calendrier hebdomadaire lisible sur ordinateur et mobile.
-- Conserver la logique actuelle des disponibilités, exceptions et créneaux occupés.
-- Fluidifier le parcours recherche → profil → formule → paiement → programmation.
-- Garder une action principale visible à chaque étape et reléguer les actions secondaires.
-
-### Phase 6 — Cohérence, données et validation
-- Identifier précisément les comptes et lignes de démonstration avant toute suppression ; ne jamais supprimer une donnée réelle par supposition.
-- Vérifier les cohérences nom/enfant/niveau/matière/intervenant/formule/séance sur tous les écrans.
-- Tester chaque rôle sur mobile et ordinateur : navigation, recherche, achat, programmation, messagerie, compte-rendu, clôture et rémunération.
-- Vérifier les URL historiques, les liens de notifications et les permissions après chaque phase.
-- Maintenir le journal de test BARA avec les parcours vérifiés et les blocages externes.
+### Lot 5 — Validation complète
+- Vérifier les 21 écrans avec des données réelles sur petit mobile, grand mobile et ordinateur.
+- Tester les trois rôles séparément : navigation, recherche, réservation, paiement, programmation, messagerie, devoirs, compte-rendu, clôture et portefeuille.
+- Contrôler les permissions, liens de notifications, URL historiques, absence de données fictives et absence de régression métier.
+- Corriger chaque lot avant de commencer le suivant et consigner les blocages externes séparément.
 
 ## Détails techniques
-- Conserver TanStack Router, les routes protégées et les liens typés existants.
-- Ajouter uniquement les routes nécessaires aux parcours dédiés, avec leurs métadonnées propres.
-- Réutiliser les requêtes et fonctions existantes ; aucune réécriture de la logique serveur pendant les phases purement UX.
-- Les éventuelles données de progression futures restent préparées dans la présentation, sans inventer de statistiques ni de champs absents.
-- Les actions sensibles restent validées côté serveur et protégées par les règles d’accès actuelles.
-- Chaque phase est vérifiée avant la suivante avec compilation, tests ciblés et parcours visuels mobile/ordinateur.
-
-## Premier lot recommandé
-Le premier lot livrable couvre les **phases 1 à 3** : fondations communes, cockpit parent, parcours enfant et expérience adulte distincte. Il apporte la différenciation la plus visible sans modifier le modèle économique ni le workflow intervenant. Le lot suivant traite l’espace intervenant et l’agenda.
+- Conserver l’architecture TanStack Start et les pages protégées actuelles.
+- Ajouter seulement les pages de détail réellement manquantes ; préférer les vues et composants réutilisables aux duplications.
+- Utiliser les fonctions serveur existantes, notamment le profil pédagogique élève et les résumés de rémunération, avant toute nouvelle requête.
+- Ne modifier le schéma de données que si une exigence ne peut réellement pas être satisfaite avec les champs existants.
+- Chaque page reçoit ses métadonnées propres et chaque lot passe les vérifications de compilation et les parcours visuels avant livraison.
