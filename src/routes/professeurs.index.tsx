@@ -338,6 +338,7 @@ function TeacherRow({
               src={teacher.avatar_url}
               alt={`Photo de ${teacher.display_name}`}
               loading="lazy"
+              suppressHydrationWarning
               className="size-20 rounded-xl object-cover"
             />
           ) : (
