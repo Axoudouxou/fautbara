@@ -153,7 +153,9 @@ function HomeScreen() {
   if (roles.includes("admin")) return <AdminHome userId={user.id} />;
   if (roles.includes("teacher")) return <TeacherHome userId={user.id} firstName={firstName} />;
 
-  return <LearnerHome userId={user.id} firstName={firstName} isParent={roles.includes("parent")} />;
+  if (roles.includes("parent")) return <ParentHome userId={user.id} firstName={firstName} />;
+  return <AdultHome userId={user.id} firstName={firstName} />;
+
 }
 
 /* ---------------- Parent / Étudiant ---------------- */
