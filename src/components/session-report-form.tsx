@@ -128,9 +128,16 @@ export function SessionReportForm({
       });
     },
     onSuccess: () => {
-      toast.success(existing ? "Compte-rendu mis à jour" : "Compte-rendu envoyé");
+      toast.success(existing ? "Compte-rendu mis à jour" : "Compte-rendu publié");
       for (const key of invalidateKeys) queryClient.invalidateQueries({ queryKey: key });
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      if (onPublished) {
+        onPublished({
+          assignments: assignments.filter((a) => a.title.trim()).length,
+          documents: documents.length,
+        });
+        return;
+      }
       onClose();
     },
     onError: (e: Error) => toast.error(e.message || "Envoi impossible"),
