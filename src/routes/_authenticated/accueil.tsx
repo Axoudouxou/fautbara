@@ -287,6 +287,14 @@ function LearnerHome({
   const thisWeekOrLater = pendingOrAccepted
     .filter((b) => new Date(b.scheduled_at).getTime() > now)
     .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at));
+  // Formules de l'apprenant adulte : uniquement celles qui ne visent aucun enfant.
+  const ownActivePacks = packs.filter((pack) => pack.status === "active" && !pack.child_id);
+  const ownSessionsLeft = ownActivePacks.reduce(
+    (sum, pack) => sum + Math.max(pack.sessions_total - pack.sessions_used, 0),
+    0,
+  );
+  const showCockpit = isParent ? children.length > 0 : bookings.length > 0 || ownActivePacks.length > 0;
+
 
   if (bookingsQuery.isLoading) {
     return (
