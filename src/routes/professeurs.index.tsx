@@ -8,9 +8,11 @@ import {
   Laptop,
   MapPin,
   Search,
+  SlidersHorizontal,
   Star,
   Users,
 } from "lucide-react";
+
 
 import { getCatalog, searchFiltersSchema, searchTeachers, type TeacherCard } from "@/lib/catalog.functions";
 import { gradeLabel } from "@/lib/packs";
@@ -259,7 +261,8 @@ function TeachersPage() {
             </select>
           </label>
 
-          <label className="min-w-0">
+          <label className="hidden min-w-0 sm:block">
+
             <span className={fieldLabelClass}>Recherche</span>
             <div className="relative">
               <Search
@@ -315,7 +318,7 @@ function TeachersPage() {
         </div>
       </div>
 
-      <div className="mt-8 flex items-center justify-between gap-4">
+      <div className="mt-5 flex items-center justify-between gap-4 sm:mt-8">
         <p className="text-sm font-semibold text-foreground">
           {teachers.length} professeur{teachers.length > 1 ? "s" : ""} trouvé
           {teachers.length > 1 ? "s" : ""}
