@@ -4,8 +4,10 @@ import {
   Baby,
   BadgeCheck,
   Bell,
+  BookOpen,
   CalendarClock,
   ChevronRight,
+  ClipboardList,
   Home,
   Inbox,
   Laptop,
@@ -13,6 +15,7 @@ import {
   Wallet,
   UserPlus,
 } from "lucide-react";
+
 
 import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 
