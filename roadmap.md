@@ -56,4 +56,4 @@
 
 ## Mes cours parent
 - [x] Afficher les cours par enfant en conservant les actions existantes
-- [ ] Vérifier le regroupement avec le compte parent sur mobile
+- [x] Vérifier le regroupement avec le compte parent sur mobile
