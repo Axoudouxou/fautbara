@@ -293,10 +293,12 @@ function TeacherStudentPage() {
                   </p>
                   <p className="mt-1 text-sm text-foreground">{r.content_note}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {ATTENDANCE_LABELS[r.attendance] ?? r.attendance} ·{" "}
-                    {PROGRESS_LABELS[r.progress_level] ?? r.progress_level}
-                    {r.homework_done ? ` · Travail : ${HOMEWORK_LABELS[r.homework_done] ?? r.homework_done}` : ""} ·
-                    Engagement {r.engagement_rating}/{ENGAGEMENT_MAX}
+                    {labelFor(ATTENDANCE_OPTIONS, r.attendance)} ·{" "}
+                    {labelFor(PROGRESS_LEVELS, r.progress_level)}
+                    {r.homework_done
+                      ? ` · Travail : ${labelFor(HOMEWORK_DONE_OPTIONS, r.homework_done)}`
+                      : ""}{" "}
+                    · Engagement {r.engagement_rating}/5
                   </p>
                   {r.next_steps && (
                     <p className="mt-1 text-xs text-foreground">Prochaine fois : {r.next_steps}</p>
