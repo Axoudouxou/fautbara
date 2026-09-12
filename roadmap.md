@@ -59,3 +59,6 @@
 ## Mes cours parent
 - [x] Afficher les cours par enfant en conservant les actions existantes
 - [x] Vérifier le regroupement avec le compte parent sur mobile
+- [ ] Remplacer les listes séparées par un détail enfant regroupé par professeur et formule
+- [ ] Afficher les séances de chaque professeur dans une frise verticale repliable
+- [ ] Vérifier le nouveau parcours avec plusieurs professeurs sur mobile
