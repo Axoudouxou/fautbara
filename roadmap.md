@@ -44,7 +44,7 @@
 
 ## Corrections demandées — navigation, parcours et compte
 - [x] Fixer le bouton central `+` et le chatbot sans chevauchement sur mobile
-- [ ] Remplacer l’objectif libre par une sélection prédéfinie affichée dans le parcours
+- [x] Remplacer l’objectif libre par une sélection prédéfinie affichée dans le parcours
 - [ ] Utiliser les niveaux scolaires prédéfinis partout où la classe est modifiable
 - [ ] Rendre les profils enfants modifiables, avec informations de parcours et photo
 - [ ] Ajouter la suppression sécurisée et irréversible du compte avec double confirmation
@@ -53,6 +53,8 @@
 ## Notifications et actions mobiles
 - [x] Remplacer les widgets de notifications des accueils par une cloche avec compteur dans l’en-tête
 - [x] Vérifier la cloche et les boutons fixes pendant un défilement mobile réel
+- [x] Retirer le bouton central `+` de toutes les interfaces
+- [x] Recomposer l’accueil adulte autour des données réelles du parcours
 
 ## Mes cours parent
 - [x] Afficher les cours par enfant en conservant les actions existantes

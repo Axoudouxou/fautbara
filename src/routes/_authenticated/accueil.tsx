@@ -162,9 +162,11 @@ type PackRow = {
   id: string;
   child_id: string | null;
   status: string;
+  pack_slug: string;
   sessions_total: number;
   sessions_used: number;
-  teacher_offers: { subjects: { name: string } | null } | null;
+  pack_types: { name: string } | null;
+  teacher_offers: { title?: string; subjects: { name: string } | null } | null;
 };
 
 function useLearnerHomeData(userId: string, withChildren: boolean) {
@@ -188,7 +190,7 @@ function useLearnerHomeData(userId: string, withChildren: boolean) {
           .order("scheduled_at", { ascending: true }),
         supabase
           .from("packs")
-          .select("id, child_id, status, sessions_total, sessions_used, teacher_offers(subjects(name))")
+          .select("id, child_id, status, pack_slug, sessions_total, sessions_used, pack_types(name), teacher_offers(title, subjects(name))")
           .eq("buyer_id", userId)
           .order("created_at", { ascending: false }),
         supabase
@@ -519,33 +521,66 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
   const left = sessionsLeftOf(activePacks);
   const objective = journeyQuery.data?.prefs?.objective;
   const prefs = journeyQuery.data?.prefs;
-  const report = journeyQuery.data?.report;
-
-  const weekEnd = now + 7 * 24 * 60 * 60 * 1000;
-  const weekCount = upcoming.filter((b) => new Date(b.scheduled_at).getTime() <= weekEnd).length;
+  const pendingBooking = upcoming.find((booking) => booking.status === "pending");
+  const primaryPack = activePacks[0];
+  const subjectNames = Array.from(
+    new Set(activePacks.map((pack) => pack.teacher_offers?.subjects?.name).filter((name): name is string => Boolean(name))),
+  );
 
   return (
     <main className="container-page py-6 sm:py-12">
-      <Greeting firstName={firstName} subtitle="Voici où vous en êtes dans votre apprentissage." />
+      <Greeting firstName={firstName} subtitle="Voici où vous en êtes dans votre parcours." />
 
-      <section className="mt-4" aria-label="Cette semaine">
-        <div className="grid grid-cols-3 gap-2.5">
-          <StatTile
-            icon={BookOpen}
-            value={activePacks.length}
-            label={activePacks.length > 1 ? "matières suivies" : "matière suivie"}
-          />
-          <StatTile icon={CalendarClock} value={weekCount} label="cours cette semaine" />
-          <StatTile
-            icon={ClipboardList}
-            value={assignments.length}
-            label={assignments.length > 1 ? "travaux à faire" : "travail à faire"}
-          />
+      <section className="mt-6" aria-label="Mon apprentissage">
+        <SectionHeading title="Mon apprentissage" />
+        <div className={`mt-3 ${SOFT_CARD}`}>
+          <div className="space-y-2.5 text-sm">
+            {objective ? (
+              <div className="flex items-start justify-between gap-4">
+                <span className="text-muted-foreground">Objectif</span>
+                <span className="text-right font-semibold text-foreground">{learningObjectiveLabel(objective)}</span>
+              </div>
+            ) : null}
+            {subjectNames.length > 0 ? (
+              <div className="flex items-start justify-between gap-4">
+                <span className="text-muted-foreground">Matière{subjectNames.length > 1 ? "s" : ""}</span>
+                <span className="text-right font-semibold text-foreground">{subjectNames.join(", ")}</span>
+              </div>
+            ) : null}
+            {primaryPack ? (
+              <>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-muted-foreground">Formule active</span>
+                  <span className="text-right font-semibold text-foreground">
+                    {primaryPack.pack_types?.name ?? primaryPack.pack_slug}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-muted-foreground">Séances restantes</span>
+                  <span className="text-right font-semibold text-foreground">{left}</span>
+                </div>
+                {primaryPack.sessions_used > 0 ? (
+                  <div className="pt-1">
+                    <ProgressBar
+                      value={(primaryPack.sessions_used / Math.max(primaryPack.sessions_total, 1)) * 100}
+                      label={`${primaryPack.sessions_used} séance${primaryPack.sessions_used > 1 ? "s" : ""} réalisée${primaryPack.sessions_used > 1 ? "s" : ""}`}
+                    />
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+            {!objective && subjectNames.length === 0 && !primaryPack ? (
+              <p className="text-muted-foreground">Votre parcours commencera avec vos préférences ou votre première formule.</p>
+            ) : null}
+          </div>
+          <Link to="/parcours" className={`mt-4 w-full ${CTA}`}>
+            Voir mon parcours
+          </Link>
         </div>
       </section>
 
-      <section className="mt-6" aria-label="Ma prochaine séance">
-        <SectionHeading title="Ma prochaine séance" />
+      <section className="mt-6" aria-label="Prochain cours">
+        <SectionHeading title="Prochain cours" />
         {next ? (
           <>
             <Link to="/compte/reservations" className="mt-3 block">
@@ -569,8 +604,8 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
                 <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               </RowCard>
             </Link>
-            <Link to="/compte/calendrier" className={`mt-3 w-full ${CTA}`}>
-              Voir le calendrier
+            <Link to="/compte/reservations" className={`mt-3 w-full ${CTA}`}>
+              Voir mes cours
             </Link>
           </>
         ) : (
@@ -592,84 +627,52 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
         )}
       </section>
 
-      <section className="mt-6" aria-label="Mes matières">
-        <SectionHeading
-          title="Mes matières"
-          action={
-            <Link to="/parcours" className="text-xs font-semibold text-primary hover:underline">
-              Mon parcours
-            </Link>
-          }
-        />
-        {activePacks.length > 0 ? (
-          <ul className="mt-3 space-y-2.5">
-            {activePacks.slice(0, 3).map((p) => {
-              const packLeft = Math.max(p.sessions_total - p.sessions_used, 0);
-              return (
-                <li key={p.id}>
-                  <Link to="/matiere/$packId" params={{ packId: p.id }} className="block">
-                    <RowCard className="transition-colors hover:bg-secondary">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-                        <BookOpen className="size-4" aria-hidden />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold text-foreground">
-                          {p.teacher_offers?.subjects?.name ?? "Matière"}
-                        </span>
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {packLeft} séance{packLeft > 1 ? "s" : ""} restante{packLeft > 1 ? "s" : ""} sur{" "}
-                          {p.sessions_total}
-                        </span>
-                      </span>
-                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                    </RowCard>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="mt-3 rounded-2xl border border-dashed border-border bg-card px-4 py-4 text-sm text-muted-foreground">
-            Aucune formule active. Choisissez un intervenant pour démarrer.
-          </p>
-        )}
-        <p className="mt-2 text-xs text-muted-foreground">
-          {left > 0 ? `${left} séance${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""} au total · ` : ""}
-          Objectif : {learningObjectiveLabel(objective) ?? "à préciser dans Mon parcours"}
-        </p>
-
-      </section>
-
-
-      {assignments.length > 0 && (
+      {(assignments.length > 0 || pendingBooking) && (
         <section className="mt-6" aria-label="À faire">
           <SectionHeading title="À faire" />
-          <Link to="/devoirs" className="mt-3 block">
-            <RowCard className="border-primary/40 bg-primary-soft/30 transition-colors hover:bg-primary-soft/50">
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-foreground">{assignments[0]!.title}</span>
-                <span className="block text-xs text-muted-foreground">Devoir à rendre</span>
-              </span>
-              <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            </RowCard>
-          </Link>
-        </section>
-      )}
-
-      {report && (
-        <section className="mt-6" aria-label="Dernière séance">
-          <SectionHeading title="Dernière séance" />
-          <div className={`mt-3 ${SOFT_CARD}`}>
-            <p className="text-sm text-foreground">{report.content_note}</p>
-            {report.next_steps && (
-              <p className="mt-1 text-xs text-muted-foreground">Prochaine étape : {report.next_steps}</p>
-            )}
-            <Link to="/parcours" className="mt-3 inline-flex text-xs font-bold text-primary hover:underline">
-              Voir mes comptes-rendus
-            </Link>
+          <div className="mt-3 space-y-2.5">
+            {assignments[0] ? (
+              <Link to="/devoirs" className="block">
+                <RowCard className="border-primary/40 bg-primary-soft/30 transition-colors hover:bg-primary-soft/50">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-foreground">{assignments[0].title}</span>
+                    <span className="block text-xs text-muted-foreground">Devoir à faire</span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                </RowCard>
+              </Link>
+            ) : null}
+            {pendingBooking ? (
+              <Link to="/compte/reservations" className="block">
+                <RowCard className="transition-colors hover:bg-secondary">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-foreground">
+                      {pendingBooking.teacher_offers?.subjects?.name ?? "Séance"}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">Demande de séance en attente</span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                </RowCard>
+              </Link>
+            ) : null}
           </div>
         </section>
       )}
+
+      <section className="mt-6" aria-label="Mon parcours">
+        <Link to="/parcours" className="block">
+          <RowCard className="transition-colors hover:bg-secondary">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+              <RouteIcon className="size-4" aria-hidden />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold text-foreground">Mon parcours</span>
+              <span className="block text-xs text-muted-foreground">Retrouver mes matières et mon objectif</span>
+            </span>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          </RowCard>
+        </Link>
+      </section>
 
     </main>
   );
