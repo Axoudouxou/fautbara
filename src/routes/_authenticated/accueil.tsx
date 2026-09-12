@@ -659,8 +659,10 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
           </p>
         )}
         <p className="mt-2 text-xs text-muted-foreground">
+          {left > 0 ? `${left} séance${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""} au total · ` : ""}
           Objectif : {objective ? objectiveLabels[objective] ?? objective : "à préciser dans Mon parcours"}
         </p>
+
       </section>
 
 
