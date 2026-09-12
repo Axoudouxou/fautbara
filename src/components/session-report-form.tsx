@@ -405,22 +405,26 @@ export function SessionReportForm({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
-          >
-            Plus tard
-          </button>
+        <div className={page ? "mt-6 space-y-2" : "mt-6 flex flex-wrap justify-end gap-2"}>
           <button
             type="button"
             disabled={save.isPending}
             onClick={() => save.mutate()}
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            className={`inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 ${
+              page ? "w-full" : "py-2"
+            }`}
           >
             {save.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-            Envoyer le compte-rendu
+            Publier le compte-rendu
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className={`rounded-full border border-border px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary ${
+              page ? "w-full" : ""
+            }`}
+          >
+            Plus tard
           </button>
         </div>
       </div>
