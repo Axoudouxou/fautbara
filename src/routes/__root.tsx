@@ -21,6 +21,7 @@ import { AppTabsBar, AppTabsMobileBar, useAppNav } from "@/components/app-nav";
 import { MessagingPanelProvider, useMessagingPanel } from "@/lib/messaging-panel-context";
 import { MessagingDrawer } from "@/components/messaging-drawer";
 import { SupportChatWidget } from "@/components/support-chat-widget";
+import { UserAvatar } from "@/components/product-ui";
 import { useMessagingSide } from "@/hooks/use-messaging-side";
 import { useConversations } from "@/lib/messaging";
 import { useNotifications } from "@/components/notifications-feed";
@@ -179,6 +180,31 @@ function NotificationsHeaderTrigger({ userId }: { userId: string }) {
   );
 }
 
+function AccountHeaderTrigger({ userId }: { userId: string }) {
+  const profileQuery = useQuery({
+    queryKey: ["header-profile", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data?.avatar_url || data.avatar_url.startsWith("http")) return data;
+      const { data: signed } = await supabase.storage.from("teacher-photos").createSignedUrl(data.avatar_url, 3600);
+      return { ...data, avatar_url: signed?.signedUrl ?? null };
+    },
+    staleTime: 60_000,
+  });
+  const name = profileQuery.data?.display_name ?? "Mon compte";
+
+  return (
+    <Link to="/compte" aria-label="Mon compte" className="md:hidden">
+      <UserAvatar name={name} src={profileQuery.data?.avatar_url} className="size-10 rounded-full" />
+    </Link>
+  );
+}
+
 function SiteHeader() {
   const { signedIn, userId, primaryRole, isChild } = useAppNav();
 
@@ -199,13 +225,14 @@ function SiteHeader() {
           <div className="flex items-center gap-2">
             <AppTabsBar role={primaryRole} isChild={isChild} />
             {userId ? <NotificationsHeaderTrigger userId={userId} /> : null}
-            <MessagingHeaderTrigger />
+            {userId ? <AccountHeaderTrigger userId={userId} /> : null}
+            <span className="hidden md:inline-flex"><MessagingHeaderTrigger /></span>
             <button
               type="button"
               onClick={() => {
                 void supabase.auth.signOut();
               }}
-              className="inline-flex items-center justify-center rounded-full border border-input bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+              className="hidden items-center justify-center rounded-full border border-input bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary md:inline-flex"
             >
               Déconnexion
             </button>

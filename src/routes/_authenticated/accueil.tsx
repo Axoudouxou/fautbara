@@ -40,6 +40,13 @@ export const Route = createFileRoute("/_authenticated/accueil")({
         content:
           "Votre accueil personnalisé BARA : prochaine séance, demandes de cours et nouveautés de la plateforme.",
       },
+      { property: "og:title", content: "Mon espace BARA" },
+      {
+        property: "og:description",
+        content: "Votre accueil personnalisé BARA : prochaine séance, demandes de cours et nouveautés de la plateforme.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -533,11 +540,8 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
     .sort((a, b) => +new Date(a.scheduled_at) - +new Date(b.scheduled_at));
   const next = upcoming[0];
   const activePacks = packs.filter((p) => p.status === "active");
-  const left = sessionsLeftOf(activePacks);
-  const objective = journeyQuery.data?.prefs?.objective;
   const prefs = journeyQuery.data?.prefs;
   const pendingBooking = upcoming.find((booking) => booking.status === "pending");
-  const primaryPack = activePacks[0];
   const subjectNames = Array.from(
     new Set(activePacks.map((pack) => pack.teacher_offers?.subjects?.name).filter((name): name is string => Boolean(name))),
   );
