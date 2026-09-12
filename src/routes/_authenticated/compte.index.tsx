@@ -114,7 +114,8 @@ function AccountPage() {
   return (
     <div className="container-page py-5 pb-24 sm:py-14">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
+
           <h1 className="font-display text-xl font-bold text-foreground sm:text-3xl">
             Mon compte
           </h1>
