@@ -74,6 +74,7 @@ function HomeworkPage() {
       return (data ?? []).map((a) => ({
         ...a,
         teacherName: names.get(a.teacher_id) ?? "Votre intervenant",
+        reportBookingId: a.session_report_id ? bookingByReport.get(a.session_report_id) ?? null : null,
       }));
     },
   });
