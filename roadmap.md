@@ -13,9 +13,9 @@
 - [ ] Vérifier une clôture réelle + portefeuille — bloquée : prochaine séance acceptée le 05/11/2026
 
 ## Premier lot UX — Parent et adulte apprenant
-- [ ] Créer les fondations UX communes réutilisables
-- [ ] Transformer l’accueil parent en cockpit familial
-- [ ] Enrichir « Mes enfants » avec un parcours enfant dédié
-- [ ] Distinguer l’accueil et le parcours de l’adulte apprenant
-- [ ] Vérifier compilation, authentification, permissions, paiements et affichages mobile/ordinateur
-- [ ] Documenter précisément le premier lot livré
+- [x] Créer les fondations UX communes réutilisables
+- [x] Transformer l’accueil parent en cockpit familial
+- [x] Enrichir « Mes enfants » avec un parcours enfant dédié
+- [x] Distinguer l’accueil et le parcours de l’adulte apprenant
+- [x] Vérifier compilation, authentification, permissions, paiements et affichages mobile/ordinateur
+- [x] Documenter précisément le premier lot livré
