@@ -111,10 +111,10 @@ function AccountPage() {
   const roles = rolesQuery.data ?? [];
 
   return (
-    <div className="container-page py-10 sm:py-14">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="container-page py-5 pb-24 sm:py-14">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+          <h1 className="font-display text-xl font-bold text-foreground sm:text-3xl">
             Mon compte
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
@@ -131,7 +131,7 @@ function AccountPage() {
       </div>
 
       {roles.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {roles.map((r) => (
             <span
               key={r}
@@ -143,9 +143,10 @@ function AccountPage() {
         </div>
       )}
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-          <h2 className="font-display text-lg font-bold text-foreground">Profil</h2>
+      <div className="mt-6 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6">
+          <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Profil</h2>
+
           {profileQuery.isLoading ? (
             <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" aria-hidden /> Chargement…
