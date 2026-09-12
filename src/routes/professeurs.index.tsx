@@ -115,19 +115,20 @@ function TeachersPage() {
   };
 
   return (
-    <div className="container-page py-10 sm:py-14">
+    <div className="container-page py-6 sm:py-14">
       <ParentChildContext childId={search.enfant} />
       <header className="max-w-2xl">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
           Trouver un professeur
         </h1>
-        <p className="mt-3 text-muted-foreground">
+        <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-base">
           Filtrez par matière, tarif, commune et disponibilités. Les tarifs sont indiqués par
           séance.
         </p>
       </header>
 
-      <div className="mt-8 rounded-2xl border border-border/70 bg-card p-4 shadow-[var(--shadow-card)]">
+      <div className="mt-5 rounded-2xl border border-border/70 bg-card p-3.5 shadow-[var(--shadow-card)] sm:mt-8 sm:p-4">
+
         {/* Filtres principaux : une seule ligne cohérente */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <label className="min-w-0">
