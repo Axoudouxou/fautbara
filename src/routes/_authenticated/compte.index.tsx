@@ -324,13 +324,13 @@ function AccountRow({
   title: string;
   description: string;
 }) {
+  const linkProps = { to, ...(search ? { search } : {}) } as unknown as { to: "/compte" };
   return (
     <Link
-      // @ts-expect-error — chemins internes validés par le routeur
-      to={to}
-      search={search}
+      {...linkProps}
       className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50 sm:p-4"
     >
+
       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
         <Icon className="size-4" />
       </span>
