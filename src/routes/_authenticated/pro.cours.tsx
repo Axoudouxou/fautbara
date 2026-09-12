@@ -7,8 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { STATUS_LABELS, formatSlot, formatTimeRange } from "./compte.reservations";
 
 export const Route = createFileRoute("/_authenticated/pro/cours")({
-  validateSearch: (search: Record<string, unknown>): { booking?: string } =>
-    typeof search["booking"] === "string" ? { booking: search["booking"] } : {},
+  validateSearch: (search: Record<string, unknown>): { booking?: string; view?: View } => {
+    const result: { booking?: string; view?: View } = {};
+    if (typeof search["booking"] === "string") result.booking = search["booking"];
+    if (search["view"] === "sessions" || search["view"] === "week" || search["view"] === "students") {
+      result.view = search["view"];
+    }
+    return result;
+  },
   head: () => ({
     meta: [
       { title: "Mes cours — espace intervenant BARA" },
@@ -48,8 +54,8 @@ const VIEWS: { key: View; label: string }[] = [
 
 function TeacherCoursesPage() {
   const { user } = Route.useRouteContext();
-  const { booking: bookingParam } = Route.useSearch();
-  const [view, setView] = useState<View>("sessions");
+  const { booking: bookingParam, view: viewParam } = Route.useSearch();
+  const [view, setView] = useState<View>(viewParam ?? "sessions");
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
 
   const rolesQuery = useQuery({

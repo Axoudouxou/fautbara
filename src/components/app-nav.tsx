@@ -9,6 +9,7 @@ import {
   Inbox,
   LayoutDashboard,
   MessageSquare,
+  Plus,
   Route as RouteIcon,
   Search,
   UserCog,
@@ -17,6 +18,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useSessionRoles, type AppRole } from "@/hooks/use-session-roles";
 
 type Tab = {
@@ -92,8 +95,8 @@ const childTabs: Tab[] = [
 /** Intervenant : Accueil · Mes cours · Mes offres · Demandes · Mon compte */
 const teacherTabs: Tab[] = [
   homeTab,
-  { label: "Mes cours", short: "Mes cours", icon: CalendarDays, link: linkOptions({ to: "/pro/cours" }) },
-  { label: "Mes offres", short: "Offres", icon: BookOpen, link: linkOptions({ to: "/pro/offres" }) },
+  { label: "Mes élèves", short: "Élèves", icon: Users, link: linkOptions({ to: "/pro/cours", search: { view: "students" } }) },
+  { label: "Agenda", short: "Agenda", icon: CalendarDays, link: linkOptions({ to: "/pro/cours", search: { view: "week" } }) },
   { label: "Demandes", short: "Demandes", icon: Inbox, link: linkOptions({ to: "/pro/demandes" }) },
   accountTab,
 ];
@@ -152,31 +155,79 @@ export function AppTabsBar({ role, isChild = false }: { role: AppRole | null; is
 /** Barre de navigation basse, mobile-first. */
 export function AppTabsMobileBar({ role, isChild = false }: { role: AppRole | null; isChild?: boolean }) {
   const tabs = tabsForRole(role, isChild);
+  const hasPrimaryAction = role !== "admin" && !isChild;
+  const mobileTabs = hasPrimaryAction ? [tabs[0], tabs[1], tabs.at(-2), tabs.at(-1)].filter((tab): tab is Tab => Boolean(tab)) : tabs;
+  const firstHalf = mobileTabs.slice(0, 2);
+  const secondHalf = mobileTabs.slice(2);
+
+  const renderTab = (tab: Tab) => {
+    const Icon = tab.icon;
+    return (
+      <li key={tab.label} className="min-w-0">
+        <Link
+          {...(tab.link as { to: string })}
+          activeOptions={{ exact: true }}
+          className="group flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold text-muted-foreground transition-colors data-[status=active]:text-primary"
+        >
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl transition-colors group-data-[status=active]:bg-primary/10">
+            <Icon className="size-5" aria-hidden />
+          </span>
+          <span className="block w-full truncate text-center">{tab.short}</span>
+        </Link>
+      </li>
+    );
+  };
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       aria-label="Navigation de l'application"
     >
-      <ul className="grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <li key={tab.label}>
-              <Link
-                {...(tab.link as { to: string })}
-                activeOptions={{ exact: true }}
-                className="group flex flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-semibold text-muted-foreground transition-colors data-[status=active]:text-primary"
-              >
-                <span className="flex size-8 items-center justify-center rounded-xl transition-colors group-data-[status=active]:bg-primary/10">
-                  <Icon className="size-5" aria-hidden />
-                </span>
-                <span className="truncate">{tab.short}</span>
-              </Link>
-            </li>
-          );
-        })}
+      <ul className="grid grid-cols-5 items-end">
+        {firstHalf.map(renderTab)}
+        {hasPrimaryAction && <li className="relative flex min-h-16 items-center justify-center"><MobilePrimaryAction role={role} /></li>}
+        {secondHalf.map(renderTab)}
       </ul>
     </nav>
+  );
+}
+
+function MobilePrimaryAction({ role }: { role: AppRole | null }) {
+  if (role === "teacher") {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            size="icon"
+            className="absolute bottom-3 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]"
+            aria-label="Ajouter ou gérer mon activité"
+          >
+            <Plus className="size-5" aria-hidden />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent side="top" align="center" className="w-64 rounded-2xl p-2">
+          <Link to="/pro/disponibilites" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-foreground hover:bg-secondary">
+            <CalendarDays className="size-4 text-primary" aria-hidden /> Gérer mes disponibilités
+          </Link>
+          <Link to="/pro/offres" className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-foreground hover:bg-secondary">
+            <BookOpen className="size-4 text-primary" aria-hidden /> Créer une offre
+          </Link>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
+  return (
+    <Button asChild size="icon" className="absolute bottom-3 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
+      <Link
+        to="/professeurs"
+        search={{}}
+        aria-label={role === "parent" ? "Rechercher un intervenant pour un enfant" : "Rechercher un intervenant pour moi"}
+      >
+        <Plus className="size-5" aria-hidden />
+      </Link>
+    </Button>
   );
 }
 
