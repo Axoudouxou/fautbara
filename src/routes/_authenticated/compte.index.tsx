@@ -146,7 +146,7 @@ function AccountPage() {
       )}
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6">
+        <section className="min-w-0 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6">
           <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Profil</h2>
 
           {profileQuery.isLoading ? (
