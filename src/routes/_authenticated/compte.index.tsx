@@ -216,158 +216,84 @@ function AccountPage() {
           )}
         </section>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
+          <AccountGroup title="Mon activité">
+            <AccountRow
+              to="/compte/portefeuille"
+              icon={Wallet}
+              title="Mon portefeuille"
+              description="Solde, remboursements et demandes de retrait."
+            />
+            <AccountRow
+              to="/compte/calendrier"
+              icon={CalendarClock}
+              title="Mon calendrier de cours"
+              description="Séances de la semaine, statuts et annulations."
+            />
+            {roles.includes("parent") && (
+              <AccountRow
+                to="/compte/enfants"
+                icon={Baby}
+                title="Mes enfants"
+                description="Créez et gérez les profils pour lesquels vous réservez."
+              />
+            )}
+            {roles.includes("student") && (
+              <AccountRow
+                to="/parcours"
+                icon={SlidersHorizontal}
+                title="Mon parcours"
+                description="Objectifs, formules, comptes-rendus et devoirs."
+              />
+            )}
+            <AccountRow
+              to="/professeurs"
+              search={{}}
+              icon={Search}
+              title="Chercher un intervenant"
+              description="Par matière, niveau, commune et budget."
+            />
+          </AccountGroup>
+
+          <AccountGroup title="Réglages">
+            <AccountRow
+              to="/onboarding"
+              icon={SlidersHorizontal}
+              title="Mes préférences"
+              description="Matières, niveaux, budget, communes et disponibilités."
+            />
+            <AccountRow
+              to="/compte/litiges"
+              icon={Gavel}
+              title="Mes litiges"
+              description="Signalements sur vos séances et décisions de l'équipe."
+            />
+          </AccountGroup>
+
+          {(roles.includes("teacher") || roles.includes("admin")) && (
+            <AccountGroup title="Espaces professionnels">
+              {roles.includes("teacher") && (
+                <AccountRow
+                  to="/pro"
+                  icon={Briefcase}
+                  title="Espace intervenant"
+                  description="Profil, offres de cours et visibilité."
+                />
+              )}
+              {roles.includes("admin") && (
+                <AccountRow
+                  to="/admin"
+                  icon={ShieldCheck}
+                  title="Administration"
+                  description="Professeurs, vérifications, offres et litiges."
+                />
+              )}
+            </AccountGroup>
+          )}
+
           <AccountSecuritySection currentEmail={user.email ?? ""} />
-
-          <Link
-            to="/compte/portefeuille"
-            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-          >
-            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-              <Wallet className="size-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-display font-bold text-foreground">Mon portefeuille</span>
-              <span className="block text-sm text-muted-foreground">
-                Solde, remboursements et demandes de retrait.
-              </span>
-            </span>
-          </Link>
-
-          {roles.includes("parent") && (
-            <Link
-              to="/compte/enfants"
-              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-                <Baby className="size-5" aria-hidden />
-              </span>
-              <span>
-                <span className="block font-display font-bold text-foreground">Mes enfants</span>
-                <span className="block text-sm text-muted-foreground">
-                  Créez et gérez les profils pour lesquels vous réservez.
-                </span>
-              </span>
-            </Link>
-          )}
-
-          {roles.includes("student") && (
-            <Link
-              to="/parcours"
-              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-                <SlidersHorizontal className="size-5" aria-hidden />
-              </span>
-              <span>
-                <span className="block font-display font-bold text-foreground">Mon parcours</span>
-                <span className="block text-sm text-muted-foreground">Objectifs, formules, comptes-rendus et devoirs.</span>
-              </span>
-            </Link>
-          )}
-
-
-          <Link
-            to="/compte/calendrier"
-            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-          >
-            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-              <CalendarClock className="size-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-display font-bold text-foreground">
-                Mon calendrier de cours
-              </span>
-              <span className="block text-sm text-muted-foreground">
-                Séances de la semaine, statuts, paiements et annulations.
-              </span>
-            </span>
-          </Link>
-
-          <Link
-            to="/professeurs"
-            search={{}}
-            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-          >
-            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-              <Search className="size-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-display font-bold text-foreground">
-                Chercher un professeur
-              </span>
-              <span className="block text-sm text-muted-foreground">
-                Par matière, niveau, commune et budget.
-              </span>
-            </span>
-          </Link>
-
-          {roles.includes("teacher") && (
-            <Link
-              to="/pro"
-              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-                <Briefcase className="size-5" aria-hidden />
-              </span>
-              <span>
-                <span className="block font-display font-bold text-foreground">
-                  Espace professeur
-                </span>
-                <span className="block text-sm text-muted-foreground">
-                  Profil, offres de cours et visibilité.
-                </span>
-              </span>
-            </Link>
-          )}
-
-          <Link
-            to="/onboarding"
-            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-          >
-            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-              <SlidersHorizontal className="size-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-display font-bold text-foreground">Mes préférences</span>
-              <span className="block text-sm text-muted-foreground">
-                Matières, niveaux, budget, communes et disponibilités.
-              </span>
-            </span>
-          </Link>
-
-          <Link
-            to="/compte/litiges"
-            className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-          >
-            <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-              <Gavel className="size-5" aria-hidden />
-            </span>
-            <span>
-              <span className="block font-display font-bold text-foreground">Mes litiges</span>
-              <span className="block text-sm text-muted-foreground">
-                Signalements sur vos séances et décisions de l&apos;équipe.
-              </span>
-            </span>
-          </Link>
-
-          {roles.includes("admin") && (
-            <Link
-              to="/admin"
-              className="flex items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-                <ShieldCheck className="size-5" aria-hidden />
-              </span>
-              <span>
-                <span className="block font-display font-bold text-foreground">Administration</span>
-                <span className="block text-sm text-muted-foreground">
-                  Professeurs, vérifications, offres et litiges.
-                </span>
-              </span>
-            </Link>
-          )}
         </div>
+
       </div>
     </div>
   );
