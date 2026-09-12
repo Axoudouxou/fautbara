@@ -385,26 +385,30 @@ function ChildJourneyPage() {
                   <dl className="mt-2.5 grid gap-2.5 text-sm sm:grid-cols-2">
                     <div>
                       <dt className="text-xs text-muted-foreground">Présence</dt>
-                      <dd className="font-semibold text-foreground">{report.attendance}</dd>
+                      <dd className="font-semibold text-foreground">
+                        {labelFor(ATTENDANCE_OPTIONS, report.attendance)}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted-foreground">Niveau d’avancement</dt>
-                      <dd className="font-semibold text-foreground">{report.progress_level}</dd>
+                      <dd className="font-semibold text-foreground">
+                        {labelFor(PROGRESS_LEVELS, report.progress_level)}
+                      </dd>
                     </div>
                     <div className="sm:col-span-2">
                       <dt className="text-xs text-muted-foreground">Contenu travaillé</dt>
                       <dd className="text-foreground">{report.content_note}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted-foreground">Travail fait depuis la dernière fois</dt>
+                      <dt className="text-xs text-muted-foreground">Travail depuis la dernière séance</dt>
                       <dd className="text-foreground">{report.homework_done || "Non renseigné"}</dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted-foreground">Engagement</dt>
-                      <dd className="text-foreground">{report.engagement_rating}/5</dd>
+                      <dd className="text-foreground">{labelFor(ENGAGEMENT_LEVELS, report.engagement_level)}</dd>
                     </div>
                     <div className="sm:col-span-2">
-                      <dt className="text-xs text-muted-foreground">Note pour la prochaine fois</dt>
+                      <dt className="text-xs text-muted-foreground">À travailler pour la prochaine séance</dt>
                       <dd className="text-foreground">{report.next_steps || "Non renseignée"}</dd>
                     </div>
                   </dl>
