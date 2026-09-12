@@ -333,13 +333,27 @@ function PaymentPage() {
             <section className="rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
               <h2 className="font-display font-bold text-foreground">Moyen de paiement</h2>
               {!canPay ? (
-                <p className="mt-3 rounded-2xl bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
-                  {pack.status === "active"
-                    ? "Cette formule est réglée : programmez vos séances depuis vos cours."
-                    : holdExpired
+                pack.status === "active" ? (
+                  <div className="mt-3 space-y-3">
+                    <p className="rounded-2xl bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
+                      Cette formule est réglée. Choisissez maintenant un créneau réel avec
+                      l&apos;intervenant pour la première séance.
+                    </p>
+                    <Link
+                      to="/compte/programmer/$packId"
+                      params={{ packId }}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                    >
+                      Programmer une séance
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-2xl bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
+                    {holdExpired
                       ? "Le délai de paiement est écoulé."
                       : "Cette formule n'est pas en attente de paiement."}
-                </p>
+                  </p>
+                )
               ) : (
                 <>
                   {showWalletOption && (
