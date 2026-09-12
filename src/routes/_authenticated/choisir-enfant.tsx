@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Baby, Loader2, Plus, Search } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { Baby, Check, Loader2, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState, UserAvatar } from "@/components/product-ui";
@@ -23,6 +24,9 @@ export const Route = createFileRoute("/_authenticated/choisir-enfant")({
 
 function ChooseChildPage() {
   const { user } = Route.useRouteContext();
+  const navigate = useNavigate();
+  const [selected, setSelected] = useState<string | null>(null);
+
   const childrenQuery = useQuery({
     queryKey: ["children", user.id],
     queryFn: async () => {
@@ -36,50 +40,89 @@ function ChooseChildPage() {
     },
   });
 
+  const children = childrenQuery.data ?? [];
+
   return (
-    <main className="container-page py-8 sm:py-12">
-      <div className="mx-auto max-w-4xl">
-        <p className="text-xs font-bold uppercase text-muted-foreground">Nouvel accompagnement</p>
-        <h1 className="mt-1 font-display text-3xl font-bold text-foreground">Pour quel enfant recherchez-vous ?</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <main className="container-page py-6 sm:py-12">
+      <div className="mx-auto max-w-2xl">
+        <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Pour quel enfant ?</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Le choix est conservé jusqu’à la formule et à la programmation des séances.
         </p>
 
         {childrenQuery.isLoading ? (
-          <p className="mt-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" /> Chargement…</p>
-        ) : childrenQuery.data?.length ? (
-          <ul className="mt-6 space-y-2.5 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-y-0">
-            {childrenQuery.data.map((child) => (
-              <li key={child.id}>
-                <Link
-                  to="/professeurs"
-                  search={{ enfant: child.id }}
-                  className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-card)] transition hover:border-primary/40"
-                >
-                  <UserAvatar name={child.first_name} className="size-10" />
-                  <div className="min-w-0 flex-1">
-                    <h2 className="truncate font-display font-bold text-foreground">{child.first_name}</h2>
-                    <p className="truncate text-xs text-muted-foreground">{child.school_level || "Niveau à préciser"}</p>
-                  </div>
-                  <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" aria-hidden />
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" /> Chargement…
+          </p>
+        ) : children.length ? (
+          <>
+            <ul className="mt-5 space-y-2.5">
+              {children.map((child) => {
+                const isActive = selected === child.id;
+                return (
+                  <li key={child.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(child.id)}
+                      aria-pressed={isActive}
+                      className={`flex w-full items-center gap-3 rounded-2xl border bg-card px-3.5 py-3 text-left shadow-[var(--shadow-card)] transition ${
+                        isActive ? "border-primary" : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <UserAvatar name={child.first_name} className="size-10" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-display font-bold text-foreground">{child.first_name}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {child.school_level || "Niveau à préciser"}
+                        </span>
+                      </span>
+                      <span
+                        className={`flex size-6 shrink-0 items-center justify-center rounded-full border ${
+                          isActive ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent"
+                        }`}
+                        aria-hidden
+                      >
+                        <Check className="size-3.5" />
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <Button
+              type="button"
+              disabled={!selected}
+              className="mt-5 w-full rounded-xl"
+              onClick={() => {
+                if (selected) navigate({ to: "/professeurs", search: { enfant: selected } });
+              }}
+            >
+              Continuer
+            </Button>
+
+            <div className="mt-4 text-center">
+              <Link to="/professeurs" search={{}} className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">
+                <Search className="size-4" aria-hidden /> Parcourir sans choisir
+              </Link>
+            </div>
+          </>
         ) : (
-          <div className="mt-8">
+          <div className="mt-6">
             <EmptyState
               icon={Baby}
               title="Ajoutez d’abord un enfant"
               description="Un profil enfant est nécessaire pour rechercher et réserver son accompagnement."
-              action={<Button asChild><Link to="/compte/enfants"><Plus className="size-4" /> Ajouter un enfant</Link></Button>}
+              action={
+                <Button asChild>
+                  <Link to="/compte/enfants">
+                    <Plus className="size-4" /> Ajouter un enfant
+                  </Link>
+                </Button>
+              }
             />
           </div>
         )}
-
-        <div className="mt-8 border-t border-border pt-6">
-          <Button asChild variant="outline"><Link to="/professeurs" search={{}}><Search className="size-4" /> Parcourir sans choisir</Link></Button>
-        </div>
       </div>
     </main>
   );
