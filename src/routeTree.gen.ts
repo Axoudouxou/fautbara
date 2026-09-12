@@ -49,6 +49,8 @@ import { Route as AuthenticatedProDisponibilitesRouteImport } from './routes/_au
 import { Route as AuthenticatedProMessagesRouteImport } from './routes/_authenticated/pro.messages'
 import { Route as AuthenticatedProOffresRouteImport } from './routes/_authenticated/pro.offres'
 import { Route as AuthenticatedProProfilRouteImport } from './routes/_authenticated/pro.profil'
+import { Route as AuthenticatedProProgressionRouteImport } from './routes/_authenticated/pro.progression'
+import { Route as AuthenticatedProRemunerationsRouteImport } from './routes/_authenticated/pro.remunerations'
 import { Route as AuthenticatedProVerificationRouteImport } from './routes/_authenticated/pro.verification'
 import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
 import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/backend-config'
@@ -275,6 +277,18 @@ const AuthenticatedProProfilRoute = AuthenticatedProProfilRouteImport.update({
   path: '/pro/profil',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProProgressionRoute =
+  AuthenticatedProProgressionRouteImport.update({
+    id: '/pro/progression',
+    path: '/pro/progression',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProRemunerationsRoute =
+  AuthenticatedProRemunerationsRouteImport.update({
+    id: '/pro/remunerations',
+    path: '/pro/remunerations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProVerificationRoute =
   AuthenticatedProVerificationRouteImport.update({
     id: '/pro/verification',
@@ -360,6 +374,8 @@ export interface FileRoutesByFullPath {
   '/pro/messages': typeof AuthenticatedProMessagesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro/progression': typeof AuthenticatedProProgressionRoute
+  '/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
@@ -409,6 +425,8 @@ export interface FileRoutesByTo {
   '/pro/messages': typeof AuthenticatedProMessagesRoute
   '/pro/offres': typeof AuthenticatedProOffresRoute
   '/pro/profil': typeof AuthenticatedProProfilRoute
+  '/pro/progression': typeof AuthenticatedProProgressionRoute
+  '/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
@@ -460,6 +478,8 @@ export interface FileRoutesById {
   '/_authenticated/pro/messages': typeof AuthenticatedProMessagesRoute
   '/_authenticated/pro/offres': typeof AuthenticatedProOffresRoute
   '/_authenticated/pro/profil': typeof AuthenticatedProProfilRoute
+  '/_authenticated/pro/progression': typeof AuthenticatedProProgressionRoute
+  '/_authenticated/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/_authenticated/pro/verification': typeof AuthenticatedProVerificationRoute
   '/_authenticated/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
@@ -511,6 +531,8 @@ export interface FileRouteTypes {
     | '/pro/messages'
     | '/pro/offres'
     | '/pro/profil'
+    | '/pro/progression'
+    | '/pro/remunerations'
     | '/pro/verification'
     | '/reserver/$offerId'
     | '/api/public/backend-config'
@@ -560,6 +582,8 @@ export interface FileRouteTypes {
     | '/pro/messages'
     | '/pro/offres'
     | '/pro/profil'
+    | '/pro/progression'
+    | '/pro/remunerations'
     | '/pro/verification'
     | '/reserver/$offerId'
     | '/api/public/backend-config'
@@ -610,6 +634,8 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/messages'
     | '/_authenticated/pro/offres'
     | '/_authenticated/pro/profil'
+    | '/_authenticated/pro/progression'
+    | '/_authenticated/pro/remunerations'
     | '/_authenticated/pro/verification'
     | '/_authenticated/reserver/$offerId'
     | '/api/public/backend-config'
@@ -920,6 +946,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProProfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/progression': {
+      id: '/_authenticated/pro/progression'
+      path: '/pro/progression'
+      fullPath: '/pro/progression'
+      preLoaderRoute: typeof AuthenticatedProProgressionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro/remunerations': {
+      id: '/_authenticated/pro/remunerations'
+      path: '/pro/remunerations'
+      fullPath: '/pro/remunerations'
+      preLoaderRoute: typeof AuthenticatedProRemunerationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pro/verification': {
       id: '/_authenticated/pro/verification'
       path: '/pro/verification'
@@ -1006,6 +1046,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProMessagesRoute: typeof AuthenticatedProMessagesRoute
   AuthenticatedProOffresRoute: typeof AuthenticatedProOffresRoute
   AuthenticatedProProfilRoute: typeof AuthenticatedProProfilRoute
+  AuthenticatedProProgressionRoute: typeof AuthenticatedProProgressionRoute
+  AuthenticatedProRemunerationsRoute: typeof AuthenticatedProRemunerationsRoute
   AuthenticatedProVerificationRoute: typeof AuthenticatedProVerificationRoute
   AuthenticatedReserverOfferIdRoute: typeof AuthenticatedReserverOfferIdRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -1046,6 +1088,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProMessagesRoute: AuthenticatedProMessagesRoute,
   AuthenticatedProOffresRoute: AuthenticatedProOffresRoute,
   AuthenticatedProProfilRoute: AuthenticatedProProfilRoute,
+  AuthenticatedProProgressionRoute: AuthenticatedProProgressionRoute,
+  AuthenticatedProRemunerationsRoute: AuthenticatedProRemunerationsRoute,
   AuthenticatedProVerificationRoute: AuthenticatedProVerificationRoute,
   AuthenticatedReserverOfferIdRoute: AuthenticatedReserverOfferIdRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

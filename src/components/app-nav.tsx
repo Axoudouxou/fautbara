@@ -95,8 +95,8 @@ const childTabs: Tab[] = [
 /** Intervenant : Accueil · Mes élèves · Agenda · Demandes · Mon compte */
 const teacherTabs: Tab[] = [
   homeTab,
-  { label: "Mes élèves", short: "Élèves", icon: Users, link: linkOptions({ to: "/pro/cours", search: { view: "students" } }) },
-  { label: "Agenda", short: "Agenda", icon: CalendarDays, link: linkOptions({ to: "/pro/cours", search: { view: "week" } }) },
+  { label: "Mes élèves", short: "Élèves", icon: Users, link: linkOptions({ to: "/pro/eleves" }) },
+  { label: "Agenda", short: "Agenda", icon: CalendarDays, link: linkOptions({ to: "/pro/agenda" }) },
   { label: "Demandes", short: "Demandes", icon: Inbox, link: linkOptions({ to: "/pro/demandes" }) },
   accountTab,
 ];
