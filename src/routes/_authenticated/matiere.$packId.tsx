@@ -2,9 +2,11 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowLeft,
   BookOpen,
-  CalendarClock,
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
   ClipboardList,
   FileText,
   Loader2,
@@ -12,10 +14,10 @@ import {
   Target,
 } from "lucide-react";
 
-import { EmptyState, ProgressBar, SectionHeading } from "@/components/product-ui";
+import { EmptyState } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { learningObjectiveLabel } from "@/lib/education";
-import { formatDate, SESSION_STATUS_LABELS } from "@/lib/packs";
+import { formatDate } from "@/lib/packs";
 import { fileFormatLabel, signReportFile } from "@/lib/session-reports";
 
 export const Route = createFileRoute("/_authenticated/matiere/$packId")({
@@ -34,6 +36,17 @@ export const Route = createFileRoute("/_authenticated/matiere/$packId")({
 });
 
 const CARD = "rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]";
+
+function shortDate(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function timeRange(iso: string, minutes: number) {
+  const start = new Date(iso);
+  const end = new Date(start.getTime() + minutes * 60_000);
+  const fmt = (d: Date) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return `${fmt(start)} - ${fmt(end)}`;
+}
 
 function SubjectDetailPage() {
   const { packId } = Route.useParams();
@@ -163,52 +176,85 @@ function SubjectDetailPage() {
   }
 
   const { pack } = data;
+  const subjectName = pack.teacher_offers?.subjects?.name ?? pack.teacher_offers?.title ?? "Matière";
+  const packName = pack.pack_types?.name ?? pack.pack_slug;
+  const done = data.bookings.filter((b) => b.status === "completed").length;
   const left = Math.max(pack.sessions_total - pack.sessions_used, 0);
   const now = new Date();
-  const nextBooking = data.bookings.find((booking) => booking.status === "accepted" && new Date(booking.scheduled_at) > now);
+  const nextBooking = data.bookings.find(
+    (booking) => booking.status === "accepted" && new Date(booking.scheduled_at) > now,
+  );
   const lastReport = data.reports[0] ?? null;
+  const reportByBooking = new Map(data.reports.map((r) => [r.booking_id, r]));
+  const bookingById = new Map(data.bookings.map((b) => [b.id, b]));
+
+  const sessionLabel = (bookingId: string) => {
+    const booking = bookingById.get(bookingId);
+    if (!booking) return "Séance";
+    const index = booking.session_index
+      ? booking.session_index
+      : data.bookings.findIndex((b) => b.id === bookingId) + 1;
+    return `Séance ${index} – ${shortDate(booking.scheduled_at)}`;
+  };
 
   return (
-    <main className="container-page py-5 pb-24 sm:py-10">
-      <Link to="/parcours" className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-        <ArrowLeft className="size-4" aria-hidden /> Mon parcours
-      </Link>
-
-      <div className="mt-3 flex items-center gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
-          <BookOpen className="size-5" aria-hidden />
-        </span>
-        <div className="min-w-0">
-          <h1 className="truncate font-display text-xl font-bold text-foreground">
-            {pack.teacher_offers?.subjects?.name ?? pack.teacher_offers?.title ?? "Matière"}
-          </h1>
-          <p className="truncate text-xs text-muted-foreground">Avec {data.teacherName}</p>
-        </div>
-      </div>
-
-      <section className={`mt-4 ${CARD}`}>
-        <SectionHeading title={`Formule ${pack.pack_types?.name ?? pack.pack_slug}`} />
-        <p className="mt-1 text-sm font-semibold text-foreground">
-          {left} séance{left > 1 ? "s" : ""} restante{left > 1 ? "s" : ""}
-        </p>
-        <div className="mt-3">
-          <ProgressBar value={(pack.sessions_used / Math.max(pack.sessions_total, 1)) * 100} label={`Sur ${pack.sessions_total} séances`} />
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">Valable jusqu’au {formatDate(pack.expires_at)}.</p>
-        {pack.status === "active" && left > 0 && (
-          <Link
-            to="/compte/programmer/$packId"
-            params={{ packId: pack.id }}
-            className="mt-3 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
-          >
-            Programmer une séance
-          </Link>
-        )}
-      </section>
+    <main className="container-page py-4 pb-28 sm:py-8">
+      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+        <Link
+          to="/parcours"
+          aria-label="Retour à mon parcours"
+          className="flex size-9 items-center justify-center rounded-full text-foreground hover:bg-secondary"
+        >
+          <ChevronLeft className="size-5" aria-hidden />
+        </Link>
+        <h1 className="truncate text-center font-display text-base font-bold text-foreground">
+          {subjectName}
+        </h1>
+        <span className="size-9" aria-hidden />
+      </header>
 
       <section className={`mt-3 ${CARD}`}>
-        <SectionHeading title="Objectif" />
-        <p className="mt-1 text-sm text-foreground">{learningObjectiveLabel(data.objective) || "Objectif à préciser dans Mon parcours."}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
+            <BookOpen className="size-5" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-display text-base font-bold text-foreground">{subjectName}</p>
+            <p className="truncate text-xs text-muted-foreground">Avec {data.teacherName}</p>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3 rounded-2xl bg-secondary/60 p-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-card text-primary">
+            <Target className="size-4" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[11px] text-muted-foreground">Mon objectif</p>
+            <p className="truncate text-sm font-semibold text-foreground">
+              {learningObjectiveLabel(data.objective) || "À préciser dans Mon parcours"}
+            </p>
+          </div>
+        </div>
+
+        <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-border pt-3">
+          <div className="min-w-0">
+            <dd className="font-display text-lg font-bold text-foreground">{done}</dd>
+            <dt className="text-[11px] leading-tight text-muted-foreground">
+              séance{done > 1 ? "s" : ""} réalisée{done > 1 ? "s" : ""}
+            </dt>
+          </div>
+          <div className="min-w-0">
+            <dd className="font-display text-lg font-bold text-foreground">{left}</dd>
+            <dt className="text-[11px] leading-tight text-muted-foreground">
+              séance{left > 1 ? "s" : ""} restante{left > 1 ? "s" : ""}
+            </dt>
+          </div>
+          <div className="min-w-0">
+            <dt className="text-[11px] leading-tight text-muted-foreground">Formule</dt>
+            <dd className="truncate font-display text-sm font-bold text-foreground">{packName}</dd>
+            <dd className="text-[11px] text-muted-foreground">{pack.sessions_total} séances</dd>
+          </div>
+        </dl>
       </section>
 
       <div className="mt-4 grid grid-cols-2 gap-1 rounded-full bg-secondary p-1" role="tablist">
@@ -235,154 +281,214 @@ function SubjectDetailPage() {
 
       {tab === "path" ? (
         <>
-          <section className={`mt-3 ${CARD}`}>
-            <SectionHeading title="Prochain cours" />
-            {nextBooking ? (
-              <Link
-                to="/seance/$bookingId"
-                params={{ bookingId: nextBooking.id }}
-                className="mt-1 block text-sm font-semibold text-foreground"
-              >
-                {new Date(nextBooking.scheduled_at).toLocaleString("fr-FR", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Link>
-            ) : (
-              <p className="mt-1 text-sm text-muted-foreground">Aucune séance programmée.</p>
-            )}
-          </section>
+          <h2 className="mt-5 font-display text-lg font-bold text-foreground">Mes séances</h2>
 
-          <section className="mt-3">
-            <SectionHeading title="Mes séances" action={<Link to="/compte/reservations" className="text-sm font-semibold text-primary">Tout voir</Link>} />
-            {data.bookings.length ? (
-              <ul className="mt-2 space-y-2">
-                {data.bookings.map((booking) => {
-                  const status = SESSION_STATUS_LABELS[booking.status];
-                  return (
-                    <li key={booking.id}>
-                      <Link
-                        to="/seance/$bookingId"
-                        params={{ bookingId: booking.id }}
-                        className={`${CARD} flex items-center justify-between gap-3 py-3`}
+          {data.bookings.length ? (
+            <ol className="mt-3">
+              {data.bookings.map((booking, index) => {
+                const isDone = booking.status === "completed";
+                const isNext = nextBooking?.id === booking.id;
+                const isLast = index === data.bookings.length - 1;
+                const note = reportByBooking.get(booking.id)?.content_note ?? null;
+                return (
+                  <li key={booking.id} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
+                    <div className="flex flex-col items-center">
+                      <span
+                        className={`flex size-8 shrink-0 items-center justify-center rounded-full border ${
+                          isDone
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : isNext
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-card text-muted-foreground"
+                        }`}
                       >
-                        <span className="flex min-w-0 items-center gap-2 text-sm text-foreground">
-                          <CalendarClock className="size-4 shrink-0 text-primary" aria-hidden />
-                          <span className="min-w-0">
-                            {booking.session_index && (
-                              <span className="block text-xs font-semibold text-muted-foreground">
-                                Séance {booking.session_index}
-                              </span>
-                            )}
-                            <span className="block truncate">
-                              {new Date(booking.scheduled_at).toLocaleString("fr-FR", {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                          </span>
+                        {isDone ? (
+                          <Check className="size-4" aria-hidden />
+                        ) : isNext ? (
+                          <CalendarDays className="size-4" aria-hidden />
+                        ) : null}
+                      </span>
+                      {!isLast && <span className="w-px flex-1 bg-border" aria-hidden />}
+                    </div>
+                    <Link
+                      to="/seance/$bookingId"
+                      params={{ bookingId: booking.id }}
+                      className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 rounded-2xl px-1 py-0.5 hover:bg-secondary/40"
+                    >
+                      <span className="min-w-0">
+                        <span
+                          className={`block font-display text-sm font-bold ${
+                            isNext ? "text-primary" : "text-foreground"
+                          }`}
+                        >
+                          Séance {booking.session_index ?? index + 1}
                         </span>
-                        {status && (
-                          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${status.className}`}>{status.label}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {shortDate(booking.scheduled_at)} • {timeRange(booking.scheduled_at, booking.duration_minutes)}
+                        </span>
+                        {note && (
+                          <span className="mt-0.5 block line-clamp-1 text-xs text-muted-foreground">{note}</span>
                         )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="mt-2 text-sm text-muted-foreground">Aucune séance pour cette matière.</p>
-            )}
-          </section>
+                        {isNext && (
+                          <span className="mt-1.5 inline-flex rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary-soft-foreground">
+                            Prochain cours
+                          </span>
+                        )}
+                      </span>
+                      <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">Aucune séance programmée pour cette matière.</p>
+          )}
+
+          {nextBooking ? (
+            <Link
+              to="/seance/$bookingId"
+              params={{ bookingId: nextBooking.id }}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              <CalendarDays className="size-4" aria-hidden /> Voir les détails du prochain cours
+            </Link>
+          ) : (
+            pack.status === "active" &&
+            left > 0 && (
+              <Link
+                to="/compte/programmer/$packId"
+                params={{ packId: pack.id }}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                <CalendarDays className="size-4" aria-hidden /> Programmer une séance
+              </Link>
+            )
+          )}
+
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            Formule {packName} · valable jusqu’au {formatDate(pack.expires_at)}
+          </p>
         </>
       ) : (
         <>
-          <section className="mt-3">
-            <SectionHeading title="Dernier compte-rendu" />
-            {lastReport ? (
-              <Link to="/compte-rendu/$bookingId" params={{ bookingId: lastReport.booking_id }} className={`mt-2 block ${CARD}`}>
-                <p className="text-sm font-semibold text-foreground">{formatDate(lastReport.created_at)}</p>
-                <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{lastReport.content_note}</p>
-                <span className="mt-2 inline-flex text-sm font-semibold text-primary">Voir le détail</span>
-              </Link>
-            ) : (
-              <p className="mt-2 text-sm text-muted-foreground">Les retours de votre intervenant apparaîtront ici.</p>
-            )}
-          </section>
+          <h2 className="mt-5 font-display text-lg font-bold text-foreground">Dernier compte rendu</h2>
+          {lastReport ? (
+            <Link
+              to="/compte-rendu/$bookingId"
+              params={{ bookingId: lastReport.booking_id }}
+              className="mt-2 block rounded-2xl bg-secondary/60 p-4"
+            >
+              <span className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+                <span className="min-w-0">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden />
+                    <span className="truncate text-sm font-semibold text-foreground">
+                      {sessionLabel(lastReport.booking_id)}
+                    </span>
+                  </span>
+                  <span className="mt-2 block line-clamp-3 text-xs text-muted-foreground">
+                    {lastReport.content_note}
+                  </span>
+                </span>
+                <ChevronRight className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              </span>
+              <span className="mt-3 block text-center text-sm font-semibold text-primary">Voir le détail</span>
+            </Link>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Les comptes-rendus de votre intervenant apparaîtront ici.
+            </p>
+          )}
 
-          {data.reports.length > 1 && (
-            <section className="mt-4">
-              <SectionHeading title="Tous les comptes-rendus" />
+          {data.reports.length > 0 && (
+            <>
+              <h2 className="mt-5 font-display text-lg font-bold text-foreground">Tous les comptes-rendus</h2>
               <ul className="mt-2 space-y-2">
                 {data.reports.map((report) => (
                   <li key={report.id}>
-                    <Link to="/compte-rendu/$bookingId" params={{ bookingId: report.booking_id }} className={`${CARD} flex items-start gap-3 py-3`}>
-                      <FileText className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-foreground">{report.content_note}</span>
-                        <span className="block text-xs text-muted-foreground">{formatDate(report.created_at)}</span>
+                    <Link
+                      to="/compte-rendu/$bookingId"
+                      params={{ bookingId: report.booking_id }}
+                      className={`${CARD} grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-3.5`}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden />
+                        <span className="truncate text-sm font-semibold text-foreground">
+                          {sessionLabel(report.booking_id)}
+                        </span>
                       </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     </Link>
                   </li>
                 ))}
               </ul>
-            </section>
+            </>
           )}
 
-          <section className="mt-4">
-            <SectionHeading title="Devoirs" action={<Link to="/devoirs" className="text-sm font-semibold text-primary">Tout voir</Link>} />
-            {data.assignments.length ? (
-              <ul className="mt-2 space-y-2">
-                {data.assignments.map((assignment) => (
-                  <li key={assignment.id} className={`${CARD} flex items-start gap-3 py-3`}>
-                    <ClipboardList className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+          <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+            <h2 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold text-foreground">
+              <ClipboardList className="size-4 shrink-0" aria-hidden /> Devoirs
+            </h2>
+            <Link to="/devoirs" className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
+              Tout voir <ChevronRight className="size-4" aria-hidden />
+            </Link>
+          </div>
+          {data.assignments.length ? (
+            <ul className="mt-2 space-y-2">
+              {data.assignments.map((assignment) => (
+                <li key={assignment.id} className={`${CARD} grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3.5`}>
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                    <FileText className="size-4" aria-hidden />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-foreground">{assignment.title}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {assignment.due_date ? `À rendre avant le ${formatDate(assignment.due_date)}` : "Sans échéance"}
+                    </span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">Aucun devoir pour cette matière.</p>
+          )}
+
+          <div className="mt-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+            <h2 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold text-foreground">
+              <Paperclip className="size-4 shrink-0" aria-hidden /> Documents
+            </h2>
+          </div>
+          {data.documents.length ? (
+            <ul className="mt-2 space-y-2">
+              {data.documents.map((doc) => (
+                <li key={doc.id}>
+                  <a
+                    href={doc.url ?? undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`${CARD} grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3.5`}
+                  >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                      <FileText className="size-4" aria-hidden />
+                    </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-foreground">{assignment.title}</span>
+                      <span className="block truncate text-sm font-semibold text-foreground">{doc.file_name}</span>
                       <span className="block text-xs text-muted-foreground">
-                        {assignment.due_date ? `À rendre avant le ${formatDate(assignment.due_date)}` : "Sans échéance"}
+                        {fileFormatLabel(doc.file_name, doc.mime_type, doc.file_size)}
                       </span>
                     </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-2 text-sm text-muted-foreground">Aucun devoir pour cette matière.</p>
-            )}
-          </section>
-
-          <section className="mt-4">
-            <SectionHeading title="Documents" />
-            {data.documents.length ? (
-              <ul className="mt-2 space-y-2">
-                {data.documents.map((doc) => (
-                  <li key={doc.id}>
-                    <a href={doc.url ?? undefined} target="_blank" rel="noreferrer" className={`${CARD} flex items-center gap-3 py-3`}>
-                      <Paperclip className="size-4 shrink-0 text-primary" aria-hidden />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-foreground">{doc.file_name}</span>
-                        <span className="block text-xs text-muted-foreground">
-                          {fileFormatLabel(doc.file_name, doc.mime_type, doc.file_size)}
-                        </span>
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-2 text-sm text-muted-foreground">Aucun document partagé.</p>
-            )}
-          </section>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">Aucun document partagé.</p>
+          )}
         </>
       )}
-
-      <p className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-        <Target className="size-3.5" aria-hidden /> Formule {pack.pack_types?.name ?? pack.pack_slug} · {pack.format === "online" ? "En ligne" : "À domicile"}
-      </p>
     </main>
   );
 }
