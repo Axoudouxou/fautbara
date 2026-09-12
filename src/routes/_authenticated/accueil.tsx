@@ -4,14 +4,18 @@ import {
   Baby,
   BadgeCheck,
   BookOpen,
+  CalendarDays,
   CalendarClock,
   ChevronRight,
   ClipboardList,
+  Clock3,
+  FileText,
   Home,
   Inbox,
   Laptop,
   Loader2,
   Route as RouteIcon,
+  Video,
   Wallet,
   UserPlus,
 } from "lucide-react";
@@ -174,7 +178,7 @@ function useLearnerHomeData(userId: string, withChildren: boolean) {
   return useQuery({
     queryKey: ["home-learner", userId, withChildren],
     queryFn: async () => {
-      const [children, bookings, packs, assignments] = await Promise.all([
+      const [children, bookings, packs, assignments, reports] = await Promise.all([
         withChildren
           ? supabase
               .from("children")
@@ -200,8 +204,12 @@ function useLearnerHomeData(userId: string, withChildren: boolean) {
           .neq("status", "done")
           .order("created_at", { ascending: false })
           .limit(5),
+        supabase
+          .from("session_reports")
+          .select("id, booking_id, child_id, created_at")
+          .order("created_at", { ascending: false }),
       ]);
-      for (const result of [children, bookings, packs, assignments]) {
+      for (const result of [children, bookings, packs, assignments, reports]) {
         if (result.error) throw result.error;
       }
 
@@ -222,6 +230,7 @@ function useLearnerHomeData(userId: string, withChildren: boolean) {
         bookings: rows,
         packs: (packs.data ?? []) as unknown as PackRow[],
         assignments: assignments.data ?? [],
+        reports: reports.data ?? [],
         teacherNames,
       };
     },
@@ -255,6 +264,20 @@ function relDay(iso: string) {
   if (diff === 0) return "Aujourd'hui";
   if (diff === 1) return "Demain";
   return d.toLocaleDateString("fr-FR", { weekday: "long" });
+}
+
+function relativeCourseLabel(iso: string) {
+  const d = new Date(iso);
+  const today = new Date();
+  const diff = Math.round(
+    (new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() -
+      new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) /
+      86_400_000,
+  );
+  if (diff === 0) return "Aujourd’hui";
+  if (diff === 1) return "Demain";
+  if (diff > 1) return `Dans ${diff} jours`;
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
 }
 
 function childLevel(children: { id: string; school_level: string | null }[], childId: string | null | undefined) {
@@ -497,6 +520,7 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
   const bookings = data?.bookings ?? [];
   const packs = (data?.packs ?? []).filter((p) => !p.child_id);
   const assignments = data?.assignments ?? [];
+  const reports = data?.reports ?? [];
   const now = Date.now();
 
   const upcoming = bookings
@@ -517,88 +541,64 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
   const subjectNames = Array.from(
     new Set(activePacks.map((pack) => pack.teacher_offers?.subjects?.name).filter((name): name is string => Boolean(name))),
   );
+  const adultBookingIds = new Set(bookings.filter((booking) => !booking.child_id).map((booking) => booking.id));
+  const adultReports = reports.filter((report) => !report.child_id && adultBookingIds.has(report.booking_id));
+  const latestReport = adultReports[0];
+  const reportLabel = `${adultReports.length} compte-rendu${adultReports.length > 1 ? "s" : ""} disponible${adultReports.length > 1 ? "s" : ""}`;
 
   return (
-    <main className="container-page py-6 sm:py-12">
-      <Greeting firstName={firstName} subtitle="Voici où vous en êtes dans votre parcours." />
+    <main className="container-page max-w-3xl py-7 pb-28 sm:py-12">
+      <Greeting firstName={firstName} subtitle="Voici votre parcours d’apprentissage !" />
 
-      <section className="mt-6" aria-label="Mon apprentissage">
-        <SectionHeading title="Mon apprentissage" />
-        <div className={`mt-3 ${SOFT_CARD}`}>
-          <div className="space-y-2.5 text-sm">
-            {objective ? (
-              <div className="flex items-start justify-between gap-4">
-                <span className="text-muted-foreground">Objectif</span>
-                <span className="text-right font-semibold text-foreground">{learningObjectiveLabel(objective)}</span>
-              </div>
-            ) : null}
-            {subjectNames.length > 0 ? (
-              <div className="flex items-start justify-between gap-4">
-                <span className="text-muted-foreground">Matière{subjectNames.length > 1 ? "s" : ""}</span>
-                <span className="text-right font-semibold text-foreground">{subjectNames.join(", ")}</span>
-              </div>
-            ) : null}
-            {primaryPack ? (
-              <>
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-muted-foreground">Formule active</span>
-                  <span className="text-right font-semibold text-foreground">
-                    {primaryPack.pack_types?.name ?? primaryPack.pack_slug}
-                  </span>
-                </div>
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-muted-foreground">Séances restantes</span>
-                  <span className="text-right font-semibold text-foreground">{left}</span>
-                </div>
-                {primaryPack.sessions_used > 0 ? (
-                  <div className="pt-1">
-                    <ProgressBar
-                      value={(primaryPack.sessions_used / Math.max(primaryPack.sessions_total, 1)) * 100}
-                      label={`${primaryPack.sessions_used} séance${primaryPack.sessions_used > 1 ? "s" : ""} réalisée${primaryPack.sessions_used > 1 ? "s" : ""}`}
-                    />
-                  </div>
-                ) : null}
-              </>
-            ) : null}
-            {!objective && subjectNames.length === 0 && !primaryPack ? (
-              <p className="text-muted-foreground">Votre parcours commencera avec vos préférences ou votre première formule.</p>
-            ) : null}
-          </div>
-          <Link to="/parcours" className={`mt-4 w-full ${CTA}`}>
-            Voir mon parcours
-          </Link>
-        </div>
+      <section className="mt-7 grid grid-cols-2 gap-3" aria-label="Résumé de mon apprentissage">
+        <Link to="/parcours" className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
+            <BookOpen className="size-6" aria-hidden />
+          </span>
+          <span className="min-w-0">
+            <strong className="block font-display text-2xl font-bold leading-none text-foreground">{subjectNames.length}</strong>
+            <span className="mt-1 block text-xs leading-tight text-muted-foreground">matière{subjectNames.length > 1 ? "s" : ""} suivie{subjectNames.length > 1 ? "s" : ""}</span>
+          </span>
+        </Link>
+        <Link to="/compte/reservations" className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
+            <CalendarDays className="size-6" aria-hidden />
+          </span>
+          <span className="min-w-0">
+            <strong className="block font-display text-2xl font-bold leading-none text-foreground">{upcoming.length}</strong>
+            <span className="mt-1 block text-xs leading-tight text-muted-foreground">séance{upcoming.length > 1 ? "s" : ""} à venir</span>
+          </span>
+        </Link>
       </section>
 
-      <section className="mt-6" aria-label="Prochain cours">
+      <section className="mt-8" aria-label="Prochain cours">
         <SectionHeading title="Prochain cours" />
         {next ? (
-          <>
-            <Link to="/compte/reservations" className="mt-3 block">
-              <RowCard className="transition-colors hover:bg-secondary">
-                <span className="w-[72px] shrink-0">
-                  <span className="block text-[11px] font-semibold text-muted-foreground">
-                    {relDay(next.scheduled_at)}
-                  </span>
-                  <span className="block font-display text-base font-bold leading-tight text-foreground">
-                    {hourOf(next.scheduled_at)}
-                  </span>
-                </span>
-                <span className="min-w-0 flex-1 border-l border-border pl-3">
-                  <span className="block truncate text-sm font-bold text-foreground">
-                    {next.teacher_offers?.subjects?.name ?? "Cours particulier"}
-                  </span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {data?.teacherNames.get(next.teacher_id) ?? "Votre intervenant"} · {formatLabel(next.format)}
-                  </span>
-                </span>
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-              </RowCard>
-            </Link>
+          <div className={`mt-3 ${CARD}`}>
+            <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-4">
+              <div className="flex min-h-28 flex-col items-center justify-center rounded-2xl bg-primary-soft px-2 text-center text-primary-soft-foreground">
+                <span className="text-sm font-semibold capitalize">{new Date(next.scheduled_at).toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "") }.</span>
+                <strong className="font-display text-3xl font-bold leading-none">{new Date(next.scheduled_at).getDate()}</strong>
+                <span className="mt-1 text-sm font-semibold">{new Date(next.scheduled_at).toLocaleDateString("fr-FR", { month: "short" })}</span>
+              </div>
+              <div className="min-w-0 py-1">
+                <p className="text-xs text-muted-foreground">{relativeCourseLabel(next.scheduled_at)}</p>
+                <h3 className="mt-1 truncate font-display text-lg font-bold text-foreground">{next.teacher_offers?.subjects?.name ?? "Cours particulier"}</h3>
+                <p className="truncate text-sm text-muted-foreground">Avec {data?.teacherNames.get(next.teacher_id) ?? "votre intervenant"}</p>
+                <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock3 className="size-4 shrink-0" aria-hidden />
+                  {hourOf(next.scheduled_at)} – {hourOf(new Date(new Date(next.scheduled_at).getTime() + next.duration_minutes * 60_000).toISOString())}
+                </p>
+                <p className="mt-1.5 flex items-center gap-2 text-sm text-muted-foreground">
+                  {next.format === "online" ? <Video className="size-4 shrink-0" aria-hidden /> : <Home className="size-4 shrink-0" aria-hidden />}
+                  {formatLabel(next.format)}
+                </p>
+              </div>
+            </div>
             <Link to="/compte/reservations" className={`mt-3 w-full ${CTA}`}>
-              Voir mes cours
+              Voir le cours
             </Link>
-          </>
+          </div>
         ) : (
           <div className={`mt-3 ${SOFT_CARD}`}>
             <p className="text-sm text-muted-foreground">Aucune séance programmée.</p>
@@ -618,10 +618,21 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
         )}
       </section>
 
-      {(assignments.length > 0 || pendingBooking) && (
-        <section className="mt-6" aria-label="À faire">
+      {(adultReports.length > 0 || assignments.length > 0 || pendingBooking) && (
+        <section className="mt-8" aria-label="À faire">
           <SectionHeading title="À faire" />
           <div className="mt-3 space-y-2.5">
+            {latestReport ? (
+              <Link to="/compte-rendu/$bookingId" params={{ bookingId: latestReport.booking_id }} className="block">
+                <RowCard className="min-h-20 transition-colors hover:bg-secondary">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+                    <FileText className="size-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 text-sm font-semibold text-foreground">{reportLabel}</span>
+                  <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+                </RowCard>
+              </Link>
+            ) : null}
             {assignments[0] ? (
               <Link to="/devoirs" className="block">
                 <RowCard className="border-primary/40 bg-primary-soft/30 transition-colors hover:bg-primary-soft/50">
@@ -649,21 +660,6 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
           </div>
         </section>
       )}
-
-      <section className="mt-6" aria-label="Mon parcours">
-        <Link to="/parcours" className="block">
-          <RowCard className="transition-colors hover:bg-secondary">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
-              <RouteIcon className="size-4" aria-hidden />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-bold text-foreground">Mon parcours</span>
-              <span className="block text-xs text-muted-foreground">Retrouver mes matières et mon objectif</span>
-            </span>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-          </RowCard>
-        </Link>
-      </section>
 
     </main>
   );
