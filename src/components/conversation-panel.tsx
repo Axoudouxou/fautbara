@@ -29,7 +29,7 @@ import {
 } from "@/lib/conversation-system-events";
 import { useStudentProfile, type StudentProfile } from "@/lib/messaging";
 import { LEARNING_STYLES, LEARNING_OBJECTIVES, SCHOOL_SYSTEMS } from "@/lib/education";
-import { ATTENDANCE_OPTIONS, HOMEWORK_DONE_OPTIONS, PROGRESS_LEVELS } from "@/lib/session-reports";
+import { ATTENDANCE_OPTIONS, ENGAGEMENT_LEVELS, PROGRESS_LEVELS } from "@/lib/session-reports";
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const BUCKET = "message-files";
