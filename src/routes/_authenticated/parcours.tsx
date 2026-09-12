@@ -5,15 +5,12 @@ import {
   ArrowRight,
   BookOpen,
   CalendarDays,
-  Clock3,
   Laptop,
   Loader2,
   MapPin,
   MessageCircle,
-  Package,
   Pencil,
   Target,
-  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 
