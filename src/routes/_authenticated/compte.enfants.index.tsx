@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ArrowRight, Loader2, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ProgressBar } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionRoles } from "@/hooks/use-session-roles";
 
