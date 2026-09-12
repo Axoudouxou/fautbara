@@ -11,6 +11,7 @@ import {
   MapPin,
   MessageCircle,
   Package,
+  Pencil,
   Target,
   UserRound,
 } from "lucide-react";
@@ -189,14 +190,27 @@ function LearningJourneyPage() {
 
   return (
     <main className="container-page max-w-6xl py-5 pb-28 sm:py-10">
-      <header className="flex items-end justify-between gap-4">
+      <header className="flex items-end justify-between gap-3">
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">Mon parcours</h1>
           <p className="mt-1 text-sm text-muted-foreground sm:text-base">Mes objectifs. Mes cours. Ma progression.</p>
         </div>
-        <Button asChild variant="secondary" className="hidden h-11 rounded-2xl px-4 sm:inline-flex">
-          <Link to="/professeurs">Ajouter un parcours</Link>
-        </Button>
+        <div className="flex shrink-0 gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            title="Modifier mon objectif"
+            aria-label="Modifier mon objectif"
+            className="size-10 rounded-xl"
+            onClick={() => setShowGoalEditor((open) => !open)}
+          >
+            <Pencil aria-hidden />
+          </Button>
+          <Button asChild variant="secondary" className="h-10 rounded-xl px-3 text-xs sm:h-11 sm:px-4 sm:text-sm">
+            <Link to="/professeurs">Ajouter un parcours</Link>
+          </Button>
+        </div>
       </header>
 
       <div className="mt-5 grid grid-cols-3 gap-2" role="group" aria-label="Filtrer les parcours">
@@ -217,19 +231,15 @@ function LearningJourneyPage() {
         ))}
       </div>
 
-      <section className="mt-4 rounded-2xl border border-border bg-card px-4 py-3 shadow-[var(--shadow-card)]">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-muted-foreground">Mon objectif</p>
-            <p className="truncate text-sm font-bold text-foreground">
-              {learningObjectiveLabel(objective) || "Aucun objectif choisi"}
-            </p>
+      {showGoalEditor && (
+        <section className="mt-4 rounded-2xl border border-border bg-card px-4 py-4 shadow-[var(--shadow-card)]">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-display text-sm font-bold text-foreground">Mon objectif</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">Choisissez votre priorité actuelle.</p>
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowGoalEditor(false)}>Fermer</Button>
           </div>
-          <Button type="button" variant="outline" size="sm" className="shrink-0 rounded-xl" onClick={() => setShowGoalEditor((open) => !open)}>
-            {objective ? "Modifier" : "Choisir"}
-          </Button>
-        </div>
-        {showGoalEditor && (
           <div className="mt-3 border-t border-border pt-3">
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {LEARNING_OBJECTIVES.map((item) => (
@@ -254,8 +264,8 @@ function LearningJourneyPage() {
               {saveGoal.isPending && <Loader2 className="animate-spin" />} Enregistrer
             </Button>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {visiblePacks.length ? (
         <section className="mt-4 space-y-3" aria-label="Liste des parcours">
@@ -265,28 +275,32 @@ function LearningJourneyPage() {
             const next = data.bookings.find(
               (booking) => booking.pack_id === pack.id && booking.status === "accepted" && new Date(booking.scheduled_at) > now,
             );
-            const subject = pack.teacher_offers?.subjects?.name ?? pack.teacher_offers?.title ?? "Matière";
+            const subject = pack.teacher_offers?.subjects?.name ?? "Matière";
+            const title = pack.teacher_offers?.title ?? subject;
             const progress = Math.min(pack.sessions_used, pack.sessions_total);
 
             return (
               <article key={pack.id} className="overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:p-5">
-                <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+                <div className="grid min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_15rem] lg:grid-cols-[minmax(0,1fr)_18rem]">
                   <div className="min-w-0">
                     <div className="flex items-start gap-3">
                       <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary-soft-foreground">
                         <BookOpen className="size-6" aria-hidden />
                       </span>
                       <div className="min-w-0">
-                        <h2 className="font-display text-base font-bold text-foreground sm:text-lg">{subject}</h2>
+                        <h2 className="font-display text-base font-bold text-foreground sm:text-lg">{title}</h2>
                         <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                          {pack.teacher_offers?.title && pack.teacher_offers.title !== subject
-                            ? pack.teacher_offers.title
-                            : learningObjectiveLabel(objective) || "Objectif à préciser"}
+                          {learningObjectiveLabel(objective) || "Objectif à préciser"}
                         </p>
                       </div>
                     </div>
 
                     <dl className="mt-4 space-y-2 text-xs sm:text-sm">
+                      <div className="flex items-start gap-2">
+                        <BookOpen className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                        <dt className="font-semibold text-foreground">Matière :</dt>
+                        <dd className="min-w-0 text-muted-foreground">{subject}</dd>
+                      </div>
                       <div className="flex items-start gap-2">
                         <Target className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
                         <dt className="font-semibold text-foreground">Objectif :</dt>
