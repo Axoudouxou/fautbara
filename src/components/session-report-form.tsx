@@ -143,13 +143,22 @@ export function SessionReportForm({
     onError: (e: Error) => toast.error(e.message || "Envoi impossible"),
   });
 
+  const page = variant === "page";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
+    <div
+      className={
+        page ? "" : "fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+      }
+    >
       <div
-        role="dialog"
-        aria-modal="true"
+        {...(page ? {} : { role: "dialog", "aria-modal": true })}
         aria-label="Compte-rendu de séance"
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6"
+        className={
+          page
+            ? "rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6"
+            : "max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6"
+        }
       >
         <h2 className="font-display text-lg font-bold text-foreground">Compte-rendu de séance</h2>
         <p className="mt-1 text-sm text-muted-foreground">
