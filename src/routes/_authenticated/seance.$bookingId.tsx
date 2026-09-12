@@ -80,7 +80,7 @@ function BookingDetailPage() {
       if (!booking) return null;
 
       const [teacher, pack, report, review, dispute] = await Promise.all([
-        supabase.from("profiles").select("display_name, avatar_url").eq("user_id", booking.teacher_id).maybeSingle(),
+        supabase.from("profiles").select("display_name").eq("user_id", booking.teacher_id).maybeSingle(),
         booking.pack_id
           ? supabase
               .from("packs")
@@ -95,16 +95,9 @@ function BookingDetailPage() {
       ]);
       for (const result of [teacher, pack, report, review, dispute]) if (result.error) throw result.error;
 
-      let teacherAvatar = teacher.data?.avatar_url ?? null;
-      if (teacherAvatar) {
-        const { data: signed } = await supabase.storage.from("teacher-photos").createSignedUrl(teacherAvatar, 3600);
-        teacherAvatar = signed?.signedUrl ?? null;
-      }
-
       return {
         booking,
         teacherName: teacher.data?.display_name ?? "Intervenant",
-        teacherAvatar,
         pack: pack.data,
         reportId: report.data?.id ?? null,
         hasReview: Boolean(review.data),
@@ -209,7 +202,7 @@ function BookingDetailPage() {
           </div>
         )}
         <div className={`${child ? "mt-4 border-t border-border pt-4" : ""} flex items-center gap-3`}>
-          <UserAvatar name={data.teacherName} src={data.teacherAvatar} className="size-11" />
+          <UserAvatar name={data.teacherName} className="size-11" />
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground">Intervenant</p>
             <p className="truncate text-sm font-bold text-foreground">{data.teacherName}</p>
@@ -230,7 +223,7 @@ function BookingDetailPage() {
             <p className="text-xs text-muted-foreground">Format</p>
             <p className="text-sm font-bold text-foreground">{booking.format === "online" ? "En ligne" : "À domicile"}</p>
             {booking.format === "online" ? (
-              <p className="mt-1 text-xs text-muted-foreground">Le lien de connexion sera transmis par l’intervenant lorsqu’il est disponible.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Lien de connexion non renseigné.</p>
             ) : (
               <p className="mt-1 inline-flex items-start gap-1 text-xs text-muted-foreground">
                 <MapPin className="mt-0.5 size-3.5 shrink-0" aria-hidden />

@@ -66,6 +66,6 @@
 - [x] Vérifier le nouveau parcours repliable sur mobile (le compte réel contient actuellement un seul professeur)
 
 ## Détail de séance parent
-- [ ] Ouvrir directement la séance choisie depuis « Prochains cours »
-- [ ] Afficher ses données réelles et uniquement les actions autorisées
-- [ ] Vérifier le parcours Parent sur mobile et ordinateur
+- [x] Ouvrir directement la séance choisie depuis « Prochains cours »
+- [x] Afficher ses données réelles et uniquement les actions autorisées
+- [x] Vérifier le parcours Parent sur mobile et ordinateur
