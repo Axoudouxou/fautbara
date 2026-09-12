@@ -35,6 +35,8 @@ function ChildrenPage() {
   const [firstName, setFirstName] = useState("");
   const [birthYear, setBirthYear] = useState("");
   const [schoolLevel, setSchoolLevel] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
 
   const childrenQuery = useQuery({
     queryKey: ["children", user.id],
