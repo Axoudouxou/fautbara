@@ -948,25 +948,19 @@ function SessionReportEntry({
     <div className={compact ? "mt-2 text-left text-xs" : "rounded-2xl border border-border bg-card p-4 text-sm"}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold text-foreground">{date}</p>
-        <div className="flex items-center gap-0.5" aria-label={`Engagement : ${event.engagementRating} sur 5`}>
-          {[1, 2, 3, 4, 5].map((n) => (
-            <Star
-              key={n}
-              className={`size-3.5 ${n <= event.engagementRating ? "fill-primary text-primary" : "text-muted-foreground"}`}
-              aria-hidden
-            />
-          ))}
-        </div>
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary-soft-foreground">
+          <Star className="size-3 fill-primary text-primary" aria-hidden /> {engagementLabel}
+        </span>
       </div>
       <p className="mt-1 text-muted-foreground">
         {attendanceLabel} · {event.contentNote}
       </p>
       <p className="mt-1 text-muted-foreground">Avancement : {progressLabel}</p>
       {homeworkLabel && (
-        <p className="mt-1 text-muted-foreground">Travail fait depuis la dernière fois : {homeworkLabel}</p>
+        <p className="mt-1 text-muted-foreground">Travail depuis la dernière séance : {homeworkLabel}</p>
       )}
       {event.nextSteps && (
-        <p className="mt-1 text-muted-foreground">Pour la prochaine fois : {event.nextSteps}</p>
+        <p className="mt-1 text-muted-foreground">À travailler pour la prochaine séance : {event.nextSteps}</p>
       )}
     </div>
   );
