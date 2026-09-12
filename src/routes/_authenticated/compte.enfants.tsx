@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, Loader2, Plus, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionRoles } from "@/hooks/use-session-roles";
@@ -127,7 +127,7 @@ function ChildrenPage() {
             children.map((child) => (
               <article
                 key={child.id}
-                className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]"
+                className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]"
               >
                 <div className="flex items-center gap-3">
                   <span className="flex size-10 items-center justify-center rounded-xl bg-primary-soft font-display font-bold text-primary-soft-foreground">
@@ -145,14 +145,23 @@ function ChildrenPage() {
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  aria-label={`Supprimer le profil de ${child.first_name}`}
-                  onClick={() => deleteMutation.mutate(child.id)}
-                  className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </button>
+                <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3">
+                  <Link
+                    to="/compte/enfants/$childId"
+                    params={{ childId: child.id }}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                  >
+                    Voir son parcours <ArrowRight className="size-4" aria-hidden />
+                  </Link>
+                  <button
+                    type="button"
+                    aria-label={`Supprimer le profil de ${child.first_name}`}
+                    onClick={() => deleteMutation.mutate(child.id)}
+                    className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" aria-hidden />
+                  </button>
+                </div>
               </article>
             ))
           )}
