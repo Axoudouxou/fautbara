@@ -40,6 +40,8 @@ export function SessionReportForm({
   existing,
   onClose,
   invalidateKeys = [],
+  variant = "modal",
+  onPublished,
 }: {
   bookingId: string;
   teacherId: string;
@@ -49,6 +51,9 @@ export function SessionReportForm({
   existing?: SessionReport | null;
   onClose: () => void;
   invalidateKeys?: unknown[][];
+  /** "page" affiche le formulaire en pleine page (parcours post-séance de l'intervenant). */
+  variant?: "modal" | "page";
+  onPublished?: (summary: { assignments: number; documents: number }) => void;
 }) {
   const queryClient = useQueryClient();
   const [attendance, setAttendance] = useState<Attendance>(existing?.attendance ?? "present");
@@ -123,21 +128,37 @@ export function SessionReportForm({
       });
     },
     onSuccess: () => {
-      toast.success(existing ? "Compte-rendu mis à jour" : "Compte-rendu envoyé");
+      toast.success(existing ? "Compte-rendu mis à jour" : "Compte-rendu publié");
       for (const key of invalidateKeys) queryClient.invalidateQueries({ queryKey: key });
       queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      if (onPublished) {
+        onPublished({
+          assignments: assignments.filter((a) => a.title.trim()).length,
+          documents: documents.length,
+        });
+        return;
+      }
       onClose();
     },
     onError: (e: Error) => toast.error(e.message || "Envoi impossible"),
   });
 
+  const page = variant === "page";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center">
+    <div
+      className={
+        page ? "" : "fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+      }
+    >
       <div
-        role="dialog"
-        aria-modal="true"
+        {...(page ? {} : { role: "dialog", "aria-modal": true })}
         aria-label="Compte-rendu de séance"
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6"
+        className={
+          page
+            ? "rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6"
+            : "max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6"
+        }
       >
         <h2 className="font-display text-lg font-bold text-foreground">Compte-rendu de séance</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -384,22 +405,26 @@ export function SessionReportForm({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary"
-          >
-            Plus tard
-          </button>
+        <div className={page ? "mt-6 space-y-2" : "mt-6 flex flex-wrap justify-end gap-2"}>
           <button
             type="button"
             disabled={save.isPending}
             onClick={() => save.mutate()}
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            className={`inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 ${
+              page ? "w-full" : "py-2"
+            }`}
           >
             {save.isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
-            Envoyer le compte-rendu
+            Publier le compte-rendu
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className={`rounded-full border border-border px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary ${
+              page ? "w-full" : ""
+            }`}
+          >
+            Plus tard
           </button>
         </div>
       </div>

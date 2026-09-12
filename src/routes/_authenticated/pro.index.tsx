@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
+  AlertCircle,
   Award,
   BookOpen,
   CalendarClock,
@@ -251,39 +252,33 @@ function TeacherDashboard() {
           )}
         </section>
 
-        {(toClose.length > 0 || missingReports.length > 0 || setupSteps.length > 0) && (
+        {(toClose.length > 0 || missingReports.length > 0) && (
+          <section className="mt-5">
+            <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
+              <p className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
+                <AlertCircle className="size-4 text-destructive" aria-hidden />
+                Séances à mettre à jour
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {toClose.length > 0 &&
+                  `${toClose.length} séance${toClose.length > 1 ? "s" : ""} passée${toClose.length > 1 ? "s" : ""} sans statut renseigné. `}
+                {missingReports.length > 0 &&
+                  `${missingReports.length} compte-rendu${missingReports.length > 1 ? "s" : ""} à rédiger.`}
+              </p>
+              <Link
+                to="/pro/seances"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                Voir les séances <ChevronRight className="size-3.5" aria-hidden />
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {setupSteps.length > 0 && (
           <section className="mt-5">
             <SectionHeading title="À faire" />
             <ul className="mt-3 space-y-2">
-              {toClose.length > 0 && (
-                <li>
-                  <Link
-                    to="/pro/demandes"
-                    className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-card)] hover:bg-secondary/40"
-                  >
-                    <span className="min-w-0 flex-1 text-sm text-foreground">
-                      Clôturer {toClose.length} séance{toClose.length > 1 ? "s" : ""} passée
-                      {toClose.length > 1 ? "s" : ""}
-                    </span>
-                    <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
-                  </Link>
-                </li>
-              )}
-              {missingReports.length > 0 && (
-                <li>
-                  <Link
-                    to="/pro/demandes"
-                    className="flex items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-card)] hover:bg-secondary/40"
-                  >
-                    <span className="min-w-0 flex-1 text-sm text-foreground">
-                      Rédiger {missingReports.length} compte-rendu
-                      {missingReports.length > 1 ? "s" : ""} manquant
-                      {missingReports.length > 1 ? "s" : ""}
-                    </span>
-                    <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
-                  </Link>
-                </li>
-              )}
               {setupSteps.map((s) => (
                 <li key={s.label}>
                   <Link
@@ -342,6 +337,7 @@ function TeacherDashboard() {
           <SectionHeading title="Raccourcis" />
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {[
+              { to: "/pro/seances" as const, icon: FileText, label: "Mes séances" },
               { to: "/pro/eleves" as const, icon: Users, label: "Mes élèves" },
               { to: "/pro/demandes" as const, icon: Inbox, label: "Demandes" },
               { to: "/pro/offres" as const, icon: BookOpen, label: "Mes offres" },

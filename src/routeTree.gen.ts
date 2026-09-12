@@ -58,8 +58,11 @@ import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/
 import { Route as AuthenticatedCompteEnfantsIndexRouteImport } from './routes/_authenticated/compte.enfants.index'
 import { Route as AuthenticatedCompteEnfantsChildIdRouteImport } from './routes/_authenticated/compte.enfants.$childId'
 import { Route as AuthenticatedCompteProgrammerPackIdRouteImport } from './routes/_authenticated/compte.programmer.$packId'
+import { Route as AuthenticatedProCompteRenduBookingIdRouteImport } from './routes/_authenticated/pro.compte-rendu.$bookingId'
 import { Route as AuthenticatedProElevesIndexRouteImport } from './routes/_authenticated/pro.eleves.index'
 import { Route as AuthenticatedProElevesLearnerIdRouteImport } from './routes/_authenticated/pro.eleves.$learnerId'
+import { Route as AuthenticatedProSeancesIndexRouteImport } from './routes/_authenticated/pro.seances.index'
+import { Route as AuthenticatedProSeancesBookingIdRouteImport } from './routes/_authenticated/pro.seances.$bookingId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -331,6 +334,12 @@ const AuthenticatedCompteProgrammerPackIdRoute =
     path: '/compte/programmer/$packId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProCompteRenduBookingIdRoute =
+  AuthenticatedProCompteRenduBookingIdRouteImport.update({
+    id: '/pro/compte-rendu/$bookingId',
+    path: '/pro/compte-rendu/$bookingId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProElevesIndexRoute =
   AuthenticatedProElevesIndexRouteImport.update({
     id: '/pro/eleves/',
@@ -341,6 +350,18 @@ const AuthenticatedProElevesLearnerIdRoute =
   AuthenticatedProElevesLearnerIdRouteImport.update({
     id: '/pro/eleves/$learnerId',
     path: '/pro/eleves/$learnerId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProSeancesIndexRoute =
+  AuthenticatedProSeancesIndexRouteImport.update({
+    id: '/pro/seances/',
+    path: '/pro/seances/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProSeancesBookingIdRoute =
+  AuthenticatedProSeancesBookingIdRouteImport.update({
+    id: '/pro/seances/$bookingId',
+    path: '/pro/seances/$bookingId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -392,9 +413,12 @@ export interface FileRoutesByFullPath {
   '/pro/': typeof AuthenticatedProIndexRoute
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
+  '/pro/compte-rendu/$bookingId': typeof AuthenticatedProCompteRenduBookingIdRoute
   '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
+  '/pro/seances/$bookingId': typeof AuthenticatedProSeancesBookingIdRoute
   '/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
   '/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
+  '/pro/seances/': typeof AuthenticatedProSeancesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -444,9 +468,12 @@ export interface FileRoutesByTo {
   '/pro': typeof AuthenticatedProIndexRoute
   '/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
+  '/pro/compte-rendu/$bookingId': typeof AuthenticatedProCompteRenduBookingIdRoute
   '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
+  '/pro/seances/$bookingId': typeof AuthenticatedProSeancesBookingIdRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsIndexRoute
   '/pro/eleves': typeof AuthenticatedProElevesIndexRoute
+  '/pro/seances': typeof AuthenticatedProSeancesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -498,9 +525,12 @@ export interface FileRoutesById {
   '/_authenticated/pro/': typeof AuthenticatedProIndexRoute
   '/_authenticated/compte/enfants/$childId': typeof AuthenticatedCompteEnfantsChildIdRoute
   '/_authenticated/compte/programmer/$packId': typeof AuthenticatedCompteProgrammerPackIdRoute
+  '/_authenticated/pro/compte-rendu/$bookingId': typeof AuthenticatedProCompteRenduBookingIdRoute
   '/_authenticated/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
+  '/_authenticated/pro/seances/$bookingId': typeof AuthenticatedProSeancesBookingIdRoute
   '/_authenticated/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
   '/_authenticated/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
+  '/_authenticated/pro/seances/': typeof AuthenticatedProSeancesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -552,9 +582,12 @@ export interface FileRouteTypes {
     | '/pro/'
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
+    | '/pro/compte-rendu/$bookingId'
     | '/pro/eleves/$learnerId'
+    | '/pro/seances/$bookingId'
     | '/compte/enfants/'
     | '/pro/eleves/'
+    | '/pro/seances/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -604,9 +637,12 @@ export interface FileRouteTypes {
     | '/pro'
     | '/compte/enfants/$childId'
     | '/compte/programmer/$packId'
+    | '/pro/compte-rendu/$bookingId'
     | '/pro/eleves/$learnerId'
+    | '/pro/seances/$bookingId'
     | '/compte/enfants'
     | '/pro/eleves'
+    | '/pro/seances'
   id:
     | '__root__'
     | '/'
@@ -657,9 +693,12 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/'
     | '/_authenticated/compte/enfants/$childId'
     | '/_authenticated/compte/programmer/$packId'
+    | '/_authenticated/pro/compte-rendu/$bookingId'
     | '/_authenticated/pro/eleves/$learnerId'
+    | '/_authenticated/pro/seances/$bookingId'
     | '/_authenticated/compte/enfants/'
     | '/_authenticated/pro/eleves/'
+    | '/_authenticated/pro/seances/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1022,6 +1061,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCompteProgrammerPackIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/compte-rendu/$bookingId': {
+      id: '/_authenticated/pro/compte-rendu/$bookingId'
+      path: '/pro/compte-rendu/$bookingId'
+      fullPath: '/pro/compte-rendu/$bookingId'
+      preLoaderRoute: typeof AuthenticatedProCompteRenduBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pro/eleves/': {
       id: '/_authenticated/pro/eleves/'
       path: '/pro/eleves'
@@ -1034,6 +1080,20 @@ declare module '@tanstack/react-router' {
       path: '/pro/eleves/$learnerId'
       fullPath: '/pro/eleves/$learnerId'
       preLoaderRoute: typeof AuthenticatedProElevesLearnerIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro/seances/': {
+      id: '/_authenticated/pro/seances/'
+      path: '/pro/seances'
+      fullPath: '/pro/seances/'
+      preLoaderRoute: typeof AuthenticatedProSeancesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pro/seances/$bookingId': {
+      id: '/_authenticated/pro/seances/$bookingId'
+      path: '/pro/seances/$bookingId'
+      fullPath: '/pro/seances/$bookingId'
+      preLoaderRoute: typeof AuthenticatedProSeancesBookingIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -1076,9 +1136,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProIndexRoute: typeof AuthenticatedProIndexRoute
   AuthenticatedCompteEnfantsChildIdRoute: typeof AuthenticatedCompteEnfantsChildIdRoute
   AuthenticatedCompteProgrammerPackIdRoute: typeof AuthenticatedCompteProgrammerPackIdRoute
+  AuthenticatedProCompteRenduBookingIdRoute: typeof AuthenticatedProCompteRenduBookingIdRoute
   AuthenticatedProElevesLearnerIdRoute: typeof AuthenticatedProElevesLearnerIdRoute
+  AuthenticatedProSeancesBookingIdRoute: typeof AuthenticatedProSeancesBookingIdRoute
   AuthenticatedCompteEnfantsIndexRoute: typeof AuthenticatedCompteEnfantsIndexRoute
   AuthenticatedProElevesIndexRoute: typeof AuthenticatedProElevesIndexRoute
+  AuthenticatedProSeancesIndexRoute: typeof AuthenticatedProSeancesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1121,9 +1184,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedCompteEnfantsChildIdRoute,
   AuthenticatedCompteProgrammerPackIdRoute:
     AuthenticatedCompteProgrammerPackIdRoute,
+  AuthenticatedProCompteRenduBookingIdRoute:
+    AuthenticatedProCompteRenduBookingIdRoute,
   AuthenticatedProElevesLearnerIdRoute: AuthenticatedProElevesLearnerIdRoute,
+  AuthenticatedProSeancesBookingIdRoute: AuthenticatedProSeancesBookingIdRoute,
   AuthenticatedCompteEnfantsIndexRoute: AuthenticatedCompteEnfantsIndexRoute,
   AuthenticatedProElevesIndexRoute: AuthenticatedProElevesIndexRoute,
+  AuthenticatedProSeancesIndexRoute: AuthenticatedProSeancesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
