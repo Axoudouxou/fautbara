@@ -114,6 +114,16 @@ function TeachersPage() {
     });
   };
 
+  const activeFilterCount = [
+    search.matiere,
+    search.niveau,
+    search.commune,
+    search.jour,
+    search.format,
+    search.prixMin,
+    search.prixMax,
+  ].filter((value) => value !== undefined && value !== "").length;
+
   return (
     <div className="container-page py-6 sm:py-14">
       <ParentChildContext childId={search.enfant} />
@@ -121,16 +131,54 @@ function TeachersPage() {
         <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-4xl">
           Trouver un professeur
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-base">
+        <p className="mt-1 text-sm text-muted-foreground sm:mt-3 sm:text-base">
           Filtrez par matière, tarif, commune et disponibilités. Les tarifs sont indiqués par
           séance.
         </p>
       </header>
 
-      <div className="mt-5 rounded-2xl border border-border/70 bg-card p-3.5 shadow-[var(--shadow-card)] sm:mt-8 sm:p-4">
+      <div className="mt-4 flex gap-2 sm:hidden">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <input
+            className={`${selectClass} pl-9`}
+            placeholder="Nom, matière, mot-clé…"
+            aria-label="Rechercher un professeur"
+            defaultValue={search.q ?? ""}
+            onBlur={(event) => update({ q: event.target.value.trim() })}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                update({ q: (event.target as HTMLInputElement).value.trim() });
+              }
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((open) => !open)}
+          aria-expanded={filtersOpen}
+          className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 text-sm font-semibold text-foreground"
+        >
+          <SlidersHorizontal className="size-4" aria-hidden /> Filtres
+          {activeFilterCount > 0 ? (
+            <span className="rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+              {activeFilterCount}
+            </span>
+          ) : null}
+        </button>
+      </div>
+
+      <div
+        className={`${filtersOpen ? "block" : "hidden sm:block"} mt-3 rounded-2xl border border-border/70 bg-card p-3.5 shadow-[var(--shadow-card)] sm:mt-8 sm:p-4`}
+      >
 
         {/* Filtres principaux : une seule ligne cohérente */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+
           <label className="min-w-0">
             <span className={fieldLabelClass}>Ce que je veux apprendre</span>
             <select
