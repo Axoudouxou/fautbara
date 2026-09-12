@@ -235,7 +235,30 @@ function dayTime(iso: string) {
   )}`;
 }
 
+function hourOf(iso: string) {
+  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function relDay(iso: string) {
+  const d = new Date(iso);
+  const today = new Date();
+  const diff = Math.round(
+    (new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() -
+      new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) /
+      86_400_000,
+  );
+  if (diff === 0) return "Aujourd'hui";
+  if (diff === 1) return "Demain";
+  return d.toLocaleDateString("fr-FR", { weekday: "long" });
+}
+
+function childLevel(children: { id: string; school_level: string | null }[], childId: string | null | undefined) {
+  if (!childId) return null;
+  return children.find((c) => c.id === childId)?.school_level ?? null;
+}
+
 const SOFT_CARD = "rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)]";
+
 
 function Greeting({ firstName, subtitle }: { firstName: string; subtitle: string }) {
   return (
