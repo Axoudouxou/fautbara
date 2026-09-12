@@ -19,7 +19,8 @@ export type ConversationTimelineEvent =
       attendance: Attendance;
       contentNote: string;
       progressLevel: ProgressLevel;
-      homeworkDone: HomeworkDone | null;
+      homeworkDone: string | null;
+      engagementLevel: EngagementLevel;
       engagementRating: number;
       nextSteps: string | null;
     };
