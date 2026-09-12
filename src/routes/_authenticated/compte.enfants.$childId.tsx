@@ -16,6 +16,7 @@ import {
 import { EmptyState, ProgressBar, RowCard, SectionHeading, UserAvatar } from "@/components/product-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/packs";
+import { ATTENDANCE_OPTIONS, ENGAGEMENT_LEVELS, PROGRESS_LEVELS, labelFor } from "@/lib/session-reports";
 
 export const Route = createFileRoute("/_authenticated/compte/enfants/$childId")({
   head: () => ({
