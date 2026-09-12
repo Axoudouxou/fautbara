@@ -7,3 +7,7 @@
 - [x] Devoirs : modification et remplacement de fichier ajoutés pour l'intervenant
 
 - [x] Bouton « Marquer comme terminée » : toujours visible, grisé avant l'heure prévue
+- [x] Service client : centre d'aide /aide, chatbot prédéfini global, formulaire de contact, admin FAQ
+- [x] Clôture de séance : règle normale rétablie (uniquement après l'heure prévue)
+- [ ] Alerte e-mail support vers teamlightech@gmail.com — bloquée : aucun domaine d'envoi configuré
+- [ ] Vérifier une clôture réelle + portefeuille — bloquée : prochaine séance acceptée le 05/11/2026

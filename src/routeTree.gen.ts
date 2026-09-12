@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AideRouteImport } from './routes/aide'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CommentFonctionneLePaiementRouteImport } from './routes/comment-fonctionne-le-paiement'
 import { Route as DevenirProfesseurRouteImport } from './routes/devenir-professeur'
@@ -24,6 +25,7 @@ import { Route as MatieresSlugRouteImport } from './routes/matieres.$slug'
 import { Route as ProfesseursIndexRouteImport } from './routes/professeurs.index'
 import { Route as ProfesseursIdRouteImport } from './routes/professeurs.$id'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminAideRouteImport } from './routes/_authenticated/admin.aide'
 import { Route as AuthenticatedAdminLitigesRouteImport } from './routes/_authenticated/admin.litiges'
 import { Route as AuthenticatedAdminOffresRouteImport } from './routes/_authenticated/admin.offres'
 import { Route as AuthenticatedAdminProfesseursRouteImport } from './routes/_authenticated/admin.professeurs'
@@ -53,6 +55,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AideRoute = AideRouteImport.update({
+  id: '/aide',
+  path: '/aide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -119,6 +126,11 @@ const ProfesseursIdRoute = ProfesseursIdRouteImport.update({
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminAideRoute = AuthenticatedAdminAideRouteImport.update({
+  id: '/admin/aide',
+  path: '/admin/aide',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminLitigesRoute =
@@ -245,6 +257,7 @@ const ApiPublicBackendConfigRoute = ApiPublicBackendConfigRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aide': typeof AideRoute
   '/auth': typeof AuthRoute
   '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
   '/devenir-professeur': typeof DevenirProfesseurRoute
@@ -257,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
+  '/admin/aide': typeof AuthenticatedAdminAideRoute
   '/admin/litiges': typeof AuthenticatedAdminLitigesRoute
   '/admin/offres': typeof AuthenticatedAdminOffresRoute
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
@@ -282,6 +296,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aide': typeof AideRoute
   '/auth': typeof AuthRoute
   '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
   '/devenir-professeur': typeof DevenirProfesseurRoute
@@ -294,6 +309,7 @@ export interface FileRoutesByTo {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres': typeof MatieresIndexRoute
   '/professeurs': typeof ProfesseursIndexRoute
+  '/admin/aide': typeof AuthenticatedAdminAideRoute
   '/admin/litiges': typeof AuthenticatedAdminLitigesRoute
   '/admin/offres': typeof AuthenticatedAdminOffresRoute
   '/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
@@ -321,6 +337,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/aide': typeof AideRoute
   '/auth': typeof AuthRoute
   '/comment-fonctionne-le-paiement': typeof CommentFonctionneLePaiementRoute
   '/devenir-professeur': typeof DevenirProfesseurRoute
@@ -333,6 +350,7 @@ export interface FileRoutesById {
   '/professeurs/$id': typeof ProfesseursIdRoute
   '/matieres/': typeof MatieresIndexRoute
   '/professeurs/': typeof ProfesseursIndexRoute
+  '/_authenticated/admin/aide': typeof AuthenticatedAdminAideRoute
   '/_authenticated/admin/litiges': typeof AuthenticatedAdminLitigesRoute
   '/_authenticated/admin/offres': typeof AuthenticatedAdminOffresRoute
   '/_authenticated/admin/professeurs': typeof AuthenticatedAdminProfesseursRoute
@@ -360,6 +378,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/aide'
     | '/auth'
     | '/comment-fonctionne-le-paiement'
     | '/devenir-professeur'
@@ -372,6 +391,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
+    | '/admin/aide'
     | '/admin/litiges'
     | '/admin/offres'
     | '/admin/professeurs'
@@ -397,6 +417,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/aide'
     | '/auth'
     | '/comment-fonctionne-le-paiement'
     | '/devenir-professeur'
@@ -409,6 +430,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres'
     | '/professeurs'
+    | '/admin/aide'
     | '/admin/litiges'
     | '/admin/offres'
     | '/admin/professeurs'
@@ -435,6 +457,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/aide'
     | '/auth'
     | '/comment-fonctionne-le-paiement'
     | '/devenir-professeur'
@@ -447,6 +470,7 @@ export interface FileRouteTypes {
     | '/professeurs/$id'
     | '/matieres/'
     | '/professeurs/'
+    | '/_authenticated/admin/aide'
     | '/_authenticated/admin/litiges'
     | '/_authenticated/admin/offres'
     | '/_authenticated/admin/professeurs'
@@ -474,6 +498,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AideRoute: typeof AideRoute
   AuthRoute: typeof AuthRoute
   CommentFonctionneLePaiementRoute: typeof CommentFonctionneLePaiementRoute
   DevenirProfesseurRoute: typeof DevenirProfesseurRoute
@@ -499,6 +524,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aide': {
+      id: '/aide'
+      path: '/aide'
+      fullPath: '/aide'
+      preLoaderRoute: typeof AideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -590,6 +622,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/aide': {
+      id: '/_authenticated/admin/aide'
+      path: '/admin/aide'
+      fullPath: '/admin/aide'
+      preLoaderRoute: typeof AuthenticatedAdminAideRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/litiges': {
@@ -747,6 +786,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDevoirsRoute: typeof AuthenticatedDevoirsRoute
   AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedAdminAideRoute: typeof AuthenticatedAdminAideRoute
   AuthenticatedAdminLitigesRoute: typeof AuthenticatedAdminLitigesRoute
   AuthenticatedAdminOffresRoute: typeof AuthenticatedAdminOffresRoute
   AuthenticatedAdminProfesseursRoute: typeof AuthenticatedAdminProfesseursRoute
@@ -775,6 +815,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDevoirsRoute: AuthenticatedDevoirsRoute,
   AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedAdminAideRoute: AuthenticatedAdminAideRoute,
   AuthenticatedAdminLitigesRoute: AuthenticatedAdminLitigesRoute,
   AuthenticatedAdminOffresRoute: AuthenticatedAdminOffresRoute,
   AuthenticatedAdminProfesseursRoute: AuthenticatedAdminProfesseursRoute,
@@ -804,6 +845,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AideRoute: AideRoute,
   AuthRoute: AuthRoute,
   CommentFonctionneLePaiementRoute: CommentFonctionneLePaiementRoute,
   DevenirProfesseurRoute: DevenirProfesseurRoute,

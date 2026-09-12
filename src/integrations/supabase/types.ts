@@ -496,6 +496,42 @@ export type Database = {
           },
         ]
       }
+      faq_entries: {
+        Row: {
+          answer: string
+          category: string
+          click_count: number
+          created_at: string
+          id: string
+          is_published: boolean
+          question: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category: string
+          click_count?: number
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          question: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          click_count?: number
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          question?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       learning_preferences: {
         Row: {
           availability_days: number[]
@@ -1146,6 +1182,50 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_requests: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          email_notified_at: string | null
+          id: string
+          message: string
+          source: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          email_notified_at?: string | null
+          id?: string
+          message: string
+          source?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          email_notified_at?: string | null
+          id?: string
+          message?: string
+          source?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_requests_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -2378,6 +2458,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      open_support_conversation: {
+        Args: { p_message: string; p_source?: string; p_subject: string }
+        Returns: string
+      }
       pair_has_booking: {
         Args: { p_child_id: string; p_learner_id: string; p_teacher_id: string }
         Returns: boolean
@@ -2788,6 +2872,7 @@ export type Database = {
         Args: { p_child_id?: string; p_learner_id: string }
         Returns: Json
       }
+      track_faq_click: { Args: { p_faq_id: string }; Returns: undefined }
       try_validate_session_earning: {
         Args: { p_booking_id: string }
         Returns: undefined

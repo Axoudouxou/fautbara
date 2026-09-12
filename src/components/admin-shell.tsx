@@ -11,6 +11,7 @@ const LINKS = [
   { to: "/admin/litiges" as const, label: "Modération" },
   { to: "/admin/offres" as const, label: "Catalogue" },
   { to: "/admin/retraits" as const, label: "Finances" },
+  { to: "/admin/aide" as const, label: "Centre d'aide" },
 ];
 
 export function useIsAdmin(userId: string) {
