@@ -337,6 +337,7 @@ function TeacherDashboard() {
           <SectionHeading title="Raccourcis" />
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {[
+              { to: "/pro/seances" as const, icon: FileText, label: "Mes séances" },
               { to: "/pro/eleves" as const, icon: Users, label: "Mes élèves" },
               { to: "/pro/demandes" as const, icon: Inbox, label: "Demandes" },
               { to: "/pro/offres" as const, icon: BookOpen, label: "Mes offres" },
