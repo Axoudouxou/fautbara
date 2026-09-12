@@ -40,10 +40,26 @@ function HomeworkPage() {
 
       const { data, error } = await supabase
         .from("assignments")
-        .select("id, title, description, due_date, status, created_at, conversation_id, teacher_id")
+        .select(
+          "id, title, description, due_date, status, created_at, conversation_id, teacher_id, session_report_id",
+        )
         .in("conversation_id", convIds)
         .order("created_at", { ascending: false });
       if (error) throw error;
+
+      // Rattache chaque devoir au compte-rendu de la séance dont il est issu.
+      const reportIds = Array.from(
+        new Set((data ?? []).map((a) => a.session_report_id).filter((id): id is string => Boolean(id))),
+      );
+      const bookingByReport = new Map<string, string>();
+      if (reportIds.length > 0) {
+        const { data: reports } = await supabase
+          .from("session_reports")
+          .select("id, booking_id")
+          .in("id", reportIds);
+        for (const r of reports ?? []) bookingByReport.set(r.id, r.booking_id);
+      }
+
 
       const teacherIds = Array.from(new Set((data ?? []).map((a) => a.teacher_id)));
       const names = new Map<string, string>();
