@@ -40,3 +40,4 @@
 ## Fidélité à la maquette envoyée
 - [x] Écrans Intervenant : accueil du jour, mes élèves, fiche élève, agenda, rémunérations, ma progression
 - [ ] Reprendre écran par écran la maquette envoyée et corriger chaque écart signalé par l'utilisateur
+- [ ] Reprise complète des 22 écrans à l'identique de la maquette (ordre : Parent, Adulte, Intervenant) — attente du renvoi de l'image de référence
