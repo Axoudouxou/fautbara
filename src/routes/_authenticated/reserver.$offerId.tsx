@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_authenticated/reserver/$offerId")({
       .object({
         date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
         time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+        enfant: z.string().uuid().optional(),
       })
       .parse(search),
   head: () => ({
@@ -37,12 +38,13 @@ const PACK_ORDER = ["decouverte", "suivi", "renfort", "intensif", "examen", "sea
 function BookingPage() {
   const { user } = Route.useRouteContext();
   const { offerId } = Route.useParams();
+  const { enfant: selectedChildId } = Route.useSearch();
   const navigate = useNavigate();
   const { roles, rolesLoading } = useSessionRoles();
   const canBook = roles.includes("parent") || roles.includes("student");
   const isParent = roles.includes("parent");
 
-  const [childId, setChildId] = useState("");
+  const [childId, setChildId] = useState(selectedChildId ?? "");
   const [packSlug, setPackSlug] = useState<string | null>(null);
   const [format, setFormat] = useState<"home" | "online">("home");
   const [commune, setCommune] = useState("");
@@ -127,6 +129,9 @@ function BookingPage() {
   const purchase = useMutation({
     mutationFn: async () => {
       if (!offer || !packSlug) throw new Error("Choisissez une formule");
+      if (isParent && !children.some((child) => child.id === childId)) {
+        throw new Error("Choisissez l’enfant concerné par cette formule");
+      }
       const { data, error } = await supabase.rpc("purchase_pack", {
         p_offer_id: offer.id,
         p_pack_slug: packSlug,
@@ -209,6 +214,10 @@ function BookingPage() {
   function submit() {
     if (!packSlug) {
       toast.error("Choisissez une formule ou une séance seule");
+      return;
+    }
+    if (isParent && !children.some((child) => child.id === childId)) {
+      toast.error("Choisissez l’enfant concerné");
       return;
     }
     if (format === "home" && !commune) {
@@ -320,7 +329,7 @@ function BookingPage() {
                   onChange={(e) => setChildId(e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Pour moi</option>
+                  <option value="">Choisir un enfant…</option>
                   {children.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.first_name}

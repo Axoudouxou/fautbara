@@ -17,6 +17,7 @@ import { gradeLabel } from "@/lib/packs";
 
 import { COMMUNES_ABIDJAN } from "@/lib/geo";
 import { Slider } from "@/components/ui/slider";
+import { ParentChildContext } from "@/components/parent-child-context";
 
 export const Route = createFileRoute("/professeurs/")({
   validateSearch: (search) => searchFiltersSchema.parse(search),
@@ -115,6 +116,7 @@ function TeachersPage() {
 
   return (
     <div className="container-page py-10 sm:py-14">
+      <ParentChildContext childId={search.enfant} />
       <header className="max-w-2xl">
         <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Trouver un professeur
@@ -271,7 +273,7 @@ function TeachersPage() {
         </p>
         <Link
           to="/professeurs"
-          search={{}}
+          search={search.enfant ? { enfant: search.enfant } : {}}
           className="text-sm font-semibold text-primary hover:underline"
         >
           Réinitialiser
@@ -301,6 +303,7 @@ function TeachersPage() {
             <TeacherRow
               key={teacher.teacher_id}
               teacher={teacher}
+              childId={search.enfant}
               {...(activeSubjectName ? { activeSubjectName } : {})}
             />
           ))}
@@ -313,9 +316,11 @@ function TeachersPage() {
 function TeacherRow({
   teacher,
   activeSubjectName,
+  childId,
 }: {
   teacher: TeacherCard;
   activeSubjectName?: string;
+  childId?: string | undefined;
 }) {
   const subjectLabel = activeSubjectName ?? teacher.subjects[0];
 
@@ -325,6 +330,7 @@ function TeacherRow({
         <Link
           to="/professeurs/$id"
           params={{ id: teacher.teacher_id }}
+          search={childId ? { enfant: childId } : {}}
           className="shrink-0"
         >
           {teacher.avatar_url ? (
@@ -346,6 +352,7 @@ function TeacherRow({
             <Link
               to="/professeurs/$id"
               params={{ id: teacher.teacher_id }}
+              search={childId ? { enfant: childId } : {}}
               className="truncate font-display text-base font-bold text-foreground hover:underline"
             >
               {teacher.display_name}
@@ -443,6 +450,7 @@ function TeacherRow({
         <Link
           to="/professeurs/$id"
           params={{ id: teacher.teacher_id }}
+          search={childId ? { enfant: childId } : {}}
           className="flex-1 inline-flex items-center justify-center rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:text-sm"
         >
           Voir le profil
@@ -451,9 +459,10 @@ function TeacherRow({
           <Link
             to="/reserver/$offerId"
             params={{ offerId: teacher.sample_offer_id }}
+            search={childId ? { enfant: childId } : {}}
             className="flex-1 inline-flex items-center justify-center rounded-full border border-border px-2 py-2 text-center text-xs font-semibold leading-tight text-foreground transition-colors hover:bg-secondary sm:text-sm"
           >
-            Réserver un cours d'essai
+            Voir les formules
           </Link>
         ) : null}
       </div>

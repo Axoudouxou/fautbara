@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 import {
   BadgeCheck,
   Briefcase,
@@ -19,8 +20,10 @@ import { getTeacherPublicProfile, searchTeachers } from "@/lib/catalog.functions
 import { getTeacherFullProfile } from "@/lib/teacher-profile.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { TeacherAvailabilityCalendar } from "@/components/teacher-availability-calendar";
+import { ParentChildContext } from "@/components/parent-child-context";
 
 export const Route = createFileRoute("/professeurs/$id")({
+  validateSearch: (search) => z.object({ enfant: z.string().uuid().optional() }).parse(search),
   loader: async ({ params }) => {
     const [{ offers }, full] = await Promise.all([
       getTeacherPublicProfile({ data: { id: params.id } }),
@@ -109,6 +112,7 @@ function initials(name: string) {
 }
 
 function TeacherPublicPage() {
+  const { enfant: childId } = Route.useSearch();
   const { profile, offers, educations, experiences, photos, reviews, rating_avg, rating_count } =
     Route.useLoaderData();
 
@@ -164,9 +168,10 @@ function TeacherPublicPage() {
 
   return (
     <div className="container-page pt-10 pb-44 sm:pt-14 md:pb-24 lg:pb-14">
+      <ParentChildContext childId={childId} />
       <Link
         to="/professeurs"
-        search={{}}
+        search={childId ? { enfant: childId } : {}}
         className="text-sm font-semibold text-primary hover:underline"
       >
         ← Tous les professeurs
@@ -376,7 +381,7 @@ function TeacherPublicPage() {
                 heure.
               </p>
               <div className="mt-4">
-                <TeacherAvailabilityCalendar teacherId={profile.teacher_id} offers={sortedOffers} />
+                <TeacherAvailabilityCalendar teacherId={profile.teacher_id} offers={sortedOffers} childId={childId} />
               </div>
             </section>
           ) : null}
@@ -452,6 +457,7 @@ function TeacherPublicPage() {
                   <Link
                     to="/reserver/$offerId"
                     params={{ offerId: offer.id }}
+                    search={childId ? { enfant: childId } : {}}
                     className="mt-3 inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
                   >
                     Réserver ce cours
@@ -482,6 +488,7 @@ function TeacherPublicPage() {
             lessonsCount={profile.lessons_count}
             teacherId={profile.teacher_id}
             firstOfferId={sortedOffers[0]?.id ?? null}
+            childId={childId}
           />
         </aside>
       </div>
@@ -492,6 +499,7 @@ function TeacherPublicPage() {
           minPrice={minPrice}
           teacherId={profile.teacher_id}
           firstOfferId={sortedOffers[0]?.id ?? null}
+          childId={childId}
         />
       </div>
     </div>
@@ -628,6 +636,7 @@ function SidebarContent({
   lessonsCount,
   teacherId,
   firstOfferId,
+  childId,
 }: {
   minPrice: number | null;
   maxPrice: number | null;
@@ -636,6 +645,7 @@ function SidebarContent({
   lessonsCount: number;
   teacherId: string;
   firstOfferId: string | null;
+  childId?: string | undefined;
 }) {
   return (
     <>
@@ -665,7 +675,7 @@ function SidebarContent({
       </div>
 
       <div className="mt-4">
-        <BookingCta teacherId={teacherId} firstOfferId={firstOfferId} />
+        <BookingCta teacherId={teacherId} firstOfferId={firstOfferId} childId={childId} />
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
         Les coordonnées privées des professeurs ne sont jamais affichées publiquement.
@@ -678,10 +688,12 @@ function MobileBookingBar({
   minPrice,
   teacherId,
   firstOfferId,
+  childId,
 }: {
   minPrice: number | null;
   teacherId: string;
   firstOfferId: string | null;
+  childId?: string | undefined;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -694,7 +706,7 @@ function MobileBookingBar({
         <span />
       )}
       <div className="max-w-[65%] flex-1">
-        <BookingCta teacherId={teacherId} firstOfferId={firstOfferId} compact />
+        <BookingCta teacherId={teacherId} firstOfferId={firstOfferId} childId={childId} compact />
       </div>
     </div>
   );
@@ -703,10 +715,12 @@ function MobileBookingBar({
 function BookingCta({
   teacherId,
   firstOfferId,
+  childId,
   compact = false,
 }: {
   teacherId: string;
   firstOfferId: string | null;
+  childId?: string | undefined;
   compact?: boolean;
 }) {
   const { ready, signedIn, primaryRole } = useSessionRoles();
@@ -744,18 +758,13 @@ function BookingCta({
     );
   }
 
-  const label = !trialReady ? "…" : hasBooked ? "Réserver un cours" : "Réserver un cours d'essai";
+  const label = !trialReady ? "…" : hasBooked ? "Choisir une formule" : "Voir les formules";
 
   return (
     <div>
-      <Link to="/reserver/$offerId" params={{ offerId: firstOfferId }} className={cls}>
+      <Link to="/reserver/$offerId" params={{ offerId: firstOfferId }} search={childId ? { enfant: childId } : {}} className={cls}>
         {label}
       </Link>
-      {!compact && trialReady && !hasBooked ? (
-        <p className="mt-2 text-center text-xs font-semibold text-primary">
-          Cours d'essai disponible avec ce professeur
-        </p>
-      ) : null}
     </div>
   );
 }

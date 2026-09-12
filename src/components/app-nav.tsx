@@ -214,13 +214,19 @@ function MobilePrimaryAction({ role }: { role: AppRole | null }) {
     );
   }
 
+  if (role === "parent") {
+    return (
+      <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
+        <Link to="/choisir-enfant" aria-label="Rechercher un intervenant pour un enfant">
+          <Plus className="size-5" aria-hidden />
+        </Link>
+      </Button>
+    );
+  }
+
   return (
     <Button asChild size="icon" className="pointer-events-auto absolute bottom-8 size-12 rounded-full border-4 border-background shadow-[var(--shadow-raised)]">
-      <Link
-        to="/professeurs"
-        search={{}}
-        aria-label={role === "parent" ? "Rechercher un intervenant pour un enfant" : "Rechercher un intervenant pour moi"}
-      >
+      <Link to="/professeurs" search={{}} aria-label="Rechercher un intervenant pour moi">
         <Plus className="size-5" aria-hidden />
       </Link>
     </Button>
