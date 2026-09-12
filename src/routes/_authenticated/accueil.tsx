@@ -20,6 +20,7 @@ import {
 import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 
 import { supabase } from "@/integrations/supabase/client";
+import { learningObjectiveLabel } from "@/lib/education";
 import { HomeShortcutTabs } from "@/components/home-shortcut-tabs";
 import { NotificationsFeed } from "@/components/notifications-feed";
 import { AdminAlertsSection, TeacherTasksSection } from "@/components/home-role-sections";
@@ -537,12 +538,6 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
   const activePacks = packs.filter((p) => p.status === "active");
   const left = sessionsLeftOf(activePacks);
   const objective = journeyQuery.data?.prefs?.objective;
-  const objectiveLabels: Record<string, string> = {
-    exam: "Réussir un examen",
-    catchup: "Combler mes lacunes",
-    advance: "Aller plus loin",
-    confidence: "Reprendre confiance",
-  };
   const prefs = journeyQuery.data?.prefs;
   const report = journeyQuery.data?.report;
 
@@ -660,7 +655,7 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
         )}
         <p className="mt-2 text-xs text-muted-foreground">
           {left > 0 ? `${left} séance${left > 1 ? "s" : ""} restante${left > 1 ? "s" : ""} au total · ` : ""}
-          Objectif : {objective ? objectiveLabels[objective] ?? objective : "à préciser dans Mon parcours"}
+          Objectif : {learningObjectiveLabel(objective) ?? "à préciser dans Mon parcours"}
         </p>
 
       </section>
