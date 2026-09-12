@@ -20,6 +20,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AppTabsBar, AppTabsMobileBar, useAppNav } from "@/components/app-nav";
 import { MessagingPanelProvider, useMessagingPanel } from "@/lib/messaging-panel-context";
 import { MessagingDrawer } from "@/components/messaging-drawer";
+import { SupportChatWidget } from "@/components/support-chat-widget";
 import { useMessagingSide } from "@/hooks/use-messaging-side";
 import { useConversations } from "@/lib/messaging";
 
@@ -228,9 +229,14 @@ function SiteFooter() {
           />
           <span className="font-display font-bold text-foreground">BARA</span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Cours particuliers en Côte d'Ivoire — Abidjan et bientôt partout ailleurs.
-        </p>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <p className="text-sm text-muted-foreground">
+            Cours particuliers en Côte d'Ivoire — Abidjan et bientôt partout ailleurs.
+          </p>
+          <Link to="/aide" className="text-sm font-semibold text-primary hover:underline">
+            Centre d'aide
+          </Link>
+        </div>
       </div>
     </footer>
   );
@@ -274,6 +280,7 @@ function RootComponent() {
         </div>
 
         <MessagingDrawer />
+        <SupportChatWidget />
         <Toaster richColors position="top-center" />
       </MessagingPanelProvider>
     </QueryClientProvider>
