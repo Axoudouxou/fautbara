@@ -29,8 +29,10 @@
 - [ ] Lot 6 : valider les trois parcours sur mobile et ordinateur
 
 ## Alignement UX sur la maquette validée
+- [x] Socle visuel commun : compteurs, titres de section et lignes de liste compactes
 - [ ] Uniformiser les 22 écrans sur la densité et la hiérarchie mobile de la référence
-- [ ] Aligner les 7 écrans Parent sans modifier les données ni les achats
+- [x] Aligner les écrans Parent accueil, enfants et choix d’enfant (densité maquette)
+- [ ] Aligner les écrans Parent recherche, détail intervenant et programmation
 - [ ] Aligner les 7 écrans Adulte et compléter les vues matière/compte-rendu
 - [ ] Aligner les 8 écrans Intervenant et compléter élève/rémunérations/progression
 - [ ] Vérifier les trois rôles sur mobile et ordinateur
