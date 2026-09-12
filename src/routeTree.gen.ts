@@ -60,6 +60,7 @@ import { Route as AuthenticatedCompteEnfantsChildIdRouteImport } from './routes/
 import { Route as AuthenticatedCompteProgrammerPackIdRouteImport } from './routes/_authenticated/compte.programmer.$packId'
 import { Route as AuthenticatedProElevesIndexRouteImport } from './routes/_authenticated/pro.eleves.index'
 import { Route as AuthenticatedProElevesLearnerIdRouteImport } from './routes/_authenticated/pro.eleves.$learnerId'
+import { Route as AuthenticatedProSeancesIndexRouteImport } from './routes/_authenticated/pro.seances.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -343,6 +344,12 @@ const AuthenticatedProElevesLearnerIdRoute =
     path: '/pro/eleves/$learnerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProSeancesIndexRoute =
+  AuthenticatedProSeancesIndexRouteImport.update({
+    id: '/pro/seances/',
+    path: '/pro/seances/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -395,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
   '/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
   '/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
+  '/pro/seances/': typeof AuthenticatedProSeancesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -447,6 +455,7 @@ export interface FileRoutesByTo {
   '/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
   '/compte/enfants': typeof AuthenticatedCompteEnfantsIndexRoute
   '/pro/eleves': typeof AuthenticatedProElevesIndexRoute
+  '/pro/seances': typeof AuthenticatedProSeancesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -501,6 +510,7 @@ export interface FileRoutesById {
   '/_authenticated/pro/eleves/$learnerId': typeof AuthenticatedProElevesLearnerIdRoute
   '/_authenticated/compte/enfants/': typeof AuthenticatedCompteEnfantsIndexRoute
   '/_authenticated/pro/eleves/': typeof AuthenticatedProElevesIndexRoute
+  '/_authenticated/pro/seances/': typeof AuthenticatedProSeancesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -555,6 +565,7 @@ export interface FileRouteTypes {
     | '/pro/eleves/$learnerId'
     | '/compte/enfants/'
     | '/pro/eleves/'
+    | '/pro/seances/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -607,6 +618,7 @@ export interface FileRouteTypes {
     | '/pro/eleves/$learnerId'
     | '/compte/enfants'
     | '/pro/eleves'
+    | '/pro/seances'
   id:
     | '__root__'
     | '/'
@@ -660,6 +672,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/eleves/$learnerId'
     | '/_authenticated/compte/enfants/'
     | '/_authenticated/pro/eleves/'
+    | '/_authenticated/pro/seances/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1036,6 +1049,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProElevesLearnerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pro/seances/': {
+      id: '/_authenticated/pro/seances/'
+      path: '/pro/seances'
+      fullPath: '/pro/seances/'
+      preLoaderRoute: typeof AuthenticatedProSeancesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -1079,6 +1099,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProElevesLearnerIdRoute: typeof AuthenticatedProElevesLearnerIdRoute
   AuthenticatedCompteEnfantsIndexRoute: typeof AuthenticatedCompteEnfantsIndexRoute
   AuthenticatedProElevesIndexRoute: typeof AuthenticatedProElevesIndexRoute
+  AuthenticatedProSeancesIndexRoute: typeof AuthenticatedProSeancesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1124,6 +1145,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProElevesLearnerIdRoute: AuthenticatedProElevesLearnerIdRoute,
   AuthenticatedCompteEnfantsIndexRoute: AuthenticatedCompteEnfantsIndexRoute,
   AuthenticatedProElevesIndexRoute: AuthenticatedProElevesIndexRoute,
+  AuthenticatedProSeancesIndexRoute: AuthenticatedProSeancesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
