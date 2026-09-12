@@ -99,8 +99,9 @@ export function useConversationSystemContext(
           attendance: r.attendance as Attendance,
           contentNote: r.content_note,
           progressLevel: r.progress_level as ProgressLevel,
-          homeworkDone: r.homework_done as HomeworkDone | null,
-          engagementRating: r.engagement_rating,
+          homeworkDone: r.homework_done,
+          engagementLevel: r.engagement_level as EngagementLevel,
+          engagementRating: engagementScore(r.engagement_level as EngagementLevel),
           nextSteps: r.next_steps,
         })),
       ].sort((a, b) => a.sortAt.localeCompare(b.sortAt));
