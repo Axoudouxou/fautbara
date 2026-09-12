@@ -299,6 +299,50 @@ function AccountPage() {
   );
 }
 
+/** Groupe de raccourcis du compte. */
+function AccountGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="font-display text-base font-bold text-foreground sm:text-lg">{title}</h2>
+      <div className="mt-2.5 space-y-2">{children}</div>
+    </section>
+  );
+}
+
+/** Raccourci compact vers un écran du compte. */
+function AccountRow({
+  to,
+  search,
+  icon: Icon,
+  title,
+  description,
+}: {
+  to: string;
+  search?: Record<string, never>;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      // @ts-expect-error — chemins internes validés par le routeur
+      to={to}
+      search={search}
+      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 shadow-[var(--shadow-card)] transition-colors hover:bg-secondary/50 sm:p-4"
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-soft-foreground">
+        <Icon className="size-4" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-display text-sm font-bold text-foreground">{title}</span>
+        <span className="block truncate text-xs text-muted-foreground">{description}</span>
+      </span>
+      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+    </Link>
+  );
+}
+
+
 /** Réglages de connexion : adresse e-mail et mot de passe. */
 function AccountSecuritySection({ currentEmail }: { currentEmail: string }) {
   const [email, setEmail] = useState(currentEmail);
