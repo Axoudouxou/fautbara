@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
   Baby,
   Briefcase,
   CalendarClock,
+  ChevronRight,
   Gavel,
   KeyRound,
   Loader2,
@@ -300,7 +301,7 @@ function AccountPage() {
 }
 
 /** Groupe de raccourcis du compte. */
-function AccountGroup({ title, children }: { title: string; children: React.ReactNode }) {
+function AccountGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
       <h2 className="font-display text-base font-bold text-foreground sm:text-lg">{title}</h2>
@@ -319,7 +320,7 @@ function AccountRow({
 }: {
   to: string;
   search?: Record<string, never>;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   title: string;
   description: string;
 }) {
