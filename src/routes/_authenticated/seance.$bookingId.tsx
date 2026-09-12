@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Baby,
-  BookOpen,
   CalendarDays,
   Clock3,
   FileText,
@@ -14,7 +13,6 @@ import {
   MapPin,
   MessageSquare,
   Package,
-  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 

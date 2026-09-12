@@ -53,6 +53,7 @@ import { Route as AuthenticatedProProgressionRouteImport } from './routes/_authe
 import { Route as AuthenticatedProRemunerationsRouteImport } from './routes/_authenticated/pro.remunerations'
 import { Route as AuthenticatedProVerificationRouteImport } from './routes/_authenticated/pro.verification'
 import { Route as AuthenticatedReserverOfferIdRouteImport } from './routes/_authenticated/reserver.$offerId'
+import { Route as AuthenticatedSeanceBookingIdRouteImport } from './routes/_authenticated/seance.$bookingId'
 import { Route as ApiPublicBackendConfigRouteImport } from './routes/api/public/backend-config'
 import { Route as AuthenticatedCompteEnfantsIndexRouteImport } from './routes/_authenticated/compte.enfants.index'
 import { Route as AuthenticatedCompteEnfantsChildIdRouteImport } from './routes/_authenticated/compte.enfants.$childId'
@@ -301,6 +302,12 @@ const AuthenticatedReserverOfferIdRoute =
     path: '/reserver/$offerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSeanceBookingIdRoute =
+  AuthenticatedSeanceBookingIdRouteImport.update({
+    id: '/seance/$bookingId',
+    path: '/seance/$bookingId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicBackendConfigRoute = ApiPublicBackendConfigRouteImport.update({
   id: '/api/public/backend-config',
   path: '/api/public/backend-config',
@@ -378,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
+  '/seance/$bookingId': typeof AuthenticatedSeanceBookingIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/compte/': typeof AuthenticatedCompteIndexRoute
@@ -429,6 +437,7 @@ export interface FileRoutesByTo {
   '/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/pro/verification': typeof AuthenticatedProVerificationRoute
   '/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
+  '/seance/$bookingId': typeof AuthenticatedSeanceBookingIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/compte': typeof AuthenticatedCompteIndexRoute
@@ -482,6 +491,7 @@ export interface FileRoutesById {
   '/_authenticated/pro/remunerations': typeof AuthenticatedProRemunerationsRoute
   '/_authenticated/pro/verification': typeof AuthenticatedProVerificationRoute
   '/_authenticated/reserver/$offerId': typeof AuthenticatedReserverOfferIdRoute
+  '/_authenticated/seance/$bookingId': typeof AuthenticatedSeanceBookingIdRoute
   '/api/public/backend-config': typeof ApiPublicBackendConfigRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/compte/': typeof AuthenticatedCompteIndexRoute
@@ -535,6 +545,7 @@ export interface FileRouteTypes {
     | '/pro/remunerations'
     | '/pro/verification'
     | '/reserver/$offerId'
+    | '/seance/$bookingId'
     | '/api/public/backend-config'
     | '/admin/'
     | '/compte/'
@@ -586,6 +597,7 @@ export interface FileRouteTypes {
     | '/pro/remunerations'
     | '/pro/verification'
     | '/reserver/$offerId'
+    | '/seance/$bookingId'
     | '/api/public/backend-config'
     | '/admin'
     | '/compte'
@@ -638,6 +650,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pro/remunerations'
     | '/_authenticated/pro/verification'
     | '/_authenticated/reserver/$offerId'
+    | '/_authenticated/seance/$bookingId'
     | '/api/public/backend-config'
     | '/_authenticated/admin/'
     | '/_authenticated/compte/'
@@ -974,6 +987,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReserverOfferIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/seance/$bookingId': {
+      id: '/_authenticated/seance/$bookingId'
+      path: '/seance/$bookingId'
+      fullPath: '/seance/$bookingId'
+      preLoaderRoute: typeof AuthenticatedSeanceBookingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/backend-config': {
       id: '/api/public/backend-config'
       path: '/api/public/backend-config'
@@ -1050,6 +1070,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProRemunerationsRoute: typeof AuthenticatedProRemunerationsRoute
   AuthenticatedProVerificationRoute: typeof AuthenticatedProVerificationRoute
   AuthenticatedReserverOfferIdRoute: typeof AuthenticatedReserverOfferIdRoute
+  AuthenticatedSeanceBookingIdRoute: typeof AuthenticatedSeanceBookingIdRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedCompteIndexRoute: typeof AuthenticatedCompteIndexRoute
   AuthenticatedProIndexRoute: typeof AuthenticatedProIndexRoute
@@ -1092,6 +1113,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProRemunerationsRoute: AuthenticatedProRemunerationsRoute,
   AuthenticatedProVerificationRoute: AuthenticatedProVerificationRoute,
   AuthenticatedReserverOfferIdRoute: AuthenticatedReserverOfferIdRoute,
+  AuthenticatedSeanceBookingIdRoute: AuthenticatedSeanceBookingIdRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedCompteIndexRoute: AuthenticatedCompteIndexRoute,
   AuthenticatedProIndexRoute: AuthenticatedProIndexRoute,
