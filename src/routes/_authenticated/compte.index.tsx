@@ -114,7 +114,8 @@ function AccountPage() {
   return (
     <div className="container-page py-5 pb-24 sm:py-14">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0 flex-1">
+
           <h1 className="font-display text-xl font-bold text-foreground sm:text-3xl">
             Mon compte
           </h1>
@@ -145,7 +146,7 @@ function AccountPage() {
       )}
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6">
+        <section className="min-w-0 rounded-2xl border border-border bg-card p-4 shadow-[var(--shadow-card)] sm:rounded-3xl sm:p-6">
           <h2 className="font-display text-base font-bold text-foreground sm:text-lg">Profil</h2>
 
           {profileQuery.isLoading ? (
@@ -217,7 +218,7 @@ function AccountPage() {
           )}
         </section>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <AccountGroup title="Mon activité">
             <AccountRow
               to="/compte/portefeuille"
