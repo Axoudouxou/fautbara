@@ -388,6 +388,15 @@ function BookingsPage() {
                       </button>
                     )}
                     {b.status === "completed" && (
+                      <Link
+                        to="/compte-rendu/$bookingId"
+                        params={{ bookingId: b.id }}
+                        className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary"
+                      >
+                        Voir le compte-rendu
+                      </Link>
+                    )}
+                    {b.status === "completed" && (
                       <LeaveReviewDialog
                         bookingId={b.id}
                         teacherId={b.teacher_id}
