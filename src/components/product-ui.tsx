@@ -14,7 +14,7 @@ export function initials(name: string) {
     .join("");
 }
 
-export function UserAvatar({ name, src, className }: { name: string; src?: string | null; className?: string }) {
+export function UserAvatar({ name, src, className }: { name: string; src?: string | null | undefined; className?: string }) {
   return (
     <Avatar className={cn("size-12 rounded-2xl", className)}>
       {src && <AvatarImage src={src} alt={`Photo de ${name}`} className="object-cover" />}
