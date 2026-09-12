@@ -7,10 +7,10 @@ import { EmptyState, ProgressBar, SectionHeading, StatTile } from "@/components/
 import { TeacherGate } from "@/components/teacher-gate";
 import { SESSION_STATUS_LABELS } from "@/lib/packs";
 import {
-  ATTENDANCE_LABELS,
-  ENGAGEMENT_MAX,
-  HOMEWORK_LABELS,
-  PROGRESS_LABELS,
+  ATTENDANCE_OPTIONS,
+  HOMEWORK_DONE_OPTIONS,
+  PROGRESS_LEVELS,
+  labelFor,
 } from "@/lib/session-reports";
 import type { SessionReport } from "@/lib/session-reports";
 
