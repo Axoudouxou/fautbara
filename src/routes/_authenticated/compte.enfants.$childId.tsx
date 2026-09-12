@@ -84,7 +84,7 @@ function ChildJourneyPage() {
         supabase
           .from("session_reports")
           .select(
-            "id, booking_id, teacher_id, attendance, content_note, progress_level, homework_done, engagement_rating, next_steps, created_at",
+            "id, booking_id, teacher_id, attendance, content_note, progress_level, homework_done, engagement_level, next_steps, created_at",
           )
           .eq("learner_id", user.id)
           .eq("child_id", childId)
