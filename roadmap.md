@@ -52,4 +52,4 @@
 
 ## Notifications et actions mobiles
 - [x] Remplacer les widgets de notifications des accueils par une cloche avec compteur dans l’en-tête
-- [ ] Vérifier la cloche et les boutons fixes pendant un défilement mobile réel
+- [x] Vérifier la cloche et les boutons fixes pendant un défilement mobile réel
