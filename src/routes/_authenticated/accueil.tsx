@@ -11,12 +11,13 @@ import {
   Inbox,
   Laptop,
   Loader2,
+  Route as RouteIcon,
   Wallet,
   UserPlus,
 } from "lucide-react";
 
 
-import { RowCard, SectionHeading, StatTile } from "@/components/product-ui";
+import { ProgressBar, RowCard, SectionHeading, StatTile } from "@/components/product-ui";
 
 import { supabase } from "@/integrations/supabase/client";
 import { learningObjectiveLabel } from "@/lib/education";
@@ -479,24 +480,14 @@ function AdultHome({ userId, firstName }: { userId: string; firstName: string })
   const journeyQuery = useQuery({
     queryKey: ["home-adult-journey", userId],
     queryFn: async () => {
-      const [prefs, report] = await Promise.all([
-        supabase
-          .from("learning_preferences")
-          .select("objective, subject_slugs, level_slugs, budget_range, preferred_communes")
-          .eq("user_id", userId)
-          .eq("role_context", "learner")
-          .maybeSingle(),
-        supabase
-          .from("session_reports")
-          .select("id, content_note, next_steps, created_at")
-          .eq("learner_id", userId)
-          .is("child_id", null)
-          .order("created_at", { ascending: false })
-          .limit(1),
-      ]);
+      const prefs = await supabase
+        .from("learning_preferences")
+        .select("objective, subject_slugs, level_slugs, budget_range, preferred_communes")
+        .eq("user_id", userId)
+        .eq("role_context", "learner")
+        .maybeSingle();
       if (prefs.error) throw prefs.error;
-      if (report.error) throw report.error;
-      return { prefs: prefs.data, report: report.data?.[0] ?? null };
+      return { prefs: prefs.data };
     },
   });
 
