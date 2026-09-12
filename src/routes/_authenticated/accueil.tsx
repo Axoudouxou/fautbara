@@ -337,10 +337,18 @@ function LearnerHome({
         </div>
       )}
 
-      {isParent && children.length > 0 && (
-        <section className="mt-5" aria-label="Cockpit familial">
+      {showCockpit && (
+        <section className="mt-5" aria-label={isParent ? "Cockpit familial" : "Mon activité"}>
           <div className="grid grid-cols-3 gap-2.5">
-            <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
+            {isParent ? (
+              <StatTile icon={Baby} value={children.length} label={children.length > 1 ? "enfants suivis" : "enfant suivi"} />
+            ) : (
+              <StatTile
+                icon={BookOpen}
+                value={ownSessionsLeft}
+                label={ownSessionsLeft > 1 ? "séances restantes" : "séance restante"}
+              />
+            )}
             <StatTile
               icon={CalendarClock}
               value={thisWeek.length}
@@ -352,6 +360,7 @@ function LearnerHome({
               label="demande(s) en attente"
             />
           </div>
+
 
           <div className="mt-5">
             <SectionHeading
