@@ -48,24 +48,20 @@ function ChooseChildPage() {
         {childrenQuery.isLoading ? (
           <p className="mt-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" /> Chargement…</p>
         ) : childrenQuery.data?.length ? (
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6 space-y-2.5 sm:grid sm:grid-cols-2 sm:gap-3 sm:space-y-0">
             {childrenQuery.data.map((child) => (
               <li key={child.id}>
                 <Link
                   to="/professeurs"
                   search={{ enfant: child.id }}
-                  className="group flex h-full flex-col rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition hover:border-primary/40"
+                  className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-card)] transition hover:border-primary/40"
                 >
-                  <div className="flex items-center gap-3">
-                    <UserAvatar name={child.first_name} className="size-12" />
-                    <div className="min-w-0">
-                      <h2 className="truncate font-display font-bold text-foreground">{child.first_name}</h2>
-                      <p className="text-xs text-muted-foreground">{child.school_level || "Niveau à préciser"}</p>
-                    </div>
+                  <UserAvatar name={child.first_name} className="size-10" />
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate font-display font-bold text-foreground">{child.first_name}</h2>
+                    <p className="truncate text-xs text-muted-foreground">{child.school_level || "Niveau à préciser"}</p>
                   </div>
-                  <span className="mt-6 inline-flex items-center justify-between text-sm font-semibold text-primary">
-                    Rechercher un intervenant <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
-                  </span>
+                  <ArrowRight className="size-4 shrink-0 text-primary transition-transform group-hover:translate-x-1" aria-hidden />
                 </Link>
               </li>
             ))}

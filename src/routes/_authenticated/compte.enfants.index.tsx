@@ -129,7 +129,7 @@ function ChildrenPage() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
         <section
           aria-label="Liste des enfants"
-          className="grid content-start gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          className="grid content-start gap-3 sm:grid-cols-2"
         >
           {childrenQuery.isLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
