@@ -40,6 +40,8 @@ export function SessionReportForm({
   existing,
   onClose,
   invalidateKeys = [],
+  variant = "modal",
+  onPublished,
 }: {
   bookingId: string;
   teacherId: string;
@@ -49,6 +51,9 @@ export function SessionReportForm({
   existing?: SessionReport | null;
   onClose: () => void;
   invalidateKeys?: unknown[][];
+  /** "page" affiche le formulaire en pleine page (parcours post-séance de l'intervenant). */
+  variant?: "modal" | "page";
+  onPublished?: (summary: { assignments: number; documents: number }) => void;
 }) {
   const queryClient = useQueryClient();
   const [attendance, setAttendance] = useState<Attendance>(existing?.attendance ?? "present");
