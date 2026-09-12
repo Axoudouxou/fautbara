@@ -252,20 +252,32 @@ function TeacherRequestsPage() {
               />
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {r.status === "accepted" && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => statusMutation.mutate({ id: r.id, status: "completed" })}
-                      disabled={statusMutation.isPending}
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Check className="size-3.5" aria-hidden /> Marquer comme terminée
-                    </button>
-                    {/* MODE TEST : la limite horaire est temporairement désactivée. À réactiver :
-                        bouton grisé avant l'heure prévue + message explicatif. */}
-                  </>
-                )}
+                {r.status === "accepted" &&
+                  (() => {
+                    const started = new Date(r.scheduled_at).getTime() <= Date.now();
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => statusMutation.mutate({ id: r.id, status: "completed" })}
+                          disabled={statusMutation.isPending || !started}
+                          title={
+                            started
+                              ? undefined
+                              : "Disponible à partir de l'heure prévue de la séance."
+                          }
+                          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Check className="size-3.5" aria-hidden /> Marquer comme terminée
+                        </button>
+                        {!started && (
+                          <span className="self-center text-xs text-muted-foreground">
+                            Possible à partir de l'heure prévue de la séance.
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                 {r.status === "completed" && (
                   <button
                     type="button"
